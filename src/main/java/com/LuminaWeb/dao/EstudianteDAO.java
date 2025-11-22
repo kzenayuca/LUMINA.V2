@@ -200,6 +200,33 @@ public class EstudianteDAO {
         return new ArrayList<>(cursos.values());
     }
 
+// estudiante_dashboard
+    /* Obtiene resumen de cursos matriculados para un estudiante */
+    public Map<String, Integer> obtenerResumenCursos(String cui) {
+        String sql = """
+            SELECT 
+                COUNT(DISTINCT CASE WHEN g.tipo_clase = 'TEORIA' THEN g.codigo_curso END) as cursos_teoria,
+                COUNT(DISTINCT CASE WHEN g.tipo_clase = 'LABORATORIO' THEN g.grupo_id END) as laboratorios
+            FROM matriculas m
+            INNER JOIN grupos_curso g ON m.grupo_id = g.grupo_id
+            WHERE m.cui = ? AND m.estado_matricula = 'ACTIVO'
+        """;
+    
+        try {
+            return jdbcTemplate.queryForObject(sql, new Object[]{cui}, (rs, rowNum) -> {
+                Map<String, Integer> resumen = new HashMap<>();
+                resumen.put("cursos", rs.getInt("cursos_teoria"));
+                resumen.put("laboratorios", rs.getInt("laboratorios"));
+                return resumen;
+            });
+        } catch (Exception e) {
+            Map<String, Integer> resumen = new HashMap<>();
+            resumen.put("cursos", 0);
+            resumen.put("laboratorios", 0);
+            return resumen;
+        }
+    }
+
     // -----------------------------
     // Métodos auxiliares
     // -----------------------------

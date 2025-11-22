@@ -12,8 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpSession;
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Controlador REST para operaciones relacionadas con estudiantes.
@@ -154,6 +154,43 @@ public class EstudianteController {
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ErrorResp("Error interno: " + ex.getMessage()));
+        }
+    }
+
+    // estudiante_dashboard
+    /** GET /api/estudiantes/me/resumen-cursos
+     * Devuelve el resumen de cursos matriculados del estudiante autenticado */
+    @GetMapping("/me/resumen-cursos")
+    public ResponseEntity<?> getResumenCursos(HttpSession session) {
+        try {
+            // <-- CORRECCIÓN: faltaban los operadores lógicos ("||")
+            if (session == null || session.getAttribute("usuario") == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ErrorResp("No autenticado"));
+            }
+
+            String correo = (String) session.getAttribute("usuario");
+            Estudiante e = dao.obtenerPorCorreo(correo);
+            if (e == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ErrorResp("Estudiante no encontrado"));
+            }
+
+            // <-- CORRECCIÓN: faltaba "||" entre las condiciones
+            if (e.cui == null || e.cui.trim().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorResp("CUI no disponible para el estudiante"));
+            }
+
+            Map<String, Integer> resumen = dao.obtenerResumenCursos(e.cui);
+            return ResponseEntity.ok(resumen);
+
+        } catch (DataAccessException dae) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorResp("Error DB: " + dae.getMostSpecificCause().getMessage()));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorResp("Error interno: " + ex.getMessage()));
         }
     }
 

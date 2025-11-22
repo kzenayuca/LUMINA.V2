@@ -418,7 +418,7 @@
     <div class="sidebar">
         <div class="logo">
             <i class="fas fa-graduation-cap"></i>
-            <h1>LUMINA STUDENT</h1>
+            <h1>LUMINA ESTUDIANTE</h1>
         </div>
         
         <div class="user-info">
@@ -511,16 +511,6 @@
             </div>
             
             <div class="stat-card">
-                <div class="stat-icon grades">
-                    <i class="fas fa-chart-line"></i>
-                </div>
-                <div class="stat-info">
-                    <h3>15.2</h3>
-                    <p>Promedio Actual</p>
-                </div>
-            </div>
-            
-            <div class="stat-card">
                 <div class="stat-icon labs">
                     <i class="fas fa-flask"></i>
                 </div>
@@ -530,15 +520,6 @@
                 </div>
             </div>
             
-            <div class="stat-card">
-                <div class="stat-icon attendance">
-                    <i class="fas fa-clipboard-check"></i>
-                </div>
-                <div class="stat-info">
-                    <h3>92%</h3>
-                    <p>Asistencia General</p>
-                </div>
-            </div>
         </div>
         
         <div class="quick-actions">
@@ -563,41 +544,6 @@
             </div>
         </div>
         
-        <div class="recent-activity">
-            <h2 class="section-title">Actividad Reciente</h2>
-            <ul class="activity-list">
-                <li class="activity-item">
-                    <div class="activity-icon">
-                        <i class="fas fa-book"></i>
-                    </div>
-                    <div class="activity-content">
-                        <h4>Nuevo contenido disponible</h4>
-                        <p>Se ha subido nuevo material para Programación I</p>
-                    </div>
-                    <div class="activity-time">Hace 2 horas</div>
-                </li>
-                <li class="activity-item">
-                    <div class="activity-icon">
-                        <i class="fas fa-clipboard-check"></i>
-                    </div>
-                    <div class="activity-content">
-                        <h4>Asistencia registrada</h4>
-                        <p>Se registró tu asistencia en Estructura de Datos</p>
-                    </div>
-                    <div class="activity-time">Hace 5 horas</div>
-                </li>
-                <li class="activity-item">
-                    <div class="activity-icon">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                    <div class="activity-content">
-                        <h4>Nota publicada</h4>
-                        <p>Se publicó la nota del parcial de Matemáticas</p>
-                    </div>
-                    <div class="activity-time">Ayer</div>
-                </li>
-            </ul>
-        </div>
     </div>
 <script>
 document.addEventListener('DOMContentLoaded', async function() {
@@ -605,6 +551,8 @@ document.addEventListener('DOMContentLoaded', async function() {
   const pathParts = window.location.pathname.split('/').filter(Boolean);
   const contextPath = pathParts.length > 0 ? '/' + pathParts[0] : ''; // ej. "/home" o "" si está en root
   const urlEstudiante = `${contextPath}/api/estudiantes/me`;
+  const urlResumenCursos = `${contextPath}/api/estudiantes/me/resumen-cursos`;
+
 
   try {
     const resp = await fetch(urlEstudiante, {
@@ -648,6 +596,38 @@ document.addEventListener('DOMContentLoaded', async function() {
     document.getElementById('userCode').textContent = `Código: ${codigo}`;
     document.getElementById('userAvatar').textContent = iniciales;
     document.getElementById('welcomeMessage').textContent = `Bienvenido/a ${nombre}`;
+
+    // Obtener resumen de cursos matriculados
+    try {
+      const respCursos = await fetch(urlResumenCursos, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' },
+        cache: 'no-store'
+      });
+
+      if (respCursos.ok) {
+        const resumen = await respCursos.json();
+        
+        // Actualizar las estadísticas en el dashboard
+        const cursosElement = document.querySelector('.stat-card .stat-icon.courses + .stat-info h3');
+        const labsElement = document.querySelector('.stat-card .stat-icon.labs + .stat-info h3');
+        
+        if (cursosElement) {
+          cursosElement.textContent = resumen.cursos || 0;
+        }
+        if (labsElement) {
+          labsElement.textContent = resumen.laboratorios || 0;
+        }
+      } else {
+        console.warn('No se pudo obtener el resumen de cursos');
+      }
+    } catch (errCursos) {
+      console.error('Error al obtener resumen de cursos:', errCursos);
+    }
+
+
+
+
   } catch (err) {
     console.error('Error fetch estudiante:', err);
     alert('Error al contactar el servidor');

@@ -403,13 +403,11 @@
         
         <div class="page-content">
             <div class="section-title">
-                <span id="sectionSemestre">Horario Académico - Semestre 2025-2</span>
+                <span id="sectionSemestre">Horario Académico - Semestre 2025-B</span>
             </div>
             
             <div class="semester-selector">
-                <button class="semester-btn active">2025-2</button>
-                <button class="semester-btn">2024-1</button>
-                <button class="semester-btn">2024-2</button>
+                <button class="semester-btn active">2025-B</button>
             </div>
             
             <div class="schedule-container">
@@ -599,6 +597,85 @@
             }
         });
     </script>
+
+    <script>
+document.addEventListener('DOMContentLoaded', async function() {
+  // Detectar contextPath de forma dinámica: toma el primer segmento "no vacío" de la ruta.
+  const pathParts = window.location.pathname.split('/').filter(Boolean);
+  const contextPath = pathParts.length > 0 ? '/' + pathParts[0] : ''; // ej. "/home" o "" si está en root
+  const urlEstudiante = `${contextPath}/api/estudiantes/me`;
+
+  try {
+    const resp = await fetch(urlEstudiante, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' },
+      cache: 'no-store'
+      //credentials: 'same-origin' // asegura enviar cookies (JSESSIONID) en la misma origin
+    });
+
+    if (resp.status === 401) {
+      // No autenticado -> redirigir al login
+      alert('No autenticado. Redirigiendo al inicio de sesión.');
+      window.location.href = contextPath + '/login';
+      return;
+    }
+
+    if (!resp.ok) {
+      // Intentamos extraer JSON de error si hay, si no, mostramos mensaje genérico
+      let errBody;
+      try {
+        errBody = await resp.json();
+      } catch (e) {
+        errBody = { error: `HTTP ${resp.status}` };
+      }
+      console.error('Error al obtener estudiante:', errBody);
+      alert('No se pudo cargar la información del estudiante.');
+      return;
+    }
+
+    // Respuesta OK -> parseamos datos del estudiante
+    const estudiante = await resp.json();
+
+    const nombre = estudiante.apellidosNombres || 'Estudiante';
+    const codigo = estudiante.numeroMatricula ? String(estudiante.numeroMatricula) : '---';
+    const iniciales = (function(n) {
+      if (!n) return 'S';
+      return n.split(' ').map(p => p.charAt(0)).slice(0,2).join('').toUpperCase();
+    })(nombre);
+
+    document.getElementById('userName').textContent = nombre;
+    document.getElementById('userCode').textContent = `Código: ${codigo}`;
+    document.getElementById('userAvatar').textContent = iniciales;
+  } catch (err) {
+    console.error('Error fetch estudiante:', err);
+    alert('Error al contactar el servidor');
+  }
+});
+
+// Manejar cierre de sesión (llama al logout en servidor si existe)
+(function() {
+  const logoutBtn = document.querySelector('.logout-btn');
+  if (!logoutBtn) return;
+
+  logoutBtn.addEventListener('click', async function() {
+    if (!confirm('¿Está seguro de que desea cerrar sesión?')) return;
+
+    // Calcular contextPath igual que arriba
+    const pathParts = window.location.pathname.split('/').filter(Boolean);
+    const contextPath = pathParts.length > 0 ? '/' + pathParts[0] : '';
+
+    try {
+      await fetch(`${contextPath}/logout`, { method: 'POST', credentials: 'same-origin' });
+    } catch (e) {
+      console.warn('Logout fetch falló', e);
+    } finally {
+      // Limpiar UI/localStorage si usas algo local
+      localStorage.removeItem('estudianteActual');
+      window.location.href = contextPath + '/Inicio_Sesion.html';
+    }
+  });
+})();
+</script>
 
 </body>
 
