@@ -326,9 +326,20 @@
             transition: all 0.3s ease;
         }
 
+        /* --- Cambio: cuando está expandido permitimos scroll interno y un max-height razonable --- */
         .week-content.expanded {
             padding: 20px;
-            max-height: 1000px;
+            max-height: 420px; /* ajusta esta altura según prefieras */
+            overflow-y: auto;
+        }
+
+        /* opcional: estilo simple para el scrollbar (puedes quitar si prefieres) */
+        .week-content.expanded::-webkit-scrollbar {
+            width: 10px;
+        }
+        .week-content.expanded::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.1);
+            border-radius: 6px;
         }
 
         .content-items {
@@ -372,11 +383,7 @@
             color: var(--warning);
         }
 
-        .item-description {
-            color: #7f8c8d;
-            margin-bottom: 10px;
-            font-size: 0.9rem;
-        }
+        /* .item-description { ... }  <-- está comentada en HTML/JS por ahora */
 
         .item-resources {
             display: flex;
@@ -494,6 +501,11 @@
                 flex-direction: column;
                 gap: 10px;
                 align-items: flex-start;
+            }
+
+            /* en pantallas pequeñas reduce la altura máxima del scroll para que no tape la pantalla */
+            .week-content.expanded {
+                max-height: 300px;
             }
         }
     </style>
@@ -632,11 +644,9 @@
     </div>
 
 <script>
-
-        /* --- helpers --- */
+    /* --- helpers --- */
     function generarIniciales(nombreCompleto) {
         if (!nombreCompleto) return '';
-        // Tomar primeras letras de los dos primeros nombres/apellidos
         const parts = nombreCompleto.trim().split(/\s+/);
         if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
         return (parts[0].charAt(0) + parts[1].charAt(0)).toUpperCase();
@@ -644,9 +654,17 @@
     let cursosData = [];
     let cursoActivo = null;
 
-/* --- carga inicial --- */
+    function getUniqueCursos() {
+        const map = new Map();
+        for (const c of (cursosData || [])) {
+            const key = String(c.id);
+            if (!map.has(key)) map.set(key, c);
+        }
+        return Array.from(map.values());
+    }
+
+    /* --- carga inicial --- */
     document.addEventListener('DOMContentLoaded', function() {
-        // Leer del localStorage bajo la clave usuarioDatos (según lo indicas)
         const raw = localStorage.getItem('usuarioDatos');
         let usuario = null;
         try {
@@ -656,7 +674,6 @@
             usuario = null;
         }
 
-        // Mapeo a la estructura usada por la UI
         const estudiante = {
             nombre: usuario?.apellidosNombres || 'Nombre Estudiante',
             codigo: usuario?.numeroMatricula || usuario?.correo || '---',
@@ -667,7 +684,6 @@
             rol: usuario?.rol || null
         };
 
-        // Rellenar UI con datos del usuario
         const elNombre = document.getElementById('userName');
         const elCodigo = document.getElementById('userCode');
         const elAvatar = document.getElementById('userAvatar');
@@ -676,16 +692,15 @@
         if (elCodigo) elCodigo.textContent = `Código: ${estudiante.codigo}`;
         if (elAvatar) elAvatar.textContent = estudiante.iniciales;
 
-        // Llamar a la carga de contenido usando el cui del usuario
         cargarContenidoCursos(estudiante);
     });
 
     async function cargarContenidoCursos(estudiante) {
         try {
             if (!estudiante || !estudiante.cui) {
-            console.warn('No hay CUI para el estudiante, cargando ejemplo local');
-            cargarContenidoEjemplo();
-            return;
+                console.warn('No hay CUI para el estudiante, cargando ejemplo local');
+                cargarContenidoEjemplo();
+                return;
             }
 
             const res = await fetch(`/api/estudiante/${encodeURIComponent(estudiante.cui)}/contenido`);
@@ -703,37 +718,48 @@
     function actualizarInterfazContenido() {
         actualizarEstadisticas();
         mostrarTabsCursos();
-        if (cursosData.length > 0) {
-            mostrarContenidoCurso(cursosData[0].id, null);
+
+        const unique = getUniqueCursos();
+        if (unique.length > 0) {
+            mostrarContenidoCurso(unique[0].id, null);
         } else {
             document.getElementById('coursesContent').innerHTML = '<div class="loading-message">No hay contenido disponible.</div>';
         }
     }
 
     function actualizarEstadisticas() {
-        const totalCursos = cursosData.length;
-        const totalRecursos = cursosData.reduce((total, curso) =>
+        const unique = getUniqueCursos();
+        const totalCursos = unique.length;
+
+        const totalRecursos = unique.reduce((total, curso) =>
             total + (curso.semanas ? curso.semanas.reduce((sum, semana) => sum + ((semana.contenidos||[]).length), 0) : 0), 0);
 
-        const contenidoCompletado = cursosData.length > 0 ?
-            Math.round((cursosData.reduce((total, curso) => total + (curso.progreso || 0), 0) / cursosData.length)) : 0;
+        const contenidoCompletado = unique.length > 0 ?
+            Math.round((unique.reduce((total, curso) => total + (curso.progreso || 0), 0) / unique.length)) : 0;
 
-        const semanasActivas = cursosData.reduce((total, curso) => total + (curso.semanas ? curso.semanas.length : 0), 0);
+        const semanasActivas = unique.reduce((total, curso) => total + (curso.semanas ? curso.semanas.length : 0), 0);
 
-        document.getElementById('totalCursos').textContent = totalCursos;
-        document.getElementById('totalRecursos').textContent = totalRecursos;
-        document.getElementById('contenidoCompletado').textContent = `${contenidoCompletado}%`;
-        document.getElementById('semanasActivas').textContent = semanasActivas;
+        const elTotal = document.getElementById('totalCursos');
+        const elRecursos = document.getElementById('totalRecursos');
+        const elContenido = document.getElementById('contenidoCompletado');
+        const elSemanas = document.getElementById('semanasActivas');
+
+        if (elTotal) elTotal.textContent = totalCursos;
+        if (elRecursos) elRecursos.textContent = totalRecursos;
+        if (elContenido) elContenido.textContent = `${contenidoCompletado}%`;
+        if (elSemanas) elSemanas.textContent = semanasActivas;
     }
 
     function mostrarTabsCursos() {
         const tabsContainer = document.getElementById('coursesTabs');
-        if (cursosData.length === 0) {
+        const unique = getUniqueCursos();
+
+        if (unique.length === 0) {
             tabsContainer.innerHTML = '<div class="loading-message">No hay cursos asignados.</div>';
             return;
         }
 
-        tabsContainer.innerHTML = cursosData.map((curso, index) => `
+        tabsContainer.innerHTML = unique.map((curso, index) => `
             <div class="course-tab ${index === 0 ? 'active' : ''}"
                  data-cursoid="${curso.id}"
                  onclick="mostrarContenidoCurso('${curso.id}', event)">
@@ -745,12 +771,12 @@
     function mostrarContenidoCurso(cursoId, evt) {
         cursoActivo = cursoId;
 
-        // actualizar pestañas activas
         document.querySelectorAll('.course-tab').forEach(tab => {
             tab.classList.toggle('active', tab.getAttribute('data-cursoid') === String(cursoId));
         });
 
-        const curso = (cursosData || []).find(c => String(c.id) === String(cursoId));
+        // buscar en la lista original el curso con ese id
+        const curso = (cursosData || []).find(c => String(c.id) === String(cursoId)) || getUniqueCursos().find(c => String(c.id) === String(cursoId));
         if (!curso) return;
 
         const contentContainer = document.getElementById('coursesContent');
@@ -782,13 +808,16 @@
                                         <div class="content-item">
                                             <div class="item-header">
                                                 <div class="item-title">${contenido.titulo}</div>
-                                                <div class="item-status ${contenido.estado === 'completed' ? 'status-completed' : 'status-pending'}">
-                                                    ${contenido.estado === 'completed' ? 'Completado' : 'Pendiente'}
+                                                <div class="item-status ${contenido.estado === 'completado' ? 'status-completed' : 'status-pending'}">
+                                                    ${contenido.estado === 'completado' ? 'Completado' : 'Pendiente'}
                                                 </div>
                                             </div>
+                                            <!-- Deshabilitado temporalmente: item-description -->
+                                            <!--
                                             <div class="item-description">
                                                 ${contenido.descripcion || ''}
                                             </div>
+                                            -->
                                             <div class="item-resources">
                                                 ${ (contenido.recursos || []).map(recurso => `
                                                     <button class="resource-btn" onclick="descargarRecurso('${recurso.id}')">
@@ -820,13 +849,15 @@
 
         if (!isExpanded) {
             weekContent.classList.add('expanded');
-            weekContent.style.maxHeight = weekContent.scrollHeight + 'px';
+            // setTimeout para permitir que padding se aplique y scrollHeight sea correcto
+            setTimeout(() => {
+                weekContent.style.maxHeight = weekContent.scrollHeight + 'px';
+            }, 50);
         }
     }
 
     async function descargarRecurso(recursoId) {
         try {
-            // Implementa la API de descarga si la tienes, por ejemplo:
             const res = await fetch(`/api/recursos/${encodeURIComponent(recursoId)}`);
             if (!res.ok) throw new Error('No se pudo descargar recurso');
             const blob = await res.blob();
@@ -844,7 +875,6 @@
         }
     }
 
-    /* Datos de ejemplo (igual que antes) */
     function cargarContenidoEjemplo() {
         cursosData = [
             {
@@ -852,7 +882,26 @@
                 nombre: 'Programación I',
                 descripcion: 'Fundamentos de programación y algoritmos',
                 progreso: 75,
-                semanas: [ /* ... igual que en tu ejemplo ... */ ]
+                semanas: [
+                    {
+                        numero: 1,
+                        titulo: 'Introducción',
+                        progreso: 100,
+                        contenidos: Array.from({length: 12}, (_,i) => ({
+                            titulo: `Tema ${i+1}`,
+                            descripcion: `Descripción tema ${i+1}`,
+                            estado: i % 3 === 0 ? 'completed' : 'pending',
+                            recursos: [{id:`r${i+1}`, nombre:`Recurso ${i+1}`}]
+                        }))
+                    }
+                ]
+            },
+            {
+                id: '2',
+                nombre: 'Matemáticas Discretas',
+                descripcion: 'Conjuntos, lógica y grafos',
+                progreso: 40,
+                semanas: []
             }
         ];
         actualizarInterfazContenido();
@@ -862,10 +911,8 @@
     if (logoutBtn) {
         logoutBtn.addEventListener('click', function() {
             if (confirm('¿Está seguro de que desea cerrar sesión?')) {
-            // eliminar la clave que usas en localStorage
-            localStorage.removeItem('usuarioDatos');
-            // redirigir a login o index
-            window.location.href = '/';
+                localStorage.removeItem('usuarioDatos');
+                window.location.href = '/';
             }
         });
     }
