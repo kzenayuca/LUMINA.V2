@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrícula Laboratorios - LUMINA STUDENT</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #3498db;
+            --secondary: #2c3e50;
+            --accent: #9b59b6;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --sidebar-width: 280px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            background: rgba(44, 62, 80, 0.95);
+            color: white;
+            height: 100vh;
+            position: fixed;
+            overflow-y: auto;
+            box-shadow: 3px 0 15px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+
+        .logo {
+            padding: 25px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo h1 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            background: linear-gradient(45deg, #3498db, #9b59b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .user-info {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .menu-item {
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: white;
+            text-decoration: none;
+        }
+
+        .menu-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .header {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .header h1 {
+            color: var(--secondary);
+            font-size: 2rem;
+        }
+
+        .alert {
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 1.1rem;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border-left: 5px solid #ffc107;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 5px solid #28a745;
+        }
+
+        .page-content {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            color: var(--secondary);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+            font-weight: 600;
+        }
+
+        .labs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .lab-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            border-left: 5px solid var(--accent);
+        }
+
+        .lab-name {
+            font-weight: 700;
+            color: var(--secondary);
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .grupos-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .grupo-option {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .grupo-option:hover:not(.disabled) {
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .grupo-option.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #f5f5f5;
+        }
+
+        .grupo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .grupo-letra {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .cupos-badge {
+            background: linear-gradient(135deg, var(--success), #27ae60);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .cupos-badge.lleno {
+            background: linear-gradient(135deg, var(--danger), #c0392b);
+        }
+
+        .grupo-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
+            color: #555;
+        }
+
+        .detail-item i {
+            color: var(--primary);
+            width: 20px;
+        }
+
+        .alert-cruce {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 12px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-matricular {
+            width: 100%;
+            margin-top: 15px;
+            padding: 12px;
+            background: linear-gradient(135deg, var(--success), #27ae60);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-matricular:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
+        }
+
+        .btn-matricular:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        .enrollment-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .enrollment-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--success);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-cancelar {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-cancelar:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #7f8c8d;
+            padding: 40px;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.3;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+        }
+
+        .loading i {
+            font-size: 3rem;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .labs-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .grupo-details {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">
+            <h1><i class="fas fa-graduation-cap"></i> LUMINA ESTUDIANTE</h1>
+        </div>
+        <div class="user-info">
+            <h3 id="estudiante-name">Estudiante</h3>
+        </div>
+        <div class="menu">
+            <a href="estudiante_dashboard.html" class="menu-item">
+                <i class="fas fa-arrow-left"></i>
+                <span>Volver al Panel</span>
+            </a>
+        </div>
+    </div>
+    
+    <div class="main-content">
+        <div class="header">
+            <h1><i class="fas fa-flask"></i> Matrícula de Laboratorios</h1>
+            <p style="color: #7f8c8d; margin-top: 10px;">Selecciona el grupo de laboratorio para cada curso</p>
+        </div>
+
+        <div id="alert-container"></div>
+
+        <div id="loading-container" class="loading">
+            <i class="fas fa-spinner"></i>
+            <p>Cargando información...</p>
+        </div>
+
+        <div id="content-matricula" style="display: none;">
+            <div class="page-content">
+                <div class="section-title">
+                    <i class="fas fa-list"></i> Laboratorios Disponibles
+                </div>
+                <div id="labs-container"></div>
+            </div>
+
+            <div class="page-content">
+                <div class="section-title">
+                    <i class="fas fa-check-circle"></i> Mis Laboratorios Matriculados
+                </div>
+                <div id="enrolled-labs-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/est/api/matricula-laboratorio';
+        let estudianteActual = null;
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            await cargarDatosEstudiante();
+            await verificarPeriodoYCargar();
+        });
+
+        async function cargarDatosEstudiante() {
+            try {
+                const resp = await fetch('/est/api/estudiantes/me', {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' },
+                    credentials: 'same-origin'
+                });
+
+                if (resp.ok) {
+                    estudianteActual = await resp.json();
+                    document.getElementById('estudiante-name').textContent = 
+                        estudianteActual.apellidosNombres || 'Estudiante';
+                }
+            } catch (err) {
+                console.error('Error al cargar estudiante:', err);
+            }
+        }
+
+        async function verificarPeriodoYCargar() {
+            try {
+                const resp = await fetch(`${API_BASE}/periodo-activo`, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' },
+                    credentials: 'same-origin'
+                });
+
+                if (!resp.ok) {
+                    mostrarError('Error al verificar período de matrícula');
+                    return;
+                }
+
+                const data = await resp.json();
+
+                if (!data.activo) {
+                    mostrarAlerta('warning', 
+                        'No hay período de matrícula activo',
+                        'El período de matrícula de laboratorios no está habilitado en este momento. Por favor, espera a que secretaría habilite el período de matrícula.');
+                    document.getElementById('loading-container').style.display = 'none';
+                    return;
+                }
+
+                // Período activo, cargar laboratorios
+                await cargarLaboratoriosDisponibles();
+                await cargarMatriculasActuales();
+
+                document.getElementById('loading-container').style.display = 'none';
+                document.getElementById('content-matricula').style.display = 'block';
+
+            } catch (err) {
+                console.error('Error:', err);
+                mostrarError('Error al conectar con el servidor');
+            }
+        }
+
+        async function cargarLaboratoriosDisponibles() {
+            try {
+                const resp = await fetch(`${API_BASE}/disponibles`, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' },
+                    credentials: 'same-origin'
+                });
+
+                if (!resp.ok) {
+                    throw new Error(`HTTP ${resp.status}`);
+                }
+
+                const laboratorios = await resp.json();
+                mostrarLaboratorios(laboratorios);
+
+            } catch (err) {
+                console.error('Error al cargar laboratorios:', err);
+                mostrarError('Error al cargar laboratorios disponibles');
+            }
+        }
+
+        function mostrarLaboratorios(laboratorios) {
+            const container = document.getElementById('labs-container');
+
+            if (!laboratorios || laboratorios.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-check-circle"></i>
+                        <p><strong>No hay laboratorios disponibles para matrícula</strong></p>
+                        <p style="font-size: 0.95rem; margin-top: 10px;">
+                            Ya estás matriculado en todos los laboratorios necesarios o 
+                            no llevas cursos con laboratorio este ciclo.
+                        </p>
+                    </div>
+                `;
+                return;
+            }
+
+            const html = laboratorios.map(lab => `
+                <div class="lab-card">
+                    <div class="lab-name">
+                        <i class="fas fa-flask"></i>
+                        ${lab.nombreCurso}
+                        <span style="font-size: 0.9rem; color: #7f8c8d; font-weight: normal;">
+                            (${lab.codigoCurso})
+                        </span>
+                    </div>
+                    
+                    <div class="grupos-container">
+                        ${lab.grupos.map(grupo => {
+                            const sinCupos = grupo.cuposDisponibles <= 0;
+                            const disabled = grupo.tieneCruce || sinCupos;
+                            
+                            return `
+                                <div class="grupo-option ${disabled ? 'disabled' : ''}" 
+                                     onclick="${disabled ? '' : `matricularEnGrupo(${grupo.grupoId}, '${lab.nombreCurso}')`}">
+                                    <div class="grupo-header">
+                                        <div class="grupo-letra">
+                                            Grupo ${grupo.letraGrupo}
+                                        </div>
+                                        <div class="cupos-badge ${sinCupos ? 'lleno' : ''}">
+                                            ${grupo.cuposDisponibles} / ${grupo.capacidadMaxima} cupos
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="grupo-details">
+                                        <div class="detail-item">
+                                            <i class="fas fa-calendar-day"></i>
+                                            <strong>${grupo.diaSemana}</strong>
+                                        </div>
+                                        <div class="detail-item">
+                                            <i class="fas fa-clock"></i>
+                                            ${grupo.horaInicio} - ${grupo.horaFin}
+                                        </div>
+                                        <div class="detail-item">
+                                            <i class="fas fa-door-open"></i>
+                                            Salón ${grupo.numeroSalon}
+                                        </div>
+                                        <div class="detail-item">
+                                            <i class="fas fa-user-tie"></i>
+                                            ${grupo.docenteNombre}
+                                        </div>
+                                    </div>
+                                    
+                                    ${grupo.tieneCruce ? `
+                                        <div class="alert-cruce">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                            <span>Este horario se cruza con tus clases actuales</span>
+                                        </div>
+                                    ` : ''}
+                                    
+                                    ${sinCupos ? `
+                                        <div class="alert-cruce">
+                                            <i class="fas fa-users-slash"></i>
+                                            <span>No hay cupos disponibles</span>
+                                        </div>
+                                    ` : ''}
+                                    
+                                    ${!disabled ? `
+                                        <button class="btn-matricular">
+                                            <i class="fas fa-plus"></i> Matricularme en este grupo
+                                        </button>
+                                    ` : ''}
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = `<div class="labs-grid">${html}</div>`;
+        }
+
+        async function matricularEnGrupo(grupoId, nombreCurso) {
+            if (!confirm(`¿Deseas matricularte en este grupo de ${nombreCurso}?`)) {
+                return;
+            }
+
+            try {
+                const resp = await fetch(`${API_BASE}/matricular`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({ grupoId: grupoId })
+                });
+
+                const data = await resp.json();
+
+                if (data.success) {
+                    mostrarAlerta('success', '¡Matrícula exitosa!', data.mensaje);
+                    
+                    // Recargar datos
+                    await cargarLaboratoriosDisponibles();
+                    await cargarMatriculasActuales();
+                } else {
+                    alert('⚠️ ' + data.mensaje);
+                }
+
+            } catch (err) {
+                console.error('Error al matricular:', err);
+                alert('Error al realizar la matrícula');
+            }
+        }
+
+        async function cargarMatriculasActuales() {
+            try {
+                const resp = await fetch(`${API_BASE}/mis-matriculas`, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' },
+                    credentials: 'same-origin'
+                });
+
+                if (!resp.ok) {
+                    throw new Error(`HTTP ${resp.status}`);
+                }
+
+                const matriculas = await resp.json();
+                mostrarMatriculas(matriculas);
+
+            } catch (err) {
+                console.error('Error al cargar matrículas:', err);
+            }
+        }
+
+        function mostrarMatriculas(matriculas) {
+            const container = document.getElementById('enrolled-labs-container');
+
+            if (!matriculas || matriculas.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-info-circle"></i>
+                        <p>No estás matriculado en ningún laboratorio todavía</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const html = matriculas.map(mat => `
+                <div class="enrollment-item">
+                    <div>
+                        <strong style="font-size: 1.2rem; color: var(--secondary);">
+                            ${mat.nombreCurso}
+                        </strong>
+                        <span style="margin-left: 10px; background: var(--primary); color: white; 
+                                     padding: 4px 12px; border-radius: 15px; font-size: 0.85rem; font-weight: 600;">
+                            GRUPO ${mat.letraGrupo}
+                        </span>
+                        <div style="margin-top: 10px; color: #7f8c8d; font-size: 0.95rem;">
+                            <i class="fas fa-calendar-day"></i> ${mat.diaSemana} •
+                            <i class="fas fa-clock"></i> ${mat.horaInicio} - ${mat.horaFin} •
+                            <i class="fas fa-door-open"></i> Salón ${mat.numeroSalon} •
+                            <i class="fas fa-user-tie"></i> ${mat.docenteNombre}
+                        </div>
+                    </div>
+                    <button class="btn-cancelar" onclick="cancelarMatricula(${mat.idMatricula}, '${mat.nombreCurso}')">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                </div>
+            `).join('');
+
+            container.innerHTML = html;
+        }
+
+        async function cancelarMatricula(idMatricula, nombreCurso) {
+            if (!confirm(`¿Estás seguro de cancelar tu matrícula en ${nombreCurso}?`)) {
+                return;
+            }
+
+            try {
+                const resp = await fetch(`${API_BASE}/${idMatricula}`, {
+                    method: 'DELETE',
+                    credentials: 'same-origin'
+                });
+
+                const data = await resp.json();
+
+                if (data.success) {
+                    mostrarAlerta('success', 'Matrícula cancelada', data.mensaje);
+                    
+                    // Recargar datos
+                    await cargarLaboratoriosDisponibles();
+                    await cargarMatriculasActuales();
+                } else {
+                    alert('⚠️ ' + data.mensaje);
+                }
+
+            } catch (err) {
+                console.error('Error al cancelar:', err);
+                alert('Error al cancelar la matrícula');
+            }
+        }
+
+        function mostrarAlerta(tipo, titulo, mensaje) {
+            const container = document.getElementById('alert-container');
+            const clase = tipo === 'success' ? 'alert-success' : 'alert-warning';
+            const icono = tipo === 'success' ? 'check-circle' : 'exclamation-triangle';
+
+            container.innerHTML = `
+                <div class="alert ${clase}">
+                    <i class="fas fa-${icono}" style="font-size: 2rem;"></i>
+                    <div>
+                        <strong>${titulo}</strong>
+                        <p style="margin-top: 5px;">${mensaje}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function mostrarError(mensaje) {
+            const container = document.getElementById('alert-container');
+            container.innerHTML = `
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 2rem;"></i>
+                    <div>
+                        <strong>Error</strong>
+                        <p style="margin-top: 5px;">${mensaje}</p>
+                    </div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

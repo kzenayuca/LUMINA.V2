@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ingreso de Notas - LUMINA</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <style>
+        :root{
+            --bg-1: #667eea;
+            --bg-2: #764ba2;
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --muted: #7f8c8d;
+            --card-bg: #ffffff;
+            --glass: rgba(255,255,255,0.92);
+            --sidebar-w: 280px;
+            --radius: 12px;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
+            --shadow-lg: 0 10px 30px rgba(0,0,0,0.12);
+            --success: #2ecc71;
+            --danger: #e74c3c;
+        }
+
+        /* Reset y base */
+        *{box-sizing:border-box}
+        html,body{height:100%}
+        body{
+            margin:0;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg,var(--bg-1) 0%,var(--bg-2) 100%);
+            color:var(--primary);
+            -webkit-font-smoothing:antialiased;
+            -moz-osx-font-smoothing:grayscale;
+            display:flex;
+            min-height:100vh;
+        }
+
+        /* SIDEBAR */
+        .sidebar{
+            width:var(--sidebar-w);
+            background: linear-gradient(180deg, rgba(44,62,80,0.98), rgba(26,35,44,0.98));
+            color:#fff;
+            position:fixed;
+            inset:0 auto 0 0;
+            height:100vh;
+            padding:22px 18px;
+            box-shadow: var(--shadow-lg);
+            display:flex;
+            flex-direction:column;
+            gap:18px;
+        }
+
+        .logo{
+            display:flex;
+            align-items:center;
+            gap:12px;
+            padding-bottom:6px;
+            border-bottom:1px solid rgba(255,255,255,0.06);
+        }
+        .logo i{font-size:1.6rem; color:var(--accent)}
+        .logo h1{
+            font-size:1.25rem;
+            font-weight:700;
+            letter-spacing:0.2px;
+            margin:0;
+        }
+
+        .user-info{
+            display:flex;
+            align-items:center;
+            gap:12px;
+            padding:10px 0;
+            border-bottom:1px solid rgba(255,255,255,0.04);
+        }
+        .user-avatar{
+            width:48px;height:48px;border-radius:10px;
+            background:linear-gradient(135deg,var(--bg-1),var(--bg-2));
+            display:flex;align-items:center;justify-content:center;
+            box-shadow: var(--shadow-sm);
+        }
+        .user-avatar i{color:#fff;font-size:1.15rem}
+        .user-details h3{margin:0;font-size:1rem}
+        .user-details p{margin:2px 0 0;font-size:0.85rem;color:rgba(255,255,255,0.8)}
+
+        .menu{display:flex;flex-direction:column;gap:6px;padding-top:6px}
+        .menu-item{
+            display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;
+            color:#fff;text-decoration:none;font-weight:600;
+            transition:all .18s ease;
+        }
+        .menu-item i{width:20px;text-align:center}
+        .menu-item:hover{transform:translateY(-2px); background:rgba(255,255,255,0.04)}
+        .menu-item .label{font-size:0.95rem}
+
+        /* MAIN */
+        .main-content{
+            margin-left:var(--sidebar-w);
+            padding:36px 40px;
+            width:100%;
+            min-height:100vh;
+        }
+
+        .top-row{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:20px;
+            margin-bottom:22px;
+        }
+        .header h1{
+            font-size:1.6rem;
+            margin:0;
+            display:flex;align-items:center;gap:12px;
+        }
+        .header h1 i{color:var(--accent)}
+
+        /* Contenedor central */
+        .container{
+            max-width:1200px;
+            margin:8px 0 40px 0;
+        }
+
+        /* Alerts (mejor espaciado) */
+        .alert{
+            display:flex;gap:14px;align-items:flex-start;padding:16px;border-radius:10px;
+            box-shadow:var(--shadow-sm);margin-bottom:18px;
+        }
+        .alert .icon{font-size:1.6rem;min-width:44px;display:flex;align-items:center;justify-content:center}
+        .alert .content strong{display:block;margin-bottom:6px;font-weight:700}
+        .alert-info{background:linear-gradient(90deg,#e6f7fb,#f0fbff);color:#0c5460;border-left:6px solid #17a2b8}
+        .alert-warning{background:linear-gradient(90deg,#fffaf0,#fff8e6);color:#856404;border-left:6px solid #ffc107}
+        .alert-success{background:linear-gradient(90deg,#e9fbe9,#f3fff3);color:#155724;border-left:6px solid #28a745}
+
+        /* Card: selector de curso */
+        .card{
+            background:var(--glass);
+            border-radius:var(--radius);
+            padding:22px;
+            box-shadow:var(--shadow-sm);
+            margin-bottom:20px;
+        }
+
+        .form-row{
+            display:flex;
+            gap:16px;
+            align-items:end;
+            flex-wrap:wrap;
+        }
+
+        .form-group{flex:1;min-width:200px}
+        .form-group label{display:block;margin-bottom:8px;font-weight:700;color:var(--muted)}
+        .form-group select{
+            width:100%;padding:12px 14px;border-radius:10px;border:1px solid #e6e9ee;
+            font-size:1rem;background:#fff;
+            transition:box-shadow .12s, border-color .12s;
+        }
+        .form-group select:focus{outline:none;box-shadow:0 6px 18px rgba(52,152,219,0.12);border-color:var(--accent)}
+
+        /* Tabla de notas (mejor espaciado y visual) */
+        .notes-table-container{
+            background:var(--card-bg);
+            border-radius:var(--radius);
+            padding:18px;
+            box-shadow:var(--shadow-sm);
+            overflow:auto;
+        }
+
+        table{
+            width:100%;
+            border-collapse:separate;
+            border-spacing:0 8px;
+            font-size:0.95rem;
+        }
+        thead th{
+            text-align:center;padding:12px 14px;font-weight:700;
+            background:linear-gradient(90deg,var(--accent),#6aa8d9);
+            color:#fff;border-radius:8px;
+        }
+        tbody tr{
+            background:#fff;border-radius:8px;
+            box-shadow:0 2px 6px rgba(0,0,0,0.03);
+        }
+        tbody td{
+            padding:12px 14px;text-align:center;border:0;color:var(--primary);
+        }
+        tbody td:first-child, thead th:first-child{border-top-left-radius:8px;border-bottom-left-radius:8px;text-align:left;padding-left:18px}
+        tbody td:last-child, thead th:last-child{border-top-right-radius:8px;border-bottom-right-radius:8px;padding-right:18px}
+
+        tbody tr:hover{transform:translateY(-3px);transition:transform .12s ease;box-shadow:0 6px 18px rgba(0,0,0,0.06)}
+        td input[type="number"]{
+            width:90px;padding:8px;border-radius:8px;border:1px solid #e6e9ee;text-align:center;
+            transition:box-shadow .12s,border-color .12s;
+        }
+        td input[type="number"]:focus{outline:none;box-shadow:0 8px 20px rgba(52,152,219,0.12);border-color:var(--accent)}
+
+        .promedio{font-weight:700}
+        .estado.aprobado{color:var(--success);font-weight:700}
+        .estado.desaprobado{color:var(--danger);font-weight:700}
+
+        /* Botones y estadisticas */
+        .controls{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:16px;flex-wrap:wrap}
+        .btn-save{
+            background:linear-gradient(90deg,var(--success),#27ae60);
+            color:#fff;border:none;padding:12px 18px;border-radius:10px;font-weight:700;cursor:pointer;
+            display:inline-flex;align-items:center;gap:10px;box-shadow:0 6px 18px rgba(46,204,113,0.16);
+            transition:transform .12s ease, box-shadow .12s ease;
+        }
+        .btn-save:hover{transform:translateY(-3px);box-shadow:0 12px 30px rgba(46,204,113,0.2)}
+
+        .stats-row{display:flex;gap:14px;align-items:stretch;flex-wrap:wrap}
+        .stat-box{
+            background:linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+            padding:12px 16px;border-radius:10px;min-width:140px;text-align:center;
+            box-shadow:var(--shadow-sm);
+        }
+        .stat-box h4{margin:0;font-size:0.82rem;color:var(--muted)}
+        .stat-box .value{margin-top:6px;font-size:1.4rem;font-weight:800;color:var(--primary)}
+
+        /* Responsive */
+        @media (max-width:1000px){
+            .main-content{padding:24px}
+            .form-row{flex-direction:column;align-items:stretch}
+        }
+        @media (max-width:720px){
+            .sidebar{position:relative;width:100%;height:auto;padding:14px 12px;flex-direction:row;align-items:center}
+            .main-content{margin-left:0;padding:16px}
+            .container{width:100%}
+            thead th{font-size:0.85rem}
+            td input[type="number"]{width:70px}
+            .logo h1{display:none}
+        }
+    </style>
+</head>
+<body>
+    <aside class="sidebar" aria-label="Barra lateral">
+        <div class="logo">
+            <i class="fas fa-university" aria-hidden="true"></i>
+            <h1>LUMINA PROFESOR</h1>
+        </div>
+
+        <div class="user-info" role="group" aria-label="Información del profesor">
+            <div class="user-avatar" aria-hidden="true"><i class="fas fa-user-tie"></i></div>
+            <div class="user-details">
+                <h3 id="profesor-name">Profesor</h3>
+                <p id="profesor-rol">Docente</p>
+            </div>
+        </div>
+
+        <nav class="menu" aria-label="Menú principal">
+            <a class="menu-item" href="nuevo_profesor.html"><i class="fas fa-arrow-left"></i><span class="label">Volver al Panel</span></a>
+            <!-- otros items -->
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <div class="top-row">
+            <div class="header">
+                <h1><i class="fas fa-edit"></i> Ingreso de Notas</h1>
+            </div>
+            <!-- espacio para controles futuros -->
+        </div>
+
+        <div class="container">
+            <div id="periodo-info-container"></div>
+
+            <section id="content-notas" style="display:none">
+                <div class="card" aria-labelledby="titulo-cursos">
+                    <h2 id="titulo-cursos" style="margin:0 0 12px 0;font-size:1rem;color:var(--primary)">Parámetros de ingreso</h2>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="select-course"><i class="fas fa-book"></i> Seleccionar Curso</label>
+                            <select id="select-course" onchange="cargarEstudiantes()">
+                                <option value="">-- Seleccione un curso --</option>
+                                <option value="MAT101">MAT101 - Matemática Aplicada</option>
+                                <option value="CC201">CC201 - Ciencia de la Computación I</option>
+                                <option value="FIS201">FIS201 - Física I</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="select-evaluation"><i class="fas fa-clipboard-list"></i> Tipo de Evaluación</label>
+                            <select id="select-evaluation">
+                                <option value="">-- Seleccione evaluación --</option>
+                                <option value="continua1">Continua 1</option>
+                                <option value="parcial1">Parcial 1</option>
+                                <option value="continua2">Continua 2</option>
+                                <option value="parcial2">Parcial 2</option>
+                                <option value="continua3">Continua 3</option>
+                                <option value="parcial3">Parcial 3</option>
+                            </select>
+                        </div>
+
+                        <div style="flex:0 0 160px;display:flex;align-items:center;">
+                            <!-- botón de búsqueda o acción (opcional) -->
+                            <button class="btn-save" onclick="document.getElementById('select-course').value ? cargarEstudiantes() : alert('Seleccione un curso')">
+                                <i class="fas fa-filter"></i> Cargar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="table-container" class="notes-table-container" style="display:none;margin-top:16px">
+                    <table id="tabla-notas" aria-label="Tabla de notas">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Alumno</th>
+                                <th>Cont1</th>
+                                <th>Parcial1</th>
+                                <th>Cont2</th>
+                                <th>Parcial2</th>
+                                <th>Cont3</th>
+                                <th>Parcial3</th>
+                                <th>Promedio</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-body">
+                            <!-- filas dinámicas -->
+                        </tbody>
+                    </table>
+
+                    <div class="controls">
+                        <div class="stats-row" style="margin-top:12px">
+                            <div class="stat-box">
+                                <h4>Total Alumnos</h4>
+                                <div class="value" id="total-alumnos">0</div>
+                            </div>
+                            <div class="stat-box">
+                                <h4>Aprobados</h4>
+                                <div class="value" id="aprobados">0</div>
+                            </div>
+                            <div class="stat-box">
+                                <h4>Desaprobados</h4>
+                                <div class="value" id="desaprobados">0</div>
+                            </div>
+                            <div class="stat-box">
+                                <h4>Promedio General</h4>
+                                <div class="value" id="promedio-general">0.0</div>
+                            </div>
+                        </div>
+
+                        <div style="margin-left:auto;">
+                            <button class="btn-save" onclick="guardarNotas()"><i class="fas fa-save"></i> Guardar Cambios</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        // Datos de ejemplo
+        const estudiantes = [
+            { codigo: '202310001', nombre: 'María González López' },
+            { codigo: '202310002', nombre: 'Carlos Mendoza Ruiz' },
+            { codigo: '202310003', nombre: 'Ana Torres Silva' },
+            { codigo: '202310004', nombre: 'Luis Ramírez Castro' }
+        ];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            verificarPeriodoNotas();
+            const userName = localStorage.getItem("profesorActual") || "Profesor Principal";
+            document.getElementById('profesor-name').textContent = userName;
+        });
+
+        function verificarPeriodoNotas() {
+            const periodosGuardados = localStorage.getItem('periodosNotas');
+            const container = document.getElementById('periodo-info-container');
+
+            if (!periodosGuardados) {
+                container.innerHTML = `
+                    <div class="alert alert-warning" role="status">
+                        <div class="icon"><i class="fas fa-exclamation-triangle"></i></div>
+                        <div class="content">
+                            <strong>No hay período habilitado para ingreso de notas</strong>
+                            <p>Por favor, contacte con secretaría para habilitar un período de ingreso de notas.</p>
+                        </div>
+                    </div>`;
+                return;
+            }
+
+            const periodos = JSON.parse(periodosGuardados).map(p => ({
+                ...p,
+                inicio: new Date(p.inicio),
+                fin: new Date(p.fin)
+            }));
+
+            const ahora = new Date();
+            const periodoActivo = periodos.find(p => ahora >= p.inicio && ahora <= p.fin);
+
+            if (!periodoActivo) {
+                container.innerHTML = `
+                    <div class="alert alert-warning" role="status">
+                        <div class="icon"><i class="fas fa-clock"></i></div>
+                        <div class="content">
+                            <strong>No es fecha para subir notas</strong>
+                            <p>El período de ingreso de notas no está activo en este momento.</p>
+                        </div>
+                    </div>`;
+                return;
+            }
+
+            const tiempoRestante = calcularTiempoRestante(periodoActivo.fin);
+            container.innerHTML = `
+                <div class="alert alert-success" role="status">
+                    <div class="icon"><i class="fas fa-check-circle"></i></div>
+                    <div class="content">
+                        <strong>Período de ingreso de notas activo</strong>
+                        <p>Puede ingresar notas hasta: ${formatearFecha(periodoActivo.fin)}</p>
+                        <p><strong>Tiempo restante:</strong> ${tiempoRestante}</p>
+                        ${periodoActivo.asignaturaNombre && periodoActivo.asignaturaNombre !== 'Todas las asignaturas' ? 
+                            `<p><strong>Asignatura:</strong> ${periodoActivo.asignaturaNombre}</p>` : ''}
+                        <p><strong>Tipo:</strong> ${periodoActivo.tipo}</p>
+                    </div>
+                </div>`;
+            document.getElementById('content-notas').style.display = 'block';
+        }
+
+        function cargarEstudiantes() {
+            const curso = document.getElementById('select-course').value;
+            if (!curso) {
+                document.getElementById('table-container').style.display = 'none';
+                return;
+            }
+
+            const tbody = document.getElementById('tabla-body');
+            tbody.innerHTML = estudiantes.map(est => `
+                <tr>
+                    <td>${est.codigo}</td>
+                    <td style="text-align:left">${est.nombre}</td>
+                    <td><input type="number" min="0" max="20" step="0.5" value="0" onchange="calcularPromedio(this)"></td>
+                    <td><input type="number" min="0" max="20" step="0.5" value="0" onchange="calcularPromedio(this)"></td>
+                    <td><input type="number" min="0" max="20" step="0.5" value="0" onchange="calcularPromedio(this)"></td>
+                    <td><input type="number" min="0" max="20" step="0.5" value="0" onchange="calcularPromedio(this)"></td>
+                    <td><input type="number" min="0" max="20" step="0.5" value="0" onchange="calcularPromedio(this)"></td>
+                    <td><input type="number" min="0" max="20" step="0.5" value="0" onchange="calcularPromedio(this)"></td>
+                    <td class="promedio">0.0</td>
+                    <td class="estado">-</td>
+                </tr>
+            `).join('');
+
+            document.getElementById('table-container').style.display = 'block';
+            actualizarEstadisticas();
+        }
+
+        function calcularPromedio(input) {
+            const row = input.closest('tr');
+            const inputs = row.querySelectorAll('input[type="number"]');
+            let suma = 0;
+            let count = 0;
+
+            inputs.forEach(inp => {
+                const valor = parseFloat(inp.value) || 0;
+                suma += valor;
+                count++;
+            });
+
+            const promedio = count ? (suma / count) : 0;
+            const promedioCell = row.querySelector('.promedio');
+            const estadoCell = row.querySelector('.estado');
+
+            promedioCell.textContent = promedio.toFixed(1);
+
+            if (promedio >= 10.5) {
+                estadoCell.textContent = 'Aprobado';
+                estadoCell.className = 'estado aprobado';
+            } else {
+                estadoCell.textContent = 'Desaprobado';
+                estadoCell.className = 'estado desaprobado';
+            }
+
+            actualizarEstadisticas();
+        }
+
+        function actualizarEstadisticas() {
+            const rows = document.querySelectorAll('#tabla-body tr');
+            const total = rows.length || 0;
+            let aprobados = 0;
+            let desaprobados = 0;
+            let sumaPromedios = 0;
+
+            rows.forEach(row => {
+                const estado = row.querySelector('.estado').textContent;
+                const promedio = parseFloat(row.querySelector('.promedio').textContent) || 0;
+
+                if (estado === 'Aprobado') aprobados++;
+                if (estado === 'Desaprobado') desaprobados++;
+                sumaPromedios += promedio;
+            });
+
+            document.getElementById('total-alumnos').textContent = total;
+            document.getElementById('aprobados').textContent = aprobados;
+            document.getElementById('desaprobados').textContent = desaprobados;
+            document.getElementById('promedio-general').textContent = total ? (sumaPromedios / total).toFixed(1) : '0.0';
+        }
+
+        function guardarNotas() {
+            // Aquí puedes añadir lógica para enviar datos al servidor
+            alert('Notas guardadas exitosamente');
+        }
+
+        function calcularTiempoRestante(fechaFin) {
+            const ahora = new Date();
+            const diff = fechaFin - ahora;
+
+            if (diff < 0) return 'Finalizado';
+
+            const dias = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const horas = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+            if (dias > 0) return `${dias} días ${horas} horas`;
+            return `${horas} horas`;
+        }
+
+        function formatearFecha(fecha) {
+            return fecha.toLocaleString('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+    </script>
+</body>
+</html>
