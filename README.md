@@ -104,6 +104,3 @@ con buenas prácticas y arquitectura escalable.
 - Revisión general de las conexiones y apoyo en la creación de tablas complementarias.
 - Desarrollo de las interfaces HTML correspondientes al módulo del estudiante.
 - Implementación de los controladores Java que enlazan las funcionalidades y la base de datos del estudiante.
-
-
->>>>>>> 086760f21f5c9f923d6ac23deb3ac96ae2212898
