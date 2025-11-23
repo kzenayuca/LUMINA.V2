@@ -24,6 +24,7 @@
             if (usuarioLocal.apellidosNombres) {
                 document.getElementById('userName').textContent = usuarioLocal.apellidosNombres;
                 document.getElementById('userAvatar').textContent = obtenerIniciales(usuarioLocal.apellidosNombres);
+                document.getElementById('userCode').textContent = `Código: ${usuarioLocal.numeroMatricula}`;
             }
 
             if (!idUsuario) {
