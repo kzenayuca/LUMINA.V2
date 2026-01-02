@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ver Usuarios - LUMINA SECRETARÍA</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #9b59b6;
+            --light: #ecf0f1;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --sidebar-width: 250px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { display: flex; min-height: 100vh; background-color: #f5f7fa; color: #333; }
+        
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: linear-gradient(180deg, var(--primary) 0%, #1a2530 100%);
+            color: white;
+            height: 100vh;
+            position: fixed;
+            overflow-y: auto;
+            box-shadow: 3px 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+        .logo { padding: 20px; text-align: center; border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .logo h1 { font-size: 1.3rem; font-weight: 600; }
+        .logo i { color: var(--secondary); font-size: 1.8rem; }
+        .user-info { padding: 15px 20px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+        .user-avatar { width: 40px; height: 40px; border-radius: 50%; background-color: var(--secondary); display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .user-details h3 { font-size: 1rem; margin-bottom: 3px; }
+        .user-details p { font-size: 0.8rem; opacity: 0.7; }
+        .logout-btn { margin-left: auto; background: none; border: none; color: white; cursor: pointer; opacity: 0.7; transition: opacity 0.3s; font-size: 1.2rem; }
+        .logout-btn:hover { opacity: 1; }
+        .menu { padding: 20px 0; }
+        .menu-item { padding: 12px 20px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.3s; border-left: 3px solid transparent; text-decoration: none; color: white; }
+        .menu-item:hover { background-color: rgba(255, 255, 255, 0.1); border-left: 3px solid var(--secondary); }
+        .menu-item.active { background-color: rgba(52, 152, 219, 0.2); border-left: 3px solid var(--secondary); }
+        .menu-item i { width: 20px; text-align: center; }
+
+        .main-content { flex: 1; margin-left: var(--sidebar-width); padding: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 15px; border-bottom: 1px solid #e0e0e0; }
+        .header h1 { color: var(--primary); font-size: 1.8rem; }
+        
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #e0e0e0; }
+        .tab { padding: 12px 24px; background: none; border: none; cursor: pointer; font-size: 1rem; font-weight: 500; color: #7f8c8d; transition: all 0.3s; border-bottom: 3px solid transparent; }
+        .tab.active { color: var(--secondary); border-bottom-color: var(--secondary); }
+        .tab:hover { color: var(--secondary); }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        .stats-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08); display: flex; align-items: center; gap: 15px; transition: transform 0.3s; }
+        .stat-card:hover { transform: translateY(-5px); }
+        .stat-icon { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: white; }
+        .stat-icon.total { background: linear-gradient(135deg, var(--secondary) 0%, #2980b9 100%); }
+        .stat-icon.active { background: linear-gradient(135deg, var(--success) 0%, #27ae60 100%); }
+        .stat-info h3 { font-size: 1.5rem; margin-bottom: 5px; color: var(--primary); }
+        .stat-info p { color: #7f8c8d; font-size: 0.9rem; }
+        
+        .page-content { background: white; border-radius: 10px; padding: 25px; box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08); margin-bottom: 30px; }
+        .section-title { font-size: 1.3rem; color: var(--primary); margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #e0e0e0; }
+        
+        .search-box { display: flex; margin-bottom: 20px; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .search-box input { flex: 1; padding: 12px 15px; border: none; font-size: 1rem; outline: none; }
+        .search-box button { padding: 12px 20px; background-color: var(--secondary); color: white; border: none; cursor: pointer; }
+        
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .data-table th, .data-table td { padding: 12px; text-align: left; border-bottom: 1px solid #e0e0e0; font-size: 0.9rem; }
+        .data-table th { background-color: var(--light); color: var(--primary); font-weight: 600; }
+        .data-table tr:hover { background-color: #f9f9f9; }
+        
+        .badge { padding: 4px 8px; background-color: var(--light); border-radius: 12px; font-size: 0.75rem; color: var(--primary); margin: 2px; display: inline-block; }
+        .badge.teoria { background-color: rgba(46, 204, 113, 0.2); color: var(--success); }
+        .badge.laboratorio { background-color: rgba(155, 89, 182, 0.2); color: var(--accent); }
+        .badge.activo { background-color: rgba(46, 204, 113, 0.2); color: var(--success); }
+        .badge.inactivo { background-color: rgba(231, 76, 60, 0.2); color: var(--danger); }
+        
+        .action-btn { width: 32px; height: 32px; border-radius: 5px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s; border: none; margin: 0 4px; }
+        .action-view { background-color: rgba(52, 152, 219, 0.1); color: var(--secondary); }
+        .action-view:hover { background-color: var(--secondary); color: white; }
+        
+        /* Modal */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 2000; align-items: center; justify-content: center; }
+        .modal.show { display: flex; }
+        .modal-content { background: white; border-radius: 10px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; }
+        .modal-header { padding: 20px; background: var(--primary); color: white; display: flex; justify-content: space-between; align-items: center; border-radius: 10px 10px 0 0; }
+        .close-modal { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+        .modal-body { padding: 20px; }
+        .modal-footer { padding: 15px 20px; background: #f9f9f9; display: flex; justify-content: flex-end; gap: 10px; border-radius: 0 0 10px 10px; }
+        
+        .info-group { margin-bottom: 20px; }
+        .info-group label { display: block; margin-bottom: 8px; font-weight: 500; color: var(--primary); }
+        .info-value { padding: 10px 15px; background: #f8f9fa; border-radius: 5px; color: #333; }
+        
+        .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: 500; transition: all 0.3s; }
+        .btn-outline { background: white; border: 1px solid var(--secondary); color: var(--secondary); }
+        .btn-outline:hover { background: var(--secondary); color: white; }
+        
+        .curso-list { max-height: 200px; overflow-y: auto; }
+        .section-subtitle { font-weight: 600; color: var(--primary); margin: 15px 0 10px; padding-top: 15px; border-top: 1px solid #e0e0e0; }
+
+        @media (max-width: 992px) {
+            .sidebar { width: 70px; }
+            .logo h1, .user-details, .menu-item span { display: none; }
+            .main-content { margin-left: 70px; }
+        }
+
+.menu-title {
+  padding: 12px 20px;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  opacity: 0.7;
+  letter-spacing: 1px;
+  font-weight: 600;
+}
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">
+            <i class="fas fa-university"></i>
+            <h1>LUMINA SECRETARÍA</h1>
+        </div>
+        <div class="user-info">
+            <div class="user-avatar">
+                <i class="fas fa-user-tie"></i>
+            </div>
+            <div class="user-details">
+                <h3 id="secretaria-name">Secretaría</h3>
+                <p>Sistema Universitario</p>
+            </div>
+            <button class="logout-btn" id="logoutBtn" title="Cerrar sesión">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </div>
+        <div class="menu">
+            <div class="menu-section">
+                <a href="secretaria.html" class="menu-item">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>DASHBOARD</span>
+                </a>
+                <div class="menu-title">Panel Principal</div>
+            </div>
+            <div class="menu-section">
+                <a href="sec_subida_datos.html" class="menu-item">
+                    <i class="fas fa-upload"></i>
+                    <span>SUBIR DE DATOS</span>
+                </a>
+                <div class="menu-title">Gestión de Datos</div>
+            </div>
+            <div class="menu-section">
+                <a href="sec_ver_usuarios.html" class="menu-item active">
+                    <i class="fas fa-users"></i>
+                    <span>VER USUARIOS</span>
+                </a>
+            </div>
+            <div class="menu-section">
+                <a href="sec_ver_ingreso_notas.html" class="menu-item">
+                    <i class="fas fa-edit"></i>
+                    <span>FECHA: INGRESO DE NOTAS</span>
+                </a>
+            </div>
+            <div class="menu-section">
+                <a href="sec_matricula_laboratorios.html" class="menu-item">
+                    <i class="fas fa-flask"></i>
+                    <span>FECHA: MATRÍCULAS DE LABORATORIOS</span>
+                </a>
+            </div>
+            <div class="menu-section">
+                <a href="sec_ver_cursos.html" class="menu-item">
+                    <i class="fas fa-book"></i>
+                    <span>VER CURSOS</span>
+                </a>
+            </div>
+            <div class="menu-section">
+                <a href="sec_ver_horarios.html" class="menu-item">
+                    <i class="fas fa-calendar-day"></i>
+                    <span>VER HORARIOS</span>
+                </a>
+            </div>
+            <div class="menu-section">
+                <a href="sec_ver_pdfs.html" class="menu-item">
+                    <i class="fas fa-file-pdf"></i>
+                    <span>VER PDFs</span>
+                </a>
+            </div>
+            <div class="menu-section">
+                <a href="sec_reportes.html" class="menu-item">
+                    <i class="fas fa-file-pdf"></i>
+                    <span>HACER REPORTES</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="header">
+            <h1>Ver Usuarios</h1>
+        </div>
+        
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" data-tab="estudiantes">
+                <i class="fas fa-user-graduate"></i> Estudiantes
+            </button>
+            <button class="tab" data-tab="docentes">
+                <i class="fas fa-chalkboard-teacher"></i> Docentes
+            </button>
+        </div>
+        
+        <!-- Tab Estudiantes -->
+        <div class="tab-content active" id="estudiantes">
+            <div class="stats-cards">
+                <div class="stat-card">
+                    <div class="stat-icon total">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="statTotalEst">0</h3>
+                        <p>Total Estudiantes</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon active">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="statActivosEst">0</h3>
+                        <p>Estudiantes Activos</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="page-content">
+                <div class="section-title">Lista de Estudiantes</div>
+                
+                <div class="search-box">
+                    <input type="text" id="searchEstudiantes" placeholder="Buscar estudiante por nombre, correo o CUI...">
+                    <button><i class="fas fa-search"></i></button>
+                </div>
+                
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Estudiante</th>
+                            <th>CUI</th>
+                            <th>Cursos Asignados</th>
+                            <th>Labs Matriculados</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="estudiantesTable">
+                        <tr><td colspan="6" style="text-align:center;">Cargando estudiantes...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Tab Docentes -->
+        <div class="tab-content" id="docentes">
+            <div class="stats-cards">
+                <div class="stat-card">
+                    <div class="stat-icon total">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="statTotalDoc">0</h3>
+                        <p>Total Docentes</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon active">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="statTeoriaDoc">0</h3>
+                        <p>Docentes Teoría</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon active">
+                        <i class="fas fa-flask"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="statLabDoc">0</h3>
+                        <p>Docentes Laboratorio</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="page-content">
+                <div class="section-title">Lista de Docentes</div>
+                
+                <div class="search-box">
+                    <input type="text" id="searchDocentes" placeholder="Buscar docente por nombre o departamento...">
+                    <button><i class="fas fa-search"></i></button>
+                </div>
+                
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Docente</th>
+                            <th>Departamento</th>
+                            <th>Tipo de Curso</th>
+                            <th>Cursos Asignados</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="docentesTable">
+                        <tr><td colspan="6" style="text-align:center;">Cargando docentes...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Ver Estudiante -->
+    <div class="modal" id="viewEstudianteModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-user-graduate"></i> Información del Estudiante</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="info-group">
+                    <label><i class="fas fa-user"></i> Nombre Completo</label>
+                    <div class="info-value" id="viewEstNombre"></div>
+                </div>
+                
+                <div class="info-group">
+                    <label><i class="fas fa-envelope"></i> Correo Institucional</label>
+                    <div class="info-value" id="viewEstCorreo"></div>
+                </div>
+                
+                <div class="info-group">
+                    <label><i class="fas fa-id-card"></i> CUI</label>
+                    <div class="info-value" id="viewEstCui"></div>
+                </div>
+                
+                <div class="info-group">
+                    <label><i class="fas fa-hashtag"></i> Número de Matrícula</label>
+                    <div class="info-value" id="viewEstMatricula"></div>
+                </div>
+                
+                <div class="info-group">
+                    <label><i class="fas fa-check-circle"></i> Estado</label>
+                    <div class="info-value" id="viewEstEstado"></div>
+                </div>
+                
+                <div class="section-subtitle"><i class="fas fa-book"></i> Cursos Asignados</div>
+                <div class="curso-list" id="viewEstCursos"></div>
+                
+                <div class="section-subtitle"><i class="fas fa-flask"></i> Laboratorios Matriculados</div>
+                <div class="curso-list" id="viewEstLabsMatriculados"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="cerrarModal('viewEstudianteModal')">
+                    <i class="fas fa-times"></i> Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Ver Docente -->
+    <div class="modal" id="viewDocenteModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-chalkboard-teacher"></i> Información del Docente</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="info-group">
+                    <label><i class="fas fa-user"></i> Nombre Completo</label>
+                    <div class="info-value" id="viewDocNombre"></div>
+                </div>
+                
+                <div class="info-group">
+                    <label><i class="fas fa-envelope"></i> Correo Institucional</label>
+                    <div class="info-value" id="viewDocCorreo"></div>
+                </div>
+                
+                <div class="info-group">
+                    <label><i class="fas fa-building"></i> Departamento</label>
+                    <div class="info-value" id="viewDocDepartamento"></div>
+                </div>
+                
+                <div class="info-group">
+                    <label><i class="fas fa-chalkboard"></i> Tipo de Curso</label>
+                    <div class="info-value" id="viewDocTipo"></div>
+                </div>
+                
+                <div class="info-group">
+                    <label><i class="fas fa-check-circle"></i> Estado</label>
+                    <div class="info-value" id="viewDocEstado"></div>
+                </div>
+                
+                <div class="section-subtitle"><i class="fas fa-book"></i> Cursos Asignados</div>
+                <div class="curso-list" id="viewDocCursos"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="cerrarModal('viewDocenteModal')">
+                    <i class="fas fa-times"></i> Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Determinar context path
+        const pathParts = window.location.pathname.split('/').filter(Boolean);
+        const contextPath = pathParts.length > 0 ? '/' + pathParts[0] : '';
+        const secretariaApiBase = `/sec/api/secretaria`;
+        
+        console.log('Context Path:', contextPath);
+        console.log('Secretaria API Base:', secretariaApiBase);
+        
+        let estudiantes = [];
+        let estudiantesFiltrados = [];
+        let docentes = [];
+        let docentesFiltrados = [];
+
+        // Tabs
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+                
+                this.classList.add('active');
+                document.getElementById(this.dataset.tab).classList.add('active');
+            });
+        });
+
+        // Cerrar modales
+        document.querySelectorAll('.close-modal').forEach(btn => {
+            btn.addEventListener('click', function() {
+                this.closest('.modal').classList.remove('show');
+            });
+        });
+
+        function cerrarModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        // Cargar estadísticas
+        async function cargarEstadisticas() {
+            try {
+                console.log('Cargando estadísticas desde:', `${secretariaApiBase}/estadisticas`);
+                
+                const resp = await fetch(`${secretariaApiBase}/estadisticas`, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' },
+                    credentials: 'same-origin'
+                });
+
+                console.log('Response status:', resp.status);
+
+                if (!resp.ok) {
+                    if (resp.status === 401) {
+                        window.location.href = contextPath + '/Inicio_Sesion.html';
+                        return;
+                    }
+                    console.error('Error al cargar estadísticas:', resp.status);
+                    return;
+                }
+
+                const stats = await resp.json();
+                console.log('Estadísticas recibidas:', stats);
+                
+                document.getElementById('statTotalEst').textContent = stats.totalEstudiantes || 0;
+                document.getElementById('statActivosEst').textContent = stats.totalEstudiantes || 0;
+                document.getElementById('statTotalDoc').textContent = stats.totalDocentes || 0;
+                document.getElementById('statTeoriaDoc').textContent = stats.docentesTeoria || 0;
+                document.getElementById('statLabDoc').textContent = stats.docentesLaboratorio || 0;
+            } catch (err) {
+                console.error('Error cargando estadísticas:', err);
+            }
+        }
+
+        // Cargar estudiantes
+        async function cargarEstudiantes() {
+            try {
+                console.log('Cargando estudiantes desde:', `${secretariaApiBase}/estudiantes-completo`);
+                
+                const resp = await fetch(`${secretariaApiBase}/estudiantes-completo`, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' },
+                    credentials: 'same-origin'
+                });
+
+                if (!resp.ok) {
+                    if (resp.status === 401) {
+                        window.location.href = contextPath + '/Inicio_Sesion.html';
+                        return;
+                    }
+                    throw new Error('Error al cargar estudiantes: ' + resp.status);
+                }
+
+                estudiantes = await resp.json();
+                console.log('Estudiantes recibidos:', estudiantes.length);
+                estudiantesFiltrados = estudiantes;
+                renderizarTablaEstudiantes();
+            } catch (err) {
+                console.error('Error:', err);
+                document.getElementById('estudiantesTable').innerHTML = 
+                    '<tr><td colspan="6" style="text-align:center;color:red;">Error al cargar estudiantes</td></tr>';
+            }
+        }
+
+        function renderizarTablaEstudiantes() {
+            const tbody = document.getElementById('estudiantesTable');
+            tbody.innerHTML = '';
+
+            if (estudiantesFiltrados.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No se encontraron estudiantes</td></tr>';
+                return;
+            }
+
+            estudiantesFiltrados.forEach(e => {
+                const tr = document.createElement('tr');
+                
+                let cursosHTML = '';
+                if (e.cursosDetalle && e.cursosDetalle.length > 0) {
+                    e.cursosDetalle.forEach(c => {
+                        const badgeClass = c.tipoClase === 'TEORIA' ? 'teoria' : 'laboratorio';
+                        cursosHTML += `<span class="badge ${badgeClass}">${c.codigoCurso} ${c.letraGrupo}</span> `;
+                    });
+                } else {
+                    cursosHTML = '<span class="badge">Ninguno</span>';
+                }
+
+                let labsMatriculadosHTML = '';
+                if (e.laboratoriosMatriculados && e.laboratoriosMatriculados.length > 0) {
+                    e.laboratoriosMatriculados.forEach(l => {
+                        labsMatriculadosHTML += `<span class="badge laboratorio">${l.codigoCurso}</span> `;
+                    });
+                } else {
+                    labsMatriculadosHTML = '<span class="badge">Ninguno</span>';
+                }
+
+                const estadoBadge = e.estadoEstudiante === 'VIGENTE' ? 
+                    '<span class="badge activo">VIGENTE</span>' : 
+                    '<span class="badge inactivo">' + e.estadoEstudiante + '</span>';
+
+                tr.innerHTML = `
+                    <td>
+                        <div style="font-weight: 500;">${e.apellidosNombres}</div>
+                        <div style="font-size: 0.8rem; color: #7f8c8d;">${e.correoInstitucional}</div>
+                    </td>
+                    <td>${e.cui}</td>
+                    <td>${cursosHTML}</td>
+                    <td>${labsMatriculadosHTML}</td>
+                    <td>${estadoBadge}</td>
+                    <td>
+                        <button class="action-btn action-view" onclick="verEstudiante('${e.cui}')" title="Ver Información">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Ver estudiante 
+        function verEstudiante(cui) {
+            const estudiante = estudiantes.find(e => e.cui === cui);
+            if (!estudiante) return;
+
+            document.getElementById('viewEstNombre').textContent = estudiante.apellidosNombres;
+        document.getElementById('viewEstCorreo').textContent = estudiante.correoInstitucional;
+        document.getElementById('viewEstCui').textContent = estudiante.cui;
+        document.getElementById('viewEstMatricula').textContent = estudiante.numeroMatricula;
+        document.getElementById('viewEstEstado').textContent = estudiante.estadoEstudiante;
+
+        // Cursos asignados
+        const cursosDiv = document.getElementById('viewEstCursos');
+        cursosDiv.innerHTML = '';
+        if (estudiante.cursosDetalle && estudiante.cursosDetalle.length > 0) {
+            estudiante.cursosDetalle.forEach(c => {
+                cursosDiv.innerHTML += `<span class="badge ${c.tipoClase === 'TEORIA' ? 'teoria' : 'laboratorio'}">${c.codigoCurso} - ${c.nombreCurso} ${c.letraGrupo} (${c.tipoClase})</span><br>`;
+            });
+        } else {
+            cursosDiv.innerHTML = '<p style="color: #7f8c8d; font-style: italic;">No tiene cursos asignados</p>';
+        }
+
+        // Labs matriculados
+        const labsMatDiv = document.getElementById('viewEstLabsMatriculados');
+        labsMatDiv.innerHTML = '';
+        if (estudiante.laboratoriosMatriculados && estudiante.laboratoriosMatriculados.length > 0) {
+            estudiante.laboratoriosMatriculados.forEach(l => {
+                labsMatDiv.innerHTML += `<span class="badge laboratorio">${l.codigoCurso} - ${l.nombreCurso} ${l.letraGrupo}</span><br>`;
+            });
+        } else {
+            labsMatDiv.innerHTML = '<p style="color: #7f8c8d; font-style: italic;">Sin laboratorios matriculados</p>';
+        }
+
+        document.getElementById('viewEstudianteModal').classList.add('show');
+    }
+
+    // Búsqueda estudiantes
+    document.getElementById('searchEstudiantes').addEventListener('input', function() {
+        const query = this.value.toLowerCase();
+        estudiantesFiltrados = estudiantes.filter(e => 
+            (e.apellidosNombres && e.apellidosNombres.toLowerCase().includes(query)) ||
+            (e.correoInstitucional && e.correoInstitucional.toLowerCase().includes(query)) ||
+            (e.cui && e.cui.toLowerCase().includes(query))
+        );
+        renderizarTablaEstudiantes();
+    });
+
+    // Cargar docentes
+    async function cargarDocentes() {
+        try {
+            console.log('Cargando docentes desde:', `${secretariaApiBase}/profesores-completo`);
+            
+            const resp = await fetch(`${secretariaApiBase}/profesores-completo`, {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' },
+                credentials: 'same-origin'
+            });
+
+            if (!resp.ok) {
+                if (resp.status === 401) {
+                    window.location.href = contextPath + '/Inicio_Sesion.html';
+                    return;
+                }
+                throw new Error('Error al cargar docentes: ' + resp.status);
+            }
+
+            docentes = await resp.json();
+            console.log('Docentes recibidos:', docentes.length);
+            docentesFiltrados = docentes;
+            renderizarTablaDocentes();
+        } catch (err) {
+            console.error('Error:', err);
+            document.getElementById('docentesTable').innerHTML = 
+                '<tr><td colspan="6" style="text-align:center;color:red;">Error al cargar docentes</td></tr>';
+        }
+    }
+
+    function renderizarTablaDocentes() {
+        const tbody = document.getElementById('docentesTable');
+        tbody.innerHTML = '';
+
+        if (docentesFiltrados.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No se encontraron docentes</td></tr>';
+            return;
+        }
+
+        docentesFiltrados.forEach(d => {
+            const tr = document.createElement('tr');
+            
+            let tipoBadge = '';
+            if (d.tipoClase === 'TEORIA') tipoBadge = '<span class="badge teoria">TEORÍA</span>';
+            else if (d.tipoClase === 'LABORATORIO') tipoBadge = '<span class="badge laboratorio">LABORATORIO</span>';
+            else if (d.tipoClase === 'AMBOS') tipoBadge = '<span class="badge teoria">TEORÍA</span> <span class="badge laboratorio">LAB</span>';
+            else tipoBadge = '<span class="badge">SIN ASIGNAR</span>';
+
+            let cursosHTML = '';
+            if (d.cursosDetalle && d.cursosDetalle.length > 0) {
+                d.cursosDetalle.forEach(c => {
+                    const badgeClass = c.tipoClase === 'TEORIA' ? 'teoria' : 'laboratorio';
+                    cursosHTML += `<span class="badge ${badgeClass}">${c.codigoCurso} ${c.letraGrupo}</span> `;
+                });
+            } else {
+                cursosHTML = '<span class="badge">Ninguno</span>';
+            }
+
+            tr.innerHTML = `
+                <td>
+                    <div style="font-weight: 500;">${d.apellidosNombres}</div>
+                    <div style="font-size: 0.8rem; color: #7f8c8d;">${d.correoInstitucional}</div>
+                </td>
+                <td>${d.departamento}</td>
+                <td>${tipoBadge}</td>
+                <td>${cursosHTML}</td>
+                <td><span class="badge activo">ACTIVO</span></td>
+                <td>
+                    <button class="action-btn action-view" onclick="verDocente(${d.idDocente})" title="Ver Información">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    // Ver docente 
+    function verDocente(idDocente) {
+        const docente = docentes.find(d => d.idDocente === idDocente);
+        if (!docente) return;
+
+        document.getElementById('viewDocNombre').textContent = docente.apellidosNombres;
+        document.getElementById('viewDocCorreo').textContent = docente.correoInstitucional;
+        document.getElementById('viewDocDepartamento').textContent = docente.departamento;
+        document.getElementById('viewDocTipo').textContent = docente.tipoClase || 'SIN ASIGNAR';
+        document.getElementById('viewDocEstado').textContent = 'ACTIVO';
+
+        const cursosDiv = document.getElementById('viewDocCursos');
+        cursosDiv.innerHTML = '';
+        if (docente.cursosDetalle && docente.cursosDetalle.length > 0) {
+            docente.cursosDetalle.forEach(c => {
+                cursosDiv.innerHTML += `<span class="badge ${c.tipoClase === 'TEORIA' ? 'teoria' : 'laboratorio'}">${c.codigoCurso} - ${c.nombreCurso} ${c.letraGrupo} (${c.tipoClase})</span><br>`;
+            });
+        } else {
+            cursosDiv.innerHTML = '<p style="color: #7f8c8d; font-style: italic;">No tiene cursos asignados</p>';
+        }
+
+        document.getElementById('viewDocenteModal').classList.add('show');
+    }
+
+    // Búsqueda docentes
+    document.getElementById('searchDocentes').addEventListener('input', function() {
+        const query = this.value.toLowerCase();
+        docentesFiltrados = docentes.filter(d => 
+            (d.apellidosNombres && d.apellidosNombres.toLowerCase().includes(query)) ||
+            (d.departamento && d.departamento.toLowerCase().includes(query))
+        );
+        renderizarTablaDocentes();
+    });
+
+    // Logout
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+        if (!confirm('¿Cerrar sesión?')) return;
+        try {
+            await fetch(`${contextPath}/logout`, { method: 'POST', credentials: 'same-origin' });
+        } catch(e) {
+            console.warn('Logout failed', e);
+        }
+        sessionStorage.clear();
+        localStorage.clear();
+        window.location.href = `/Inicio_Sesion.html`;
+    });
+
+    // Inicialización
+    document.addEventListener('DOMContentLoaded', async () => {
+        const userName = sessionStorage.getItem("usuarioNombre") || "Secretaría";
+        document.getElementById('secretaria-name').textContent = userName;
+        
+        console.log('=== Iniciando carga de datos ===');
+        await cargarEstadisticas();
+        await cargarEstudiantes();
+        await cargarDocentes();
+    });
+</script>
+</body>
+</html>

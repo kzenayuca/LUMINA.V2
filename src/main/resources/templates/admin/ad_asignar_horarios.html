@@ -1,0 +1,1747 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asignar Horarios - LUMINA ADMIN</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #9b59b6;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --success: #2ec7ccff;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --sidebar-width: 250px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: linear-gradient(180deg, var(--primary) 0%, #1a2530 100%);
+            color: white;
+            height: 100vh;
+            position: fixed;
+            overflow-y: auto;
+            box-shadow: 3px 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .logo {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .logo i {
+            color: var(--secondary);
+            font-size: 1.8rem;
+        }
+
+        .user-info {
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .user-details h3 {
+            font-size: 1rem;
+            margin-bottom: 3px;
+        }
+
+        .user-details p {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+
+        .logout-btn {
+            margin-left: auto;
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+            font-size: 1.2rem;
+        }
+
+        .logout-btn:hover {
+            opacity: 1;
+        }
+
+        .menu {
+            padding: 20px 0;
+        }
+
+        .menu-section {
+            margin-bottom: 10px;
+        }
+
+        .menu-title {
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            opacity: 0.7;
+            letter-spacing: 1px;
+        }
+
+        .menu-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+            text-decoration: none;
+            color: white;
+        }
+
+        .menu-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-left: 3px solid var(--secondary);
+        }
+
+        .menu-item.active {
+            background-color: rgba(52, 152, 219, 0.2);
+            border-left: 3px solid var(--secondary);
+        }
+
+        .menu-item i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .submenu {
+            padding-left: 40px;
+            display: none;
+        }
+
+        .submenu.active {
+            display: block;
+        }
+
+        .submenu-item {
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            opacity: 0.8;
+            cursor: pointer;
+            transition: opacity 0.3s;
+            text-decoration: none;
+            color: white;
+        }
+
+        .submenu-item:hover {
+            opacity: 1;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .header h1 {
+            color: var(--primary);
+            font-size: 1.8rem;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        .breadcrumb i {
+            font-size: 0.7rem;
+        }
+
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+    }
+
+    .stat-icon.courses {
+        background: linear-gradient(135deg, var(--success) 0%, #9327aeff 100%);
+    }
+
+    .stat-icon.classrooms {
+        background: linear-gradient(135deg, var(--accent) 0%, #8e44ad 100%);
+    }
+
+    .stat-info h3 {
+        font-size: 1.5rem;
+        margin-bottom: 5px;
+        color: var(--primary);
+    }
+
+    .stat-info p {
+        color: #7f8c8d;
+        font-size: 0.9rem;
+    }
+
+    .page-content {
+        background: white;
+        border-radius: 10px;
+        padding: 25px;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+    }
+
+    .section-title {
+        font-size: 1.3rem;
+        color: var(--primary);
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #e0e0e0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-primary {
+        background-color: var(--secondary);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background-color: #2980b9;
+        transform: translateY(-2px);
+    }
+
+    .btn-success {
+        background-color: var(--success);
+        color: white;
+    }
+
+    .btn-success:hover {
+        background-color: #7c27aeff;
+    }
+
+    .btn-danger {
+        background-color: var(--danger);
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background-color: #c0392b;
+    }
+
+    .btn-secondary {
+        background-color: #95a5a6;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background-color: #7f8c8d;
+    }
+
+    .filters-panel {
+        background: var(--light);
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .filter-row {
+        display: flex;
+        gap: 15px;
+        align-items: flex-end;
+        flex-wrap: wrap;
+    }
+
+    .filter-group {
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .filter-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+        color: var(--primary);
+    }
+
+    .filter-group select,
+    .filter-group input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 1rem;
+    }
+
+    .schedule-container {
+        margin-top: 20px;
+        overflow-x: auto;
+    }
+
+    .schedule-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+    }
+
+    .schedule-table th {
+        background: var(--primary);
+        color: white;
+        padding: 12px;
+        text-align: center;
+        font-weight: 600;
+    }
+
+    .schedule-table td {
+        border: 1px solid #e0e0e0;
+        padding: 8px;
+        vertical-align: top;
+        min-height: 60px;
+    }
+
+    
+
+    .schedule-slot {
+        cursor: pointer;
+        transition: background 0.3s;
+        min-height: 60px;
+    }
+
+    .schedule-slot:hover {
+        background: #f0f8ff;
+    }
+
+    .schedule-slot.occupied {
+        background: #f5e8f5ff;
+        border-left: 4px solid var(--success);
+        cursor: default;
+    }
+
+    .schedule-slot.occupied:hover {
+        background: #ddc8e6ff;
+    }
+
+    .class-info {
+        font-size: 0.85rem;
+    }
+
+    .class-name {
+        font-weight: 600;
+        margin-bottom: 3px;
+        color: var(--primary);
+    }
+
+    .class-details {
+        color: #7f8c8d;
+        font-size: 0.8rem;
+    }
+
+    .class-actions {
+        margin-top: 5px;
+        display: flex;
+        gap: 5px;
+    }
+
+    .action-icon {
+        cursor: pointer;
+        padding: 3px 6px;
+        border-radius: 3px;
+        font-size: 0.8rem;
+        transition: all 0.3s;
+    }
+
+    .action-icon.edit {
+        color: var(--secondary);
+        background: rgba(52, 152, 219, 0.1);
+    }
+
+    .action-icon.edit:hover {
+        background: var(--secondary);
+        color: white;
+    }
+
+    .action-icon.delete {
+        color: var(--danger);
+        background: rgba(231, 76, 60, 0.1);
+    }
+
+    .action-icon.delete:hover {
+        background: var(--danger);
+        color: white;
+    }
+
+    /* Modal */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 2000;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .modal.active {
+        display: flex;
+    }
+
+    .modal-content {
+        background: white;
+        border-radius: 10px;
+        padding: 30px;
+        max-width: 600px;
+        width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .modal-header h2 {
+        color: var(--primary);
+    }
+
+    .close-modal {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #7f8c8d;
+    }
+
+    .close-modal:hover {
+        color: var(--danger);
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+        color: var(--primary);
+    }
+
+    .form-group input,
+    .form-group select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 1rem;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 20px;
+    }
+
+    .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        display: none;
+        align-items: center;
+        gap: 10px;
+        z-index: 3000;
+    }
+
+    .notification.show {
+        display: flex;
+        animation: slideIn 0.3s ease;
+    }
+
+    .notification.success {
+        border-left: 4px solid var(--success);
+    }
+
+    .notification.error {
+        border-left: 4px solid var(--danger);
+    }
+
+    .time-slot {
+    background: var(--light);
+    font-weight: 600;
+    text-align: center;
+    min-width: 120px;
+    padding: 12px 8px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.empty-slot {
+    text-align: center;
+    color: #bdc3c7;
+    font-size: 0.85rem;
+    min-height: 60px;
+    vertical-align: top;
+    padding: 10px;
+}
+
+.course-block {
+    background: linear-gradient(135deg, #f5e8f4ff 0%, #dbc8e6ff 100%);
+    border-left: 4px solid var(--success);
+    padding: 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 4px;
+    min-height: 50px;
+}
+
+.course-block:hover {
+    background: linear-gradient(135deg, #e6c8e2ff 0%, #d691d6ff 100%);
+    transform: translateX(2px);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+}
+
+.course-block.reserva {
+    background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+    border-left-color: var(--warning);
+}
+
+.course-block.reserva:hover {
+    background: linear-gradient(135deg, #ffe0b2 0%, #ffcc80 100%);
+}
+
+.course-block.lab {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbfbf2ff 100%);
+    border-left-color: var(--secondary);
+}
+
+.course-block.lab:hover {
+    background: linear-gradient(135deg, #bbdefb 0%, #90f9e2ff 100%);
+}
+
+.course-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--primary);
+    margin-bottom: 4px;
+    line-height: 1.2;
+}
+
+.course-details {
+    font-size: 0.75rem;
+    color: #897f8dff;
+    line-height: 1.3;
+}
+
+    @keyframes slideIn {
+        from {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    .empty-message {
+        text-align: center;
+        padding: 40px;
+        color: #7f8c8d;
+    }
+
+    .empty-message i {
+        font-size: 3rem;
+        margin-bottom: 15px;
+        opacity: 0.5;
+    }
+
+    @media (max-width: 992px) {
+        .sidebar {
+            width: 70px;
+        }
+        
+        .logo h1, .user-details, .menu-title, .menu-item span {
+            display: none;
+        }
+        
+        .main-content {
+            margin-left: 70px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .stats-cards {
+            grid-template-columns: 1fr;
+        }
+        
+        .filter-row {
+            flex-direction: column;
+        }
+        
+        .filter-group {
+            width: 100%;
+        }
+    }
+</style></head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">
+            <i class="fas fa-graduation-cap"></i>
+            <h1>LUMINA ADMINISTRADOR</h1>
+        </div>
+        
+        <div class="user-info">
+            <div class="user-avatar" id="userAvatar">A</div>
+            <div class="user-details">
+                <h3 id="adminName">Administrador</h3>
+                <p id="adminEmail">admin@lumina.edu.pe</p>
+            </div>
+            <button class="logout-btn" id="logoutBtn">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </div>
+        
+        <div class="menu">
+            <div class="menu-section">
+                <a href="admin.html" class="menu-item active">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>DASHBOARD</span>
+                </a>
+                <div class="menu-title">Panel Principal</div>
+            </div>
+            
+            <div class="menu-section">
+                <div class="menu-item" id="users-menu">
+                    <i class="fas fa-users"></i>
+                    <span>GESTIÓN DE USUARIOS</span>
+                </div>
+                <div class="submenu" id="users-submenu">
+                    <a href="ad_gestion_usuarios.html" class="submenu-item">
+                        <i class="fas fa-chevron-right"></i>
+                        <span>Gestionar Usuarios</span>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="menu-section">
+                <div class="menu-item" id="academic-menu">
+                    <i class="fas fa-book-open"></i>
+                    <span>GESTIÓN ACADÉMICA</span>
+                </div>
+                <div class="submenu" id="academic-submenu">                    
+                    <a href="ad_docentes.html" class="submenu-item">
+                        <i class="fas fa-chevron-right"></i>
+                        <span>Editar Docentes</span>
+                    </a>
+                    <a href="ad_edita_estudiante.html" class="submenu-item">
+                        <i class="fas fa-chevron-right"></i>
+                        <span>Editar Estudiantes</span>
+                    </a>
+                    <a href="ad_gestion_cursos.html" class="submenu-item">
+                        <i class="fas fa-chevron-right"></i>
+                        <span>Editar cursos</span>
+                    </a>
+                    <a href="ad_gestion_cursos.html" class="submenu-item">
+                        <i class="fas fa-chevron-right"></i>
+                        <span>Información cursos</span>
+                    </a>
+                    <a href="ad_asignar_horarios.html" class="submenu-item">
+                        <i class="fas fa-chevron-right"></i>
+                        <span>Editar Horarios</span>
+                    </a>
+                    
+                </div>
+            </div>
+            
+            <div class="menu-section">
+                <div class="menu-item" id="reports-menu">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>ARCHIVOS</span>
+                </div>
+                <div class="submenu" id="reports-submenu">
+                    <a href="ad_reportes.html" class="submenu-item">
+                        <i class="fas fa-file-download"></i>
+                        <span>Reportes Académicos</span>
+                    </a>
+                    <a href="ad_pdfs.html" class="submenu-item">
+                        <i class="fas fa-file-pdf"></i>
+                        <span>Ver PDFs</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- Main Content -->
+<div class="main-content">
+    <div class="header">
+        <div>
+            <h1>Asignar Horarios</h1>
+            <div class="breadcrumb">
+                <span>Inicio</span>
+                <i class="fas fa-chevron-right"></i>
+                <span>Gestión Académica</span>
+                <i class="fas fa-chevron-right"></i>
+                <span>Asignar Horarios</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="stats-cards">
+        <div class="stat-card">
+            <div class="stat-icon courses">
+                <i class="fas fa-book"></i>
+            </div>
+            <div class="stat-info">
+                <h3 id="statCursos">...</h3>
+                <p>Cursos Programados</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon classrooms">
+                <i class="fas fa-door-open"></i>
+            </div>
+            <div class="stat-info">
+                <h3 id="statAulas">...</h3>
+                <p>Aulas Disponibles</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="page-content">
+        <div class="section-title">
+            <span id="tituloHorario">Horario Semanal</span>
+            <button class="btn btn-primary" id="btnNuevoHorario">
+                <i class="fas fa-plus"></i> Nueva Asignación
+            </button>
+        </div>
+        
+        <div class="filters-panel">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="tipoVisualizacion">
+                        <i class="fas fa-eye"></i> Ver Horario Por
+                    </label>
+                    <select id="tipoVisualizacion">
+                        <option value="">Seleccionar tipo</option>
+                        <option value="docente">Docente</option>
+                        <option value="estudiante">Estudiante</option>
+                        <option value="ambiente">Ambiente</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group" id="selectorContainer" style="display: none;">
+                    <label for="selector" id="selectorLabel">Seleccionar</label>
+                    <select id="selector">
+                        <option value="">Seleccionar...</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <button class="btn btn-success" id="btnCargarHorario" disabled>
+                        <i class="fas fa-search"></i> Cargar Horario
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="schedule-container" id="scheduleContainer">
+            <div class="empty-message">
+                <i class="fas fa-calendar-alt"></i>
+                <h3>Selecciona una opción para ver el horario</h3>
+                <p>Elige ver por docente, estudiante o ambiente</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Horario -->
+<div class="modal" id="horarioModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modalTitle">
+                <i class="fas fa-calendar-plus"></i> Nuevo Horario
+            </h2>
+            <button class="close-modal" id="closeModal">&times;</button>
+        </div>
+        
+        <form id="horarioForm">
+            <input type="hidden" id="idHorario">
+            
+            <div class="form-group">
+                <label>Curso / Grupo</label>
+                <select id="grupoId" required>
+                    <option value="">Seleccionar grupo...</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Salón</label>
+                <select id="numeroSalon" required>
+                    <option value="">Seleccionar salón...</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Día de la Semana</label>
+                <select id="diaSemana" required>
+                    <option value="">Seleccionar día...</option>
+                    <option value="LUNES">Lunes</option>
+                    <option value="MARTES">Martes</option>
+                    <option value="MIERCOLES">Miércoles</option>
+                    <option value="JUEVES">Jueves</option>
+                    <option value="VIERNES">Viernes</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Hora Inicio</label>
+                <input type="time" id="horaInicio" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Hora Fin</label>
+                <input type="time" id="horaFin" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Docente (Opcional)</label>
+                <select id="idDocente">
+                    <option value="">Sin docente asignado</option>
+                </select>
+            </div>
+            
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="cerrarModal()">
+                    Cancelar
+                </button>
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save"></i> Guardar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Notificación -->
+<div class="notification" id="notification">
+    <i class="fas fa-check-circle"></i>
+    <span id="notification-text">Operación exitosa</span>
+</div>
+
+<script>
+// VARIABLES GLOBALES
+let contextPath = '';
+let adminApiBase = '';
+let vistaActual = null;
+let entidadSeleccionada = null;
+let horariosActuales = [];
+
+const DIAS = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES'];
+
+// FUNCIONES DE NORMALIZACIÓN Y PARSEO
+function normalizeDia(d) {
+    if (!d) return null;
+    const raw = String(d).trim().toUpperCase();
+    const map = {
+        'LUN':'LUNES','LUNES':'LUNES',
+        'MAR':'MARTES','MARTES':'MARTES',
+        'MIE':'MIERCOLES','MIÉ':'MIERCOLES','MIÉRCOLES':'MIERCOLES','MIERCOLES':'MIERCOLES',
+        'JUE':'JUEVES','JUEVES':'JUEVES',
+        'VIE':'VIERNES','VIERNES':'VIERNES'
+    };
+    if (map[raw]) return map[raw];
+    const n = parseInt(raw.replace(/^0+/,''));
+    if (!isNaN(n)) {
+        const names = ['LUNES','MARTES','MIERCOLES','JUEVES','VIERNES','SABADO','DOMINGO'];
+        if (n >= 1 && n <= names.length) return names[n-1];
+    }
+    return raw;
+}
+
+function parseTimeStr(t) {
+    if (!t) return null;
+    const s = String(t).trim();
+    const cnt = (s.match(/:/g) || []).length;
+    const withSecs = cnt === 1 ? `${s}:00` : s;
+    return new Date(`1970-01-01T${withSecs}`);
+}
+
+
+function minutesSinceBase(timeStr) {
+    // Convierte "HH:MM" a minutos desde las 07:00
+    const [h, m] = timeStr.split(':').map(Number);
+    return h * 60 + m - (7 * 60); // 7 * 60 = 420 minutos (base 07:00)
+}
+
+/*
+function convertirAMinutos(hora) {
+    if (!hora) return 0;
+    const partes = hora.split(':');
+    return parseInt(partes[0]) * 60 + parseInt(partes[1]);
+}
+function minutesSinceBase(date, baseHour = 7) {
+    return date.getHours() * 60 + date.getMinutes() - baseHour * 60;
+}
+
+// GENERAR BLOQUES DE 10 MINUTOS
+function generarBloques() {
+    const bloques = [];
+    const horaInicio = 7;
+    const horaFin = 20;
+
+    for (let h = horaInicio; h < horaFin; h++) {
+        for (let m = 0; m < 60; m += BLOCK_MINUTES) {
+            const inicio = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+            let finMinutos = m + BLOCK_MINUTES;
+            let finHora = h;
+
+            if (finMinutos >= 60) {
+                finMinutos -= 60;
+                finHora++;
+            }
+            const fin = `${String(finHora).padStart(2, '0')}:${String(finMinutos).padStart(2, '0')}`;
+            bloques.push(`${inicio} - ${fin}`);
+        }
+    }
+    return bloques;
+} */
+
+function generarBloques() {
+    // Intervalos personalizados de 50 minutos con descansos
+    const intervalos = [
+        { inicio: '07:00', fin: '07:50' },
+        { inicio: '07:50', fin: '08:40' },
+        { inicio: '08:50', fin: '09:40' },
+        { inicio: '09:40', fin: '10:30' },
+        { inicio: '10:40', fin: '11:30' },
+        { inicio: '11:30', fin: '12:20' },
+        { inicio: '12:20', fin: '13:10' },
+        { inicio: '13:10', fin: '14:00' },
+        { inicio: '14:00', fin: '14:50' },
+        { inicio: '14:50', fin: '15:40' },
+        { inicio: '15:50', fin: '16:40' },
+        { inicio: '16:40', fin: '17:30' },
+        { inicio: '17:40', fin: '18:30' },
+        { inicio: '18:30', fin: '19:20' },
+        { inicio: '19:20', fin: '20:10' }
+    ];
+    
+    return intervalos.map(i => `${i.inicio} - ${i.fin}`);
+}
+
+function encontrarIndiceBloque(horaInicio, horaFin) {
+    const intervalos = [
+        { inicio: '07:00', fin: '07:50' },
+        { inicio: '07:50', fin: '08:40' },
+        { inicio: '08:50', fin: '09:40' },
+        { inicio: '09:40', fin: '10:30' },
+        { inicio: '10:40', fin: '11:30' },
+        { inicio: '11:30', fin: '12:20' },
+        { inicio: '12:20', fin: '13:10' },
+        { inicio: '13:10', fin: '14:00' },
+        { inicio: '14:00', fin: '14:50' },
+        { inicio: '14:50', fin: '15:40' },
+        { inicio: '15:50', fin: '16:40' },
+        { inicio: '16:40', fin: '17:30' },
+        { inicio: '17:40', fin: '18:30' },
+        { inicio: '18:30', fin: '19:20' },
+        { inicio: '19:20', fin: '20:10' }
+    ];
+    
+    // Encontrar el índice inicial
+    let startIdx = -1;
+    let endIdx = -1;
+    
+    for (let i = 0; i < intervalos.length; i++) {
+        // Si la hora de inicio coincide o está dentro del intervalo
+        if (horaInicio >= intervalos[i].inicio && horaInicio < intervalos[i].fin) {
+            startIdx = i;
+        }
+        // Si la hora de fin coincide o está dentro del intervalo
+        if (horaFin > intervalos[i].inicio && horaFin <= intervalos[i].fin) {
+            endIdx = i;
+        }
+    }
+    
+    // Si no encontramos exactamente, buscar el más cercano
+    if (startIdx === -1) {
+        for (let i = 0; i < intervalos.length; i++) {
+            if (horaInicio <= intervalos[i].inicio) {
+                startIdx = i;
+                break;
+            }
+        }
+    }
+    
+    if (endIdx === -1) {
+        for (let i = intervalos.length - 1; i >= 0; i--) {
+            if (horaFin >= intervalos[i].fin) {
+                endIdx = i;
+                break;
+            }
+        }
+    }
+    
+    return {
+        startIdx: Math.max(0, startIdx),
+        span: Math.max(1, endIdx - startIdx + 1)
+    };
+}
+
+// CREAR BLOQUE VISUAL DE CURSO
+function crearCursoBlock(h) {
+    const div = document.createElement('div');
+    const esReserva = h.tipoClase === 'RESERVA';
+    
+    div.className = 'course-block' + 
+        (esReserva ? ' reserva' : 
+         (h.tipoClase && h.tipoClase.toLowerCase().includes('lab') ? ' lab' : ''));
+
+    const nombre = document.createElement('div');
+    nombre.className = 'course-name';
+    
+    if (esReserva) {
+        nombre.textContent = h.motivo || 'Reserva de Salón';
+    } else {
+        let title = h.nombreCurso || h.codigo_curso || 'Curso';
+        nombre.textContent = title + (h.letraGrupo ? ' - ' + h.letraGrupo : '');
+    }
+
+    const detalles = document.createElement('div');
+    detalles.className = 'course-details';
+    
+    let textoDetalles = `${h.nombreDocente || 'Sin docente'} | ${h.numeroSalon || '-'} | ${h.horaInicio} - ${h.horaFin}`;
+    
+    if (esReserva && h.descripcion) {
+        textoDetalles += ` | ${h.descripcion}`;
+    }
+    
+    detalles.textContent = textoDetalles;
+
+    const acciones = document.createElement('div');
+    acciones.className = 'class-actions';
+    
+    if (!esReserva) {
+        const btnEdit = document.createElement('span');
+        btnEdit.className = 'action-icon edit';
+        btnEdit.title = 'Editar';
+        btnEdit.innerHTML = '<i class="fas fa-edit"></i>';
+        btnEdit.onclick = () => editarHorario(h.idHorario);
+        acciones.appendChild(btnEdit);
+    }
+    
+    const btnDelete = document.createElement('span');
+    btnDelete.className = 'action-icon delete';
+    btnDelete.title = esReserva ? 'Cancelar Reserva' : 'Eliminar';
+    btnDelete.innerHTML = '<i class="fas fa-trash"></i>';
+    btnDelete.onclick = () => eliminarHorario(h.idHorario, esReserva);
+    acciones.appendChild(btnDelete);
+
+    div.appendChild(nombre);
+    div.appendChild(detalles);
+    div.appendChild(acciones);
+    
+    return div;
+}
+
+// RENDERIZAR HORARIO
+function renderizarHorario() {
+    const container = document.getElementById('scheduleContainer');
+    
+    if (!horariosActuales || horariosActuales.length === 0) {
+        container.innerHTML = `
+            <div class="empty-message">
+                <i class="fas fa-calendar-times"></i>
+                <h3>No hay horarios asignados</h3>
+                <p>Esta entidad no tiene horarios registrados</p>
+            </div>
+        `;
+        return;
+    }
+
+    const bloques = generarBloques();
+    const dayStarts = {};
+
+    // Procesar horarios y agrupar por día
+    horariosActuales.forEach(h => {
+        const dayKey = normalizeDia(h.diaSemana);
+        if (!dayKey) return;
+        
+        const horaInicio = h.horaInicio.substring(0, 5); // HH:MM
+        const horaFin = h.horaFin.substring(0, 5);       // HH:MM
+        
+        const indices = encontrarIndiceBloque(horaInicio, horaFin);
+        
+        if (!dayStarts[dayKey]) dayStarts[dayKey] = [];
+        dayStarts[dayKey].push({ 
+            startIdx: indices.startIdx, 
+            span: indices.span, 
+            horario: h 
+        });
+    });
+
+    // Ordenar por índice de inicio
+    Object.keys(dayStarts).forEach(k => {
+        dayStarts[k].sort((a, b) => a.startIdx - b.startIdx);
+    });
+
+    // Crear tabla
+    const tbody = document.createElement('tbody');
+    const activeSpans = {};
+    DIAS.forEach(d => activeSpans[d] = 0);
+
+    for (let i = 0; i < bloques.length; i++) {
+        const b = bloques[i];
+        const tr = document.createElement('tr');
+
+        // Columna de hora
+        const tdHora = document.createElement('td');
+        tdHora.className = 'time-slot';
+        tdHora.textContent = b;
+        tr.appendChild(tdHora);
+
+        // Columnas de días
+        DIAS.forEach(d => {
+            if (activeSpans[d] > 0) {
+                activeSpans[d]--;
+                return;
+            }
+
+            const starts = (dayStarts[d] || []).filter(x => x.startIdx === i);
+            
+            if (starts.length === 0) {
+                const td = document.createElement('td');
+                td.className = "empty-slot";
+                tr.appendChild(td);
+            } else {
+                const td = document.createElement('td');
+                
+                starts.forEach(s => {
+                    if (s.span > 1) {
+                        td.setAttribute('rowspan', String(s.span));
+                        activeSpans[d] = s.span - 1;
+                    }
+                    
+                    const div = crearCursoBlock(s.horario);
+                    td.appendChild(div);
+                });
+
+                tr.appendChild(td);
+            }
+        });
+
+        tbody.appendChild(tr);
+    }
+
+    // Crear tabla completa
+    const table = document.createElement('table');
+    table.className = 'schedule-table';
+    table.innerHTML = `
+        <thead>
+            <tr>
+                <th style="width: 120px;">Hora</th>
+                ${DIAS.map(dia => `<th>${dia.charAt(0) + dia.slice(1).toLowerCase()}</th>`).join('')}
+            </tr>
+        </thead>
+    `;
+    table.appendChild(tbody);
+
+    container.innerHTML = '';
+    container.appendChild(table);
+}
+
+// INICIALIZACIÓN
+document.addEventListener('DOMContentLoaded', async function() {
+    console.log('🚀 Iniciando gestión de horarios...');
+    
+    const pathParts = window.location.pathname.split('/').filter(Boolean);
+    contextPath = pathParts.length > 0 ? '/' + pathParts[0] : '';
+    adminApiBase = (contextPath === '/admin') ? contextPath + '/api' : contextPath + '/admin/api';
+    
+    console.log('Context Path:', contextPath);
+    console.log('Admin API Base:', adminApiBase);
+    
+    await cargarEstadisticas();
+    configurarEventos();
+});
+
+// CARGAR DATOS INICIALES
+async function cargarEstadisticas() {
+    try {
+        const response = await fetch(`${adminApiBase}/horarios/contadores`, {
+            method: 'GET',
+            credentials: 'same-origin'
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            document.getElementById('statCursos').textContent = data.totalCursos || 0;
+            document.getElementById('statAulas').textContent = data.totalAulas || 0;
+        } else {
+            console.error('Error cargando contadores:', response.status);
+            document.getElementById('statCursos').textContent = 'N/A';
+            document.getElementById('statAulas').textContent = 'N/A';
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        document.getElementById('statCursos').textContent = 'N/A';
+        document.getElementById('statAulas').textContent = 'N/A';
+    }
+}
+
+// CONFIGURAR EVENTOS
+function configurarEventos() {
+    // Cambio de tipo de visualización
+    document.getElementById('tipoVisualizacion').addEventListener('change', async function() {
+        const tipo = this.value;
+        const container = document.getElementById('selectorContainer');
+        const selector = document.getElementById('selector');
+        const label = document.getElementById('selectorLabel');
+        const btnCargar = document.getElementById('btnCargarHorario');
+        
+        if (!tipo) {
+            container.style.display = 'none';
+            btnCargar.disabled = true;
+            return;
+        }
+        
+        container.style.display = 'block';
+        btnCargar.disabled = false;
+        vistaActual = tipo;
+        
+        // Configurar label
+        if (tipo === 'docente') {
+            label.textContent = 'Seleccionar Docente';
+            await cargarListaDocentes(selector);
+        } else if (tipo === 'estudiante') {
+            label.textContent = 'Seleccionar Estudiante';
+            await cargarListaEstudiantes(selector);
+        } else if (tipo === 'ambiente') {
+            label.textContent = 'Seleccionar Salón';
+            await cargarListaSalones(selector);
+        }
+    });
+    
+    document.getElementById('btnCargarHorario').addEventListener('click', cargarHorarioSeleccionado);
+    
+    document.getElementById('btnNuevoHorario').addEventListener('click', abrirModalNuevo);
+    
+    document.getElementById('horarioForm').addEventListener('submit', guardarHorario);
+    
+    document.getElementById('closeModal').addEventListener('click', cerrarModal);
+    document.getElementById('horarioModal').addEventListener('click', function(e) {
+        if (e.target === this) cerrarModal();
+    });
+    
+    const slotSlider = document.getElementById('slotSize');
+    if (slotSlider) {
+        document.documentElement.style.setProperty('--slot-height', slotSlider.value + 'px');
+        slotSlider.addEventListener('input', (e) => {
+            const val = e.target.value;
+            document.documentElement.style.setProperty('--slot-height', val + 'px');
+            if (horariosActuales && horariosActuales.length) renderizarHorario();
+        });
+    }
+    
+    // Logout
+    document.getElementById('logoutBtn').addEventListener('click', async function() {
+        if (!confirm('¿Está seguro de que desea cerrar sesión?')) return;
+        try {
+            await fetch(`${contextPath}/logout`, { method: 'POST', credentials: 'same-origin' });
+        } catch (e) {
+            console.warn('Logout fetch falló', e);
+        } finally {
+            localStorage.clear();
+            window.location.href = '/Inicio_Sesion.html';
+        }
+    });
+    
+    // Toggle submenus
+    document.querySelectorAll('.menu-item').forEach(item => {
+        if (!item.hasAttribute('href')) {
+            item.addEventListener('click', function() {
+                const submenu = this.nextElementSibling;
+                if (submenu && submenu.classList.contains('submenu')) {
+                    submenu.classList.toggle('active');
+                }
+            });
+        }
+    });
+}
+
+// CARGAR LISTAS
+async function cargarListaDocentes(selectElement) {
+    try {
+        const response = await fetch(`${adminApiBase}/listas/docentes`, {
+            method: 'GET',
+            credentials: 'same-origin'
+        });
+        
+        if (response.ok) {
+            const docentes = await response.json();
+            selectElement.innerHTML = '<option value="">Seleccionar docente...</option>';
+            
+            docentes.forEach(doc => {
+                const option = document.createElement('option');
+                option.value = doc.id_docente;
+                option.textContent = `${doc.apellidos_nombres} (${doc.correo_institucional})`;
+                selectElement.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Error cargando docentes:', error);
+        mostrarNotificacion('Error al cargar lista de docentes', 'error');
+    }
+}
+
+async function cargarListaEstudiantes(selectElement) {
+    try {
+        const response = await fetch(`${adminApiBase}/listas/estudiantes`, {
+            method: 'GET',
+            credentials: 'same-origin'
+        });
+        
+        if (response.ok) {
+            const estudiantes = await response.json();
+            selectElement.innerHTML = '<option value="">Seleccionar estudiante...</option>';
+            
+            estudiantes.forEach(est => {
+                const option = document.createElement('option');
+                option.value = est.cui;
+                option.textContent = `${est.apellidos_nombres} (${est.correo_institucional})`;
+                selectElement.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Error cargando estudiantes:', error);
+        mostrarNotificacion('Error al cargar lista de estudiantes', 'error');
+    }
+}
+
+async function cargarListaSalones(selectElement) {
+    try {
+        const response = await fetch(`${adminApiBase}/listas/salones`, {
+            method: 'GET',
+            credentials: 'same-origin'
+        });
+        
+        if (response.ok) {
+            const salones = await response.json();
+            selectElement.innerHTML = '<option value="">Seleccionar salón...</option>';
+            
+            salones.forEach(sal => {
+                const option = document.createElement('option');
+                option.value = sal.numero_salon;
+                option.textContent = `${sal.numero_salon} - ${sal.nombre_tipo} (Cap: ${sal.capacidad})`;
+                selectElement.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Error cargando salones:', error);
+        mostrarNotificacion('Error al cargar lista de salones', 'error');
+    }
+}
+
+// CARGAR HORARIO
+async function cargarHorarioSeleccionado() {
+    const selector = document.getElementById('selector');
+    entidadSeleccionada = selector.value;
+    
+    if (!entidadSeleccionada) {
+        mostrarNotificacion('Debe seleccionar una opción', 'error');
+        return;
+    }
+    
+    let endpoint = '';
+    let nombreEntidad = selector.options[selector.selectedIndex].text;
+    
+    if (vistaActual === 'docente') {
+        endpoint = `${adminApiBase}/horarios/docente/${entidadSeleccionada}`;
+    } else if (vistaActual === 'estudiante') {
+        endpoint = `${adminApiBase}/horarios/estudiante/${entidadSeleccionada}`;
+    } else if (vistaActual === 'ambiente') {
+        endpoint = `${adminApiBase}/horarios/salon/${entidadSeleccionada}`;
+    }
+    
+    try {
+        const response = await fetch(endpoint, {
+            method: 'GET',
+            credentials: 'same-origin'
+        });
+        
+        if (response.ok) {
+            horariosActuales = await response.json();
+            console.log('Horarios cargados:', horariosActuales);
+            
+            document.getElementById('tituloHorario').textContent = 
+                `Horario de: ${nombreEntidad}`;
+            
+            renderizarHorario();
+        } else {
+            console.error('Error cargando horario:', response.status);
+            mostrarNotificacion('Error al cargar horario', 'error');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        mostrarNotificacion('Error de conexión al cargar horario', 'error');
+    }
+}
+
+// MODAL NUEVO/EDITAR
+async function abrirModalNuevo() {
+    document.getElementById('modalTitle').innerHTML = 
+        '<i class="fas fa-calendar-plus"></i> Nuevo Horario';
+    document.getElementById('horarioForm').reset();
+    document.getElementById('idHorario').value = '';
+    
+    await cargarDatosFormulario();
+    document.getElementById('horarioModal').classList.add('active');
+}
+
+async function editarHorario(idHorario) {
+    try {
+        const response = await fetch(`${adminApiBase}/horarios/${idHorario}/detalle`, {
+            method: 'GET',
+            credentials: 'same-origin'
+        });
+        
+        if (response.ok) {
+            const horario = await response.json();
+            console.log('Horario a editar:', horario);
+            
+            document.getElementById('modalTitle').innerHTML = 
+                '<i class="fas fa-edit"></i> Editar Horario';
+            document.getElementById('idHorario').value = idHorario;
+            
+            await cargarDatosFormulario();
+            
+            // formulario
+            document.getElementById('grupoId').value = horario.grupoId;
+            document.getElementById('numeroSalon').value = horario.numeroSalon;
+            document.getElementById('diaSemana').value = horario.diaSemana;
+            document.getElementById('horaInicio').value = horario.horaInicio.substring(0, 5);
+            document.getElementById('horaFin').value = horario.horaFin.substring(0, 5);
+            document.getElementById('idDocente').value = horario.idDocente || '';
+            
+            document.getElementById('horarioModal').classList.add('active');
+        } else {
+            mostrarNotificacion('Error al cargar datos del horario', 'error');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        mostrarNotificacion('Error de conexión', 'error');
+    }
+}
+
+async function cargarDatosFormulario() {
+    // Cargar grupos
+    try {
+        const respGrupos = await fetch(`${adminApiBase}/cursos`, {
+            method: 'GET',
+            credentials: 'same-origin'
+        });
+        
+        if (respGrupos.ok) {
+            const cursos = await respGrupos.json();
+            const selectGrupo = document.getElementById('grupoId');
+            selectGrupo.innerHTML = '<option value="">Seleccionar grupo...</option>';
+            
+            cursos.forEach(curso => {
+                if (curso.grupos) {
+                    curso.grupos.forEach(grupo => {
+                        const option = document.createElement('option');
+                        option.value = grupo.grupoId;
+                        option.textContent = `${curso.nombreCurso} - Grupo ${grupo.letraGrupo} (${grupo.tipoClase})`;
+                        selectGrupo.appendChild(option);
+                    });
+                }
+            });
+        }
+    } catch (error) {
+        console.error('Error cargando grupos:', error);
+    }
+    
+    // Cargar salones
+    try {
+        const respSalones = await fetch(`${adminApiBase}/listas/salones`, {
+            method: 'GET',
+            credentials: 'same-origin'
+        });
+        
+        if (respSalones.ok) {
+            const salones = await respSalones.json();
+            const selectSalon = document.getElementById('numeroSalon');
+            selectSalon.innerHTML = '<option value="">Seleccionar salón...</option>';
+            
+            salones.forEach(salon => {
+                const option = document.createElement('option');
+                option.value = salon.numero_salon;
+                option.textContent = `${salon.numero_salon} - ${salon.nombre_tipo} (Cap: ${salon.capacidad})`;
+                selectSalon.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Error cargando salones:', error);
+    }
+    
+    // Cargar docentes
+    try {
+        const respDocentes = await fetch(`${adminApiBase}/listas/docentes`, {
+            method: 'GET',
+            credentials: 'same-origin'
+        });
+        
+        if (respDocentes.ok) {
+            const docentes = await respDocentes.json();
+            const selectDocente = document.getElementById('idDocente');
+            selectDocente.innerHTML = '<option value="">Sin docente asignado</option>';
+            
+            docentes.forEach(doc => {
+                const option = document.createElement('option');
+                option.value = doc.id_docente;
+                option.textContent = doc.apellidos_nombres;
+                selectDocente.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Error cargando docentes:', error);
+    }
+}
+
+function cerrarModal() {
+    document.getElementById('horarioModal').classList.remove('active');
+}
+
+// GUARDAR HORARIO
+async function guardarHorario(e) {
+    e.preventDefault();
+    
+    const idHorario = document.getElementById('idHorario').value;
+    const grupoId = parseInt(document.getElementById('grupoId').value);
+    const numeroSalon = document.getElementById('numeroSalon').value;
+    const diaSemana = document.getElementById('diaSemana').value;
+    const horaInicio = document.getElementById('horaInicio').value + ':00';
+    const horaFin = document.getElementById('horaFin').value + ':00';
+    const idDocenteVal = document.getElementById('idDocente').value;
+    const idDocente = idDocenteVal ? parseInt(idDocenteVal) : null;
+    
+    // Validar horas
+    if (horaInicio >= horaFin) {
+        mostrarNotificacion('La hora de inicio debe ser menor a la hora de fin', 'error');
+        return;
+    }
+    
+    const datos = {
+        grupoId,
+        numeroSalon,
+        diaSemana,
+        horaInicio,
+        horaFin,
+        idDocente
+    };
+    
+    try {
+        let url, method;
+        
+        if (idHorario) {
+            url = `${adminApiBase}/horarios/${idHorario}`;
+            method = 'PUT';
+        } else {
+            url = `${adminApiBase}/horarios`;
+            method = 'POST';
+        }
+        
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(datos),
+            credentials: 'same-origin'
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            
+            if (result.success) {
+                mostrarNotificacion(result.mensaje || 'Horario guardado correctamente', 'success');
+                cerrarModal();
+                
+                if (vistaActual && entidadSeleccionada) {
+                    await cargarHorarioSeleccionado();
+                }
+            } else {
+                mostrarNotificacion(result.mensaje || 'Error al guardar horario', 'error');
+            }
+        } else {
+            mostrarNotificacion('Error del servidor al guardar horario', 'error');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        mostrarNotificacion('Error de conexión al guardar', 'error');
+    }
+}
+
+// ELIMINAR HORARIO
+async function eliminarHorario(idHorario, esReserva) {
+    const tipo = esReserva ? 'reserva' : 'horario';
+    
+    if (!confirm(`¿Está seguro de eliminar este ${tipo}?`)) {
+        return;
+    }
+    
+    try {
+        const endpoint = esReserva 
+            ? `${adminApiBase}/reservas/${idHorario}`
+            : `${adminApiBase}/horarios/${idHorario}`;
+        
+        const response = await fetch(endpoint, {
+            method: 'DELETE',
+            credentials: 'same-origin'
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            
+            if (result.success) {
+                mostrarNotificacion(result.mensaje || `${tipo} eliminado correctamente`, 'success');
+                
+                // Recargar horario
+                if (vistaActual && entidadSeleccionada) {
+                    await cargarHorarioSeleccionado();
+                }
+            } else {
+                mostrarNotificacion(result.mensaje || `Error al eliminar ${tipo}`, 'error');
+            }
+        } else {
+            mostrarNotificacion(`Error del servidor al eliminar ${tipo}`, 'error');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        mostrarNotificacion('Error de conexión al eliminar', 'error');
+    }
+}
+
+// NOTIFICACIONES
+function mostrarNotificacion(mensaje, tipo) {
+    const notification = document.getElementById('notification');
+    const notificationText = document.getElementById('notification-text');
+    
+    notificationText.textContent = mensaje;
+    notification.className = `notification ${tipo} show`;
+    
+    setTimeout(() => {
+        notification.classList.remove('show');
+    }, 3000);
+}
+</script>       
+</body>
+</html>       
+

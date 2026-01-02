@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Asistencia Desbloqueada - LUMINA</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    /* --- Mantuve tus estilos (recortado aquí por brevedad — copia tus estilos originales) --- */
+    /* (Pega todo el CSS que ya tenías en tu archivo original) */
+    :root{--primary:#3498db;--secondary:#2c3e50;--success:#2ecc71}
+    body{font-family:Segoe UI, Tahoma, Geneva, Verdana, sans-serif}
+           :root {
+            --primary: #3498db;
+            --secondary: #2c3e50;
+            --accent: #9b59b6;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --info: #1abc9c;
+            --sidebar-width: 280px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: rgba(44, 62, 80, 0.95);
+            color: white;
+            height: 100vh;
+            position: fixed;
+            overflow-y: auto;
+            box-shadow: 3px 0 15px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .logo {
+            padding: 25px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            background: rgba(52, 73, 94, 0.8);
+        }
+
+        .logo h1 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            background: linear-gradient(45deg, #3498db, #9b59b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo i {
+            color: #3498db;
+            font-size: 1.8rem;
+        }
+
+        .user-info {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(52, 73, 94, 0.5);
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #3498db, #9b59b6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .user-details h3 {
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+
+        .user-details p {
+            font-size: 0.85rem;
+            opacity: 0.8;
+        }
+
+        .menu {
+            padding: 20px 0;
+        }
+
+        .menu-section {
+            margin-bottom: 15px;
+        }
+
+        .menu-title {
+            padding: 12px 20px;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            opacity: 0.7;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .menu-item {
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+            text-decoration: none;
+            color: white;
+        }
+
+        .menu-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-left: 4px solid var(--primary);
+            padding-left: 25px;
+        }
+
+        .menu-item.active {
+            background: rgba(52, 152, 219, 0.2);
+            border-left: 4px solid var(--primary);
+        }
+
+        .menu-item i {
+            width: 20px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            min-height: 100vh;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: var(--secondary);
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        .breadcrumb i {
+            font-size: 0.7rem;
+        }
+
+        /* Estilos específicos para asistencia desbloqueada */
+        .unlocked-container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .unlocked-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .unlocked-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            color: var(--secondary);
+        }
+
+        .unlocked-icon {
+            color: var(--success);
+            font-size: 1.8rem;
+        }
+
+        .location-info {
+            background: #e8f4fc;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .location-info i {
+            color: var(--primary);
+            font-size: 1.2rem;
+        }
+
+        .attendance-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .attendance-controls select, .attendance-controls input {
+            padding: 10px 15px;
+            border: 1px solid #bdc3c7;
+            border-radius: 8px;
+            background: white;
+            min-width: 200px;
+        }
+
+        .attendance-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .attendance-table th {
+            background: var(--secondary);
+            color: white;
+            padding: 15px;
+            text-align: left;
+        }
+
+        .attendance-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .attendance-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .present {
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        .absent {
+            color: var(--danger);
+            font-weight: bold;
+        }
+
+        .btn-mark-attendance {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-mark-attendance:hover {
+            background: #27ae60;
+        }
+
+        .student-view {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .student-view h2 {
+            color: var(--secondary);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .qr-code {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .qr-placeholder {
+            width: 200px;
+            height: 200px;
+            background: #f8f9fa;
+            border: 2px dashed #bdc3c7;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            color: #7f8c8d;
+        }
+
+        .student-actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 70px;
+                overflow: visible;
+            }
+            
+            .logo h1, .user-details, .menu-title, .menu-item span {
+                display: none;
+            }
+            
+            .main-content {
+                margin-left: 70px;
+            }
+            
+            .logo {
+                justify-content: center;
+            }
+            
+            .user-info {
+                justify-content: center;
+            }
+            
+            .menu-item {
+                justify-content: center;
+                padding: 15px 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .attendance-controls {
+                flex-direction: column;
+            }
+            
+            .attendance-controls select, .attendance-controls input {
+                width: 100%;
+            }
+            
+            .student-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 250px;
+                justify-content: center;
+            }
+        }
+    .warning { background: #fff3cd; border: 1px solid #ffeeba; padding: 10px; border-radius:6px; margin-bottom:12px;}
+    .hidden { display:none; }
+  </style>
+</head>
+<body>
+  <!-- Sidebar (idéntico al tuyo) -->
+  <div class="sidebar">
+    <div class="logo"><i class="fas fa-university"></i><h1>LUMINA PROFESOR</h1></div>
+    <div class="user-info">
+      <div class="user-avatar"><i class="fas fa-user-tie"></i></div>
+      <div class="user-details">
+        <h3 id="profesor-name">Profesor</h3>
+        <p id="ip-ubicacion">IP: -- ( -- )</p>
+      </div>
+    </div>
+        <div class="menu">
+            <div class="menu-section">
+                <a href="nuevo_profesor.html"  class="menu-item">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>DASHBOARD</span>
+                </a>
+                <div class="menu-title">Panel Principal</div>
+            </div>
+            
+            <div class="menu-section">
+                <a href="nuevo_profesor_asistenciabloqueada.html" class="menu-item">
+                    <i class="fas fa-clipboard-check"></i>
+                    <span>REGISTRAR ASISTENCIA</span>
+                </a>
+            </div>
+            
+            <div class="menu-section">
+                <a href="profesor_notas.html" class="menu-item">
+                    <i class="fas fa-edit"></i>
+                    <span>INGRESAR NOTAS</span>
+                </a>
+            </div>
+            
+            <div class="menu-section">
+                <a href="profesor_estadisticas.html" class="menu-item">
+                    <i class="fas fa-edit"></i>
+                    <span>ESTADISTICAS</span>
+                </a>
+            </div>
+            
+            <div class="menu-section">
+                <a href="profesor_horario.html" class="menu-item">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>VER HORARIO</span>
+                </a>
+            </div>
+            
+            <div class="menu-section">
+                <a href="profesor_reservaaulalab.html" class="menu-item">
+                    <i class="fas fa-door-open"></i>
+                    <span>DISPONIBILIDAD DE AULAS</span>
+                </a>
+            </div>
+            
+            <div class="menu-section">
+                <a href="nuevo_profesor_contenido.html" class="menu-item">
+                    <i class="fas fa-upload"></i>
+                    <span>SUBIR SÍLABOS / CONTENIDO</span>
+                </a>
+            </div>
+            
+            <div class="menu-section">
+                <a href="profesor_reportes.html" class="menu-item">
+                    <i class="fas fa-file-pdf"></i>
+                    <span>REPORTES PDF</span>
+                </a>
+            </div>
+        </div>
+  </div>
+
+  <div class="main-content">
+    <div class="header">
+      <h1>Registrar Asistencia</h1>
+      <div class="breadcrumb">
+        <a href="index.html" style="color:#7f8c8d;text-decoration:none;">Inicio</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Asistencia Desbloqueada</span>
+      </div>
+    </div>
+
+    <div class="unlocked-container">
+      <div class="unlocked-header">
+        <h2 class="unlocked-title"><i class="fas fa-unlock unlocked-icon"></i> Asistencia Habilitada</h2>
+        <div id="status-badge" class="status-badge" style="background:var(--success); color:white; padding:8px 15px; border-radius:20px; font-weight:600;">
+          <i class="fas fa-check-circle"></i> Geolocalización Activa
+        </div>
+      </div>
+
+      <div id="warning-sin-silabo" class="warning hidden"></div>
+
+      <div class="location-info" id="location-info">
+        <i class="fas fa-map-marker-alt"></i>
+        <div>
+          <strong>Ubicación verificada:</strong>
+          <span id="ubicacion-text">Obteniendo ubicación...</span>
+          <br />
+          <small id="distancia-text"></small>
+        </div>
+      </div>
+
+      <div class="attendance-controls" style="margin-top:12px;">
+        <select id="select-course">
+          <option value="">Seleccionar Curso</option>
+        </select>
+
+        <select id="select-group">
+          <option value="">Seleccionar Grupo</option>
+        </select>
+
+        <input type="date" id="attendance-date" readonly />
+      </div>
+
+      <table class="attendance-table" id="attendance-table" style="margin-top:18px;">
+        <thead>
+          <tr><th>Código</th><th>Estudiante</th><th>Asistencia</th><th>Acción</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <div class="student-actions">
+        <button id="btn-save" class="btn btn-primary"><i class="fas fa-save"></i> Guardar Asistencia</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // CONFIGURACIONES
+    const BACKEND = '/api/asistencia'; // ajusta si tu contexto es distinto
+
+    // Coordenadas aproximadas de "UNSA - Campus Ingenierías, Arequipa"
+    const UNSA_COORDS = { lat: -16.398700, lon: -71.536900 };
+
+    // UTILS
+    function haversineDistance(lat1, lon1, lat2, lon2) {
+      function toRad(x){ return x*Math.PI/180; }
+      const R = 6371; // km
+      const dLat = toRad(lat2-lat1);
+      const dLon = toRad(lon2-lon1);
+      const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)*Math.sin(dLon/2);
+      const c = 2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return R*c;
+    }
+
+    // Lógica principal
+    document.addEventListener('DOMContentLoaded', init);
+
+    let estadoUbicacion = 'VIRTUAL';
+    let ipRegistrada = null;
+    let ubicacionCoords = null;
+    let userDatos = null; // objeto de localStorage
+    let cursos = []; // lista de objetos {codigoCurso,nombreCurso,grupoId,letraGrupo,tipoClase}
+    let gruposPorCurso = {}; // map codigo -> lista de grupos
+    let controlActivo = null; // info retornada por backend con id_horario, estado, estudiantes[]
+
+    async function init() {
+      // Cargar userDatos desde localStorage
+      try {
+        const raw = localStorage.getItem('usuarioDatos') || localStorage.getItem('profesorActual') || null;
+        userDatos = raw ? JSON.parse(raw) : null;
+      } catch (e) {
+        console.warn('No hay usuarioDatos JSON válido en localStorage');
+        userDatos = null;
+      }
+      document.getElementById('profesor-name').textContent = userDatos?.apellidosNombres || 'Profesor';
+
+      // fijar fecha actual (no modificable)
+      const today = new Date().toISOString().slice(0,10);
+      document.getElementById('attendance-date').value = today;
+
+      // obtener ip y geolocalización
+      await fetchIPandGeo();
+
+      // pedir cursos al backend
+      if (!userDatos?.correo) {
+        alert('No se encontró correo del docente en localStorage.usuarioDatos');
+        return;
+      }
+      await cargarCursos(userDatos.correo);
+
+      // registrar eventos
+      document.getElementById('select-course').addEventListener('change', onCourseChange);
+      document.getElementById('select-group').addEventListener('change', onGroupChange);
+      document.getElementById('btn-save').addEventListener('click', guardarAsistencias);
+    }
+
+    async function fetchIPandGeo(){
+      try {
+        // 1) obtener IP pública
+        const ipResp = await fetch('https://api.ipify.org?format=json');
+        const ipJson = await ipResp.json();
+        ipRegistrada = ipJson.ip;
+        // 2) pedir geolocalización desde ipapi.co (puedes cambiar el proveedor si deseas)
+        const geoResp = await fetch(`https://ipapi.co/${ipRegistrada}/json/`);
+        const geo = await geoResp.json();
+        ubicacionCoords = { lat: parseFloat(geo.latitude), lon: parseFloat(geo.longitude) };
+        const ciudad = geo.city || geo.region || geo.country_name || 'Ubicación desconocida';
+        document.getElementById('ubicacion-text').textContent = `${ciudad} (${geo.ip || ipRegistrada})`;
+        const dist = haversineDistance(UNSA_COORDS.lat, UNSA_COORDS.lon, ubicacionCoords.lat, ubicacionCoords.lon);
+        document.getElementById('distancia-text').textContent = `Distancia a UNSA: ${dist.toFixed(2)} km`;
+        estadoUbicacion = dist <= 5 ? 'PRESENCIAL' : 'VIRTUAL';
+        document.getElementById('ip-ubicacion').textContent = `IP: ${ipRegistrada} (${estadoUbicacion})`;
+      } catch(e) {
+        console.error('Error al obtener IP/Geo:', e);
+        document.getElementById('ubicacion-text').textContent = 'No se pudo determinar ubicación';
+      }
+    }
+
+    async function cargarCursos(correo) {
+      try {
+        const res = await fetch(BACKEND + '/cursos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ correo })
+        });
+        if (!res.ok) throw new Error('Error cargando cursos desde servidor');
+        const data = await res.json();
+        // data = lista de {codigoCurso,nombreCurso,grupoId,letraGrupo,tipoClase}
+        cursos = data;
+        // agrupar por codigo_curso
+        gruposPorCurso = {};
+        cursos.forEach(c => {
+          if (!gruposPorCurso[c.codigoCurso]) gruposPorCurso[c.codigoCurso] = [];
+          gruposPorCurso[c.codigoCurso].push(c);
+        });
+        // poblar select de cursos
+        const select = document.getElementById('select-course');
+        select.innerHTML = '<option value="">Seleccionar Curso</option>';
+        for (const codigo of Object.keys(gruposPorCurso)) {
+          const nombre = gruposPorCurso[codigo][0].nombreCurso || codigo;
+          const opt = document.createElement('option');
+          opt.value = codigo;
+          opt.textContent = `${codigo} - ${nombre}`;
+          select.appendChild(opt);
+        }
+      } catch(e) {
+        console.error(e);
+        alert('No se pudieron cargar los cursos. Revise la conexión con el backend.');
+      }
+    }
+
+    async function onCourseChange(e) {
+      const codigo = e.target.value;
+      document.getElementById('warning-sin-silabo').classList.add('hidden');
+      // limpiar tabla y grupos
+      document.getElementById('attendance-table').querySelector('tbody').innerHTML = '';
+      document.getElementById('select-group').innerHTML = '<option value="">Seleccionar Grupo</option>';
+      controlActivo = null;
+
+      if (!codigo) return;
+
+      // verificar si existe sílabo para el curso
+      try {
+        const res = await fetch(BACKEND + '/verificar-silabo', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ codigoCurso: codigo })
+        });
+        const sil = await res.json();
+        if (sil.advertencia) {
+          // marca inválido, mostrar advertencia y no permitir acciones
+          document.getElementById('warning-sin-silabo').textContent = 'Sin Sílabos. No Asistencia.';
+          document.getElementById('warning-sin-silabo').classList.remove('hidden');
+          document.getElementById('btn-save').disabled = true;
+          return;
+        } else {
+          document.getElementById('warning-sin-silabo').classList.add('hidden');
+          document.getElementById('btn-save').disabled = false;
+        }
+      } catch (err) {
+        console.error(err);
+      }
+
+      // poblar grupos disponibles para el curso
+      const grupos = gruposPorCurso[codigo] || [];
+      const selectG = document.getElementById('select-group');
+      selectG.innerHTML = '<option value="">Seleccionar Grupo</option>';
+      grupos.forEach(g => {
+        const opt = document.createElement('option');
+        opt.value = g.grupoId;
+        opt.textContent = `Grupo ${g.letraGrupo} (${g.tipoClase})`;
+        selectG.appendChild(opt);
+      });
+    }
+
+    async function onGroupChange(e) {
+      const grupoId = e.target.value;
+      if (!grupoId) return;
+      // Solicitar apertura/estado y estudiantes
+      try {
+        const res = await fetch(BACKEND + '/abrir-control', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            grupoId: parseInt(grupoId),
+            correoDocente: userDatos.correo,
+            ip: ipRegistrada,
+            tipoUbicacion: estadoUbicacion
+          })
+        });
+        if (!res.ok) throw new Error('Error al abrir control de asistencia');
+        const data = await res.json();
+        // data = { estado: 'ABIERTO'|'CERRADO', idHorario, estudiantes:[{idMatricula,cui,codigoEstudiante,nombre,estado_asistencia,idAsistencia?}], mensaje }
+        controlActivo = data;
+        poblarTablaEstudiantes(data.estudiantes || []);
+        // si estado abierto y docente ya fue registrada asistenciaDocente, mostrar alerta
+        if (data.mensaje) alert(data.mensaje);
+        if (data.estado === 'CERRADO') {
+          document.getElementById('btn-save').disabled = true;
+          if (data.mensaje) showLocalInfo(data.mensaje);
+        } else {
+          document.getElementById('btn-save').disabled = false;
+        }
+      } catch (err) {
+        console.error(err);
+        alert('No se pudo abrir el control de asistencia (ver consola)');
+      }
+    }
+
+    function poblarTablaEstudiantes(estudiantes) {
+      const tbody = document.getElementById('attendance-table').querySelector('tbody');
+      tbody.innerHTML = '';
+      estudiantes.forEach(s => {
+        const tr = document.createElement('tr');
+        tr.dataset.idMatricula = s.idMatricula;
+        tr.innerHTML = `
+          <td>${s.numeroMatricula || s.cui || ''}</td>
+          <td>${s.nombre}</td>
+          <td class="${s.estado_asistencia === 'PRESENTE' ? 'present' : 'absent'}">${s.estado_asistencia}</td>
+          <td><button class="btn-mark-attendance">Cambiar</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // listeners para botones cambiar
+      tbody.querySelectorAll('.btn-mark-attendance').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const row = this.closest('tr');
+          const cell = row.querySelector('td:nth-child(3)');
+          if (cell.classList.contains('present')) {
+            cell.classList.remove('present');
+            cell.classList.add('absent');
+            cell.textContent = 'FALTA';
+          } else {
+            cell.classList.remove('absent');
+            cell.classList.add('present');
+            cell.textContent = 'PRESENTE';
+          }
+        });
+      });
+    }
+
+    async function guardarAsistencias() {
+      if (!controlActivo || !controlActivo.idHorario) {
+        alert('No hay control activo para guardar.');
+        return;
+      }
+      // recolectar estados de la tabla
+      const rows = Array.from(document.getElementById('attendance-table').querySelectorAll('tbody tr'));
+      const updates = rows.map(r => ({
+        idMatricula: parseInt(r.dataset.idMatricula),
+        estado_asistencia: r.querySelector('td:nth-child(3)').textContent.trim() === 'PRESENTE' ? 'PRESENTE' : 'FALTA'
+      }));
+
+      try {
+        const res = await fetch(BACKEND + '/guardar-estudiantes', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            idHorario: controlActivo.idHorario,
+            fecha: document.getElementById('attendance-date').value,
+            registradoPorCorreo: userDatos.correo,
+            actualizaciones: updates
+          })
+        });
+        if (!res.ok) throw new Error('Error al guardar asistencias');
+        const resp = await res.json();
+        alert(resp.mensaje || 'Asistencias guardadas correctamente');
+      } catch (err) {
+        console.error(err);
+        alert('No se pudieron guardar las asistencias. Ver consola.');
+      }
+    }
+
+    function showLocalInfo(msg) {
+      const div = document.getElementById('warning-sin-silabo');
+      div.textContent = msg;
+      div.classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>

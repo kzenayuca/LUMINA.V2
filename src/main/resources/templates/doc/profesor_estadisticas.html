@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Estadísticas - LUMINA</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <style>
+        :root {
+            /* colores */
+            --bg-1: #667eea;
+            --bg-2: #764ba2;
+            --primary: #2c3e50;
+            --secondary: #2c3e50;
+            --accent: #9b59b6;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+
+            /* espaciamientos y tamaños */
+            --sidebar-width: 300px;
+            --page-pad: 40px;
+            --card-pad: 28px;
+            --gap-sm: 16px;
+            --gap-md: 24px;
+            --gap-lg: 32px;
+            --radius: 14px;
+
+            /* sombras */
+            --shadow-sm: 0 6px 16px rgba(22, 28, 37, 0.06);
+            --shadow-lg: 0 14px 40px rgba(22, 28, 37, 0.10);
+        }
+
+        /* Reset */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; }
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-1) 0%, var(--bg-2) 100%);
+            color: var(--primary);
+            display: flex;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            line-height: 1.45;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: linear-gradient(180deg, rgba(44,62,80,0.97), rgba(26,35,44,0.97));
+            color: #fff;
+            position: fixed;
+            inset: 0 auto 0 0;
+            padding: calc(var(--page-pad) * 0.6);
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+            gap: var(--gap-md);
+            z-index: 1000;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .logo i { font-size: 1.5rem; color: var(--accent); }
+        .logo h1 { font-size: 1.15rem; font-weight: 700; letter-spacing: 0.3px; margin: 0; }
+
+.logout-btn {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    opacity: 0.85;
+    transition: opacity 0.3s;
+    font-size: 1rem;
+}
+
+.logout-btn:hover {
+    opacity: 1;
+}
+
+.menu-section {
+    margin-bottom: 10px;
+}
+
+.menu-title {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    opacity: 0.7;
+    letter-spacing: 1px;
+}
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 0;
+        }
+        .user-avatar {
+            width: 54px;
+            height: 54px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+            display:flex;align-items:center;justify-content:center;
+            font-size:1.2rem;
+        }
+        .user-details h3 { font-size: 0.98rem; margin-bottom: 4px; }
+        .user-details p { font-size: 0.82rem; color: rgba(255,255,255,0.75); margin: 0; }
+
+        .menu { display:flex;flex-direction:column; gap:8px; padding-top:6px; }
+        .menu-item {
+            display:flex;align-items:center;gap:12px;padding:12px;border-radius:10px;
+            color:#fff;text-decoration:none;font-weight:600;transition:all .14s ease;
+        }
+        .menu-item i { width:22px; text-align:center; }
+        .menu-item:hover { transform:translateY(-3px); background: rgba(255,255,255,0.04); }
+
+        /* MAIN */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: var(--page-pad);
+            flex: 1;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .page-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: var(--gap-lg);
+        }
+
+        .header {
+            padding-bottom: 14px;
+            border-bottom: 2px solid rgba(0,0,0,0.05);
+            margin-bottom: 6px;
+        }
+        .header h1 {
+            font-size: 1.8rem;
+            color: var(--secondary);
+            display:flex;align-items:center;gap:12px;
+            margin: 0;
+        }
+        .header h1 i { color: var(--accent); font-size:1.25rem; }
+
+        /* Selector de curso (card) */
+        .course-selector {
+            background: rgba(255,255,255,0.98);
+            border-radius: var(--radius);
+            padding: var(--card-pad);
+            box-shadow: var(--shadow-sm);
+        }
+        .form-group { margin-bottom: 12px; }
+        .form-group label {
+            display:block;margin-bottom:8px;font-weight:700;color:var(--secondary);
+        }
+        select {
+            width:100%;
+            padding:12px 14px;border-radius:10px;border:1px solid #e7e9ee;
+            font-size:1rem;background: #fff;
+        }
+
+        /* Área de estadísticas */
+        #stats-content { display: none; }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 360px;
+            gap: var(--gap-lg);
+            align-items: start;
+        }
+
+        /* Cards grandes (avance + attendance) */
+        .card {
+            background: #fff;
+            border-radius: var(--radius);
+            padding: var(--card-pad);
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Avance del temario: más alto, mejor espaciado */
+        .progress-section {
+            display:flex;
+            flex-direction:column;
+            gap: var(--gap-sm);
+            margin-top: 6px;
+        }
+        .progress-item {
+            display:flex;
+            flex-direction:column;
+            gap: 8px;
+            padding: 8px 6px;
+        }
+        .progress-label {
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            font-size:0.95rem;
+            color: #58606a;
+        }
+        .progress-bar {
+            width:100%;
+            height: 18px;
+            background: #f0f3f6;
+            border-radius: 999px;
+            overflow:hidden;
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.03);
+        }
+        .progress-fill {
+            height:100%;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:0.82rem;
+            font-weight:700;
+            color:#fff;
+            border-radius:999px;
+        }
+        .progress-fill.full { background: linear-gradient(90deg, #3ac371, #27ae60); }
+        .progress-fill.mid  { background: linear-gradient(90deg,#4aa3e0,#7b6be6); }
+        .progress-fill.low  { background: linear-gradient(90deg,#f3b03e,#f39c12); }
+
+        /* Grid de unidades: mayor gap y cards más aireadas */
+        .stats-grid {
+            display:grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--gap-md);
+            margin-top: 6px;
+        }
+
+        .stat-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: var(--shadow-sm);
+            display:flex;
+            flex-direction:column;
+            gap: 14px;
+        }
+
+        .stat-card h3 {
+            margin:0;
+            font-size:1.02rem;
+            color:var(--secondary);
+            display:flex;align-items:center;gap:10px;
+            border-bottom: 1px dashed rgba(0,0,0,0.04);
+            padding-bottom:8px;
+        }
+
+        .unit-stats {
+            background: #fbfcfe;
+            padding: 12px;
+            border-radius: 10px;
+            display:flex;
+            flex-direction:column;
+            gap:8px;
+        }
+        .unit-title { font-weight:700; color:var(--secondary); margin-bottom:6px; }
+
+        .stat-row {
+            display:flex;
+            justify-content:space-between;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.03);
+        }
+        .stat-row:last-child { border-bottom: none; }
+        .stat-label { color: #6c7782; font-size:0.95rem; }
+        .stat-value { font-weight:700; color:var(--secondary); }
+
+        .stat-value.high { color: var(--success); }
+        .stat-value.low  { color: var(--danger); }
+
+        /* Attendance card: más grande y más separación */
+        .attendance-card { margin-top: 0; }
+        .attendance-bar {
+            display:flex;
+            gap:18px;
+            align-items:center;
+        }
+        .attendance-icon {
+            width:68px; height:68px; border-radius:14px;
+            display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:#fff;
+        }
+        .attendance-icon.high { background: linear-gradient(90deg,#2ecc71,#27ae60); }
+        .attendance-icon.medium { background: linear-gradient(90deg,#f39c12,#f1c40f); }
+        .attendance-icon.low { background: linear-gradient(90deg,#e74c3c,#c0392b); }
+
+        .attendance-info { display:flex;flex-direction:column;gap:6px; }
+        .attendance-percentage { font-size:2.25rem; font-weight:800; color:var(--secondary); }
+        .attendance-label { color:#6c7782; font-size:0.95rem; }
+
+        /* Responsive adjustments */
+        @media (max-width:1100px) {
+            .grid { grid-template-columns: 1fr; }
+            .main-content { padding: 28px; }
+        }
+        @media (max-width:760px) {
+            .sidebar { position: relative; width:100%; height:auto; padding: 14px; display:flex; flex-direction:row; align-items:center; gap:12px; }
+            .logo h1 { display:none; }
+            .main-content { margin-left:0; padding: 18px; }
+            .user-info { display:none; }
+            .page-wrapper { gap: 20px; }
+            .attendance-icon { width:56px; height:56px; border-radius:12px; }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+<div class="sidebar">
+    <div class="logo">
+        <i class="fas fa-university"></i>
+        <h1>LUMINA PROFESOR</h1>
+    </div>
+    
+    <div class="user-info">
+        <div class="user-avatar" id="userAvatar">P</div>
+        <div class="user-details">
+            <h3 id="profesor-name">Profesor</h3>
+            <p id="profesor-especialidad">Docente</p>
+        </div>
+        <button class="logout-btn" id="logoutBtn">
+            <i class="fas fa-sign-out-alt"></i>
+        </button>
+    </div>
+    
+    <div class="menu">
+        <div class="menu-section">
+            <a href="nuevo_profesor.html" class="menu-item">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>DASHBOARD</span>
+            </a>
+            <div class="menu-title">Panel Principal</div>
+        </div>
+        
+        <div class="menu-section">
+            <a href="nuevo_profesor_asistenciabloqueada.html" class="menu-item">
+                <i class="fas fa-clipboard-check"></i>
+                <span>REGISTRAR ASISTENCIA</span>
+            </a>
+        </div>
+        
+        <div class="menu-section">
+            <a href="profesor_notas.html" class="menu-item">
+                <i class="fas fa-edit"></i>
+                <span>INGRESAR NOTAS</span>
+            </a>
+        </div>
+        
+        <div class="menu-section">
+            <a href="profesor_estadisticas.html" class="menu-item active">
+                <i class="fas fa-chart-line"></i>
+                <span>ESTADISTICAS</span>
+            </a>
+        </div>
+        
+        <div class="menu-section">
+            <a href="profesor_horario.html" class="menu-item">
+                <i class="fas fa-calendar-alt"></i>
+                <span>VER HORARIO</span>
+            </a>
+        </div>
+        
+        <div class="menu-section">
+            <a href="profesor_reservaaulalab.html" class="menu-item">
+                <i class="fas fa-door-open"></i>
+                <span>DISPONIBILIDAD DE AULAS</span>
+            </a>
+        </div>
+        
+        <div class="menu-section">
+            <a href="nuevo_profesor_contenido.html" class="menu-item">
+                <i class="fas fa-upload"></i>
+                <span>SUBIR SÍLABOS / CONTENIDO</span>
+            </a>
+        </div>
+        
+        <div class="menu-section">
+            <a href="profesor_reportes.html" class="menu-item">
+                <i class="fas fa-file-pdf"></i>
+                <span>REPORTES PDF</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+    <main class="main-content" role="main">
+        <div class="page-wrapper">
+            <header class="header">
+                <h1><i class="fas fa-chart-line"></i> Estadísticas del Curso</h1>
+            </header>
+
+            <section class="course-selector card" aria-labelledby="sel-curso">
+                <label id="sel-curso" style="display:block;font-weight:700;margin-bottom:10px;color:var(--secondary)"><i class="fas fa-book"></i> Seleccionar Curso</label>
+                <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+                    <select id="select-course" onchange="cargarEstadisticas()" style="flex:1;min-width:220px;padding:12px;border-radius:10px;border:1px solid #e7e9ee;">
+                        <option value="">-- Seleccione un curso --</option>
+                        <option value="MAT101">MAT101 - Matemática Aplicada</option>
+                        <option value="CC201">CC201 - Ciencia de la Computación I</option>
+                        <option value="FIS201">FIS201 - Física I</option>
+                    </select>
+                    <button onclick="document.getElementById('select-course').value ? cargarEstadisticas() : alert('Seleccione un curso')" style="padding:10px 14px;border-radius:10px;border:none;background:linear-gradient(90deg,var(--accent),#6aa8d9);color:#fff;font-weight:700;cursor:pointer">Cargar</button>
+                </div>
+            </section>
+
+            <section id="stats-content" aria-live="polite">
+                <!-- layout: left = main stats, right = resumen / asistencia -->
+                <div class="grid">
+                    <div style="display:flex;flex-direction:column;gap:var(--gap-md)">
+                        <!-- Avance del temario -->
+                        <div class="card">
+                            <h3 style="margin:0 0 8px 0; font-size:1.05rem; color:var(--secondary)"><i class="fas fa-tasks"></i> Avance del Temario</h3>
+                            <div class="progress-section">
+                                <div class="progress-item">
+                                    <div class="progress-label"><span>Unidad 1: Fundamentos</span><span><strong>30%</strong></span></div>
+                                    <div class="progress-bar"><div class="progress-fill full" style="width:30%">Iniciando</div></div>
+                                </div>
+                                <div class="progress-item">
+                                    <div class="progress-label"><span>Unidad 2: Aplicaciones</span><span><strong>30%</strong></span></div>
+                                    <div class="progress-bar"><div class="progress-fill mid" style="width:30%">Iniciando</div></div>
+                                </div>
+                                <div class="progress-item">
+                                    <div class="progress-label"><span>Unidad 3: Análisis Avanzado</span><span><strong>30%</strong></span></div>
+                                    <div class="progress-bar"><div class="progress-fill low" style="width:30%">Iniciando</div></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Grid con unidades/evaluaciones -->
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <h3><i class="fas fa-book-open"></i> Unidad 1: Evaluaciones</h3>
+                                <div class="unit-stats">
+                                    <div class="unit-title">Continua 1</div>
+                                    <div class="stat-row"><span class="stat-label">Nota Más Alta:</span><span class="stat-value high">18.5</span></div>
+                                    <div class="stat-row"><span class="stat-label">Nota Más Baja:</span><span class="stat-value low">8.0</span></div>
+                                    <div class="stat-row"><span class="stat-label">Promedio:</span><span class="stat-value">14.2</span></div>
+                                </div>
+
+                                <div class="unit-stats" style="margin-top:10px">
+                                    <div class="unit-title">Parcial 1</div>
+                                    <div class="stat-row"><span class="stat-label">Nota Más Alta:</span><span class="stat-value high">19.0</span></div>
+                                    <div class="stat-row"><span class="stat-label">Nota Más Baja:</span><span class="stat-value low">7.5</span></div>
+                                    <div class="stat-row"><span class="stat-label">Promedio:</span><span class="stat-value">13.8</span></div>
+                                </div>
+                            </div>
+
+                            <div class="stat-card">
+                                <h3><i class="fas fa-book-open"></i> Unidad 2: Evaluaciones</h3>
+                                <div class="unit-stats">
+                                    <div class="unit-title">Continua 2</div>
+                                    <div class="stat-row"><span class="stat-label">Nota Más Alta:</span><span class="stat-value high">17.5</span></div>
+                                    <div class="stat-row"><span class="stat-label">Nota Más Baja:</span><span class="stat-value low">9.0</span></div>
+                                    <div class="stat-row"><span class="stat-label">Promedio:</span><span class="stat-value">14.5</span></div>
+                                </div>
+
+                                <div class="unit-stats" style="margin-top:10px">
+                                    <div class="unit-title">Parcial 2</div>
+                                    <div class="stat-row"><span class="stat-label">Nota Más Alta:</span><span class="stat-value high">18.0</span></div>
+                                    <div class="stat-row"><span class="stat-label">Nota Más Baja:</span><span class="stat-value low">8.5</span></div>
+                                    <div class="stat-row"><span class="stat-label">Promedio:</span><span class="stat-value">14.0</span></div>
+                                </div>
+                            </div>
+
+                            <div class="stat-card">
+                                <h3><i class="fas fa-book-open"></i> Unidad 3: Evaluaciones</h3>
+                                <div class="unit-stats">
+                                    <div class="unit-title">Continua 3</div>
+                                    <div class="stat-row"><span class="stat-label">Nota Más Alta:</span><span class="stat-value high">16.5</span></div>
+                                    <div class="stat-row"><span class="stat-label">Nota Más Baja:</span><span class="stat-value low">10.0</span></div>
+                                    <div class="stat-row"><span class="stat-label">Promedio:</span><span class="stat-value">13.5</span></div>
+                                </div>
+
+                                <div class="unit-stats" style="margin-top:10px">
+                                    <div class="unit-title">Parcial 3</div>
+                                    <div class="stat-row"><span class="stat-label">Nota Más Alta:</span><span class="stat-value">-</span></div>
+                                    <div class="stat-row"><span class="stat-label">Nota Más Baja:</span><span class="stat-value">-</span></div>
+                                    <div class="stat-row"><span class="stat-label">Promedio:</span><span class="stat-value">Pendiente</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Resumen / Asistencia (columna derecha) -->
+                    <aside style="display:flex;flex-direction:column;gap:var(--gap-md)">
+                        <div class="card attendance-card">
+                            <h3 style="margin:0 0 8px 0; font-size:1.05rem; color:var(--secondary)"><i class="fas fa-user-check"></i> Asistencia del Curso</h3>
+
+                            <div class="attendance-bar" style="margin-top:6px;">
+                                <div class="attendance-icon high"><i class="fas fa-check"></i></div>
+                                <div class="attendance-info">
+                                    <div class="attendance-percentage">87.5%</div>
+                                    <div class="attendance-label">Asistencia Promedio del Curso</div>
+                                </div>
+                            </div>
+
+                            <div class="unit-stats" style="margin-top:12px">
+                                <div class="stat-row"><span class="stat-label">Total de Clases:</span><span class="stat-value">32</span></div>
+                                <div class="stat-row"><span class="stat-label">Estudiantes con &gt; 90%:</span><span class="stat-value high">15 (50%)</span></div>
+                                <div class="stat-row"><span class="stat-label">Estudiantes 70–90%:</span><span class="stat-value">12 (40%)</span></div>
+                                <div class="stat-row"><span class="stat-label">Estudiantes &lt; 70%:</span><span class="stat-value low">3 (10%)</span></div>
+                            </div>
+                        </div>
+
+                        <!-- Aquí podrías agregar cards de KPIs / quick-stats -->
+                        <div class="card">
+                            <h3 style="margin:0 0 8px 0; font-size:1.05rem; color:var(--secondary)"><i class="fas fa-chart-pie"></i> Indicadores rápidos</h3>
+                            <div style="display:flex;flex-direction:column;gap:12px">
+                                <div style="display:flex;justify-content:space-between;align-items:center">
+                                    <div style="color:#6c7782">Promedio General</div>
+                                    <div style="font-weight:800;color:var(--secondary)">14.1</div>
+                                </div>
+                                <div style="display:flex;justify-content:space-between;align-items:center">
+                                    <div style="color:#6c7782">Aprobación</div>
+                                    <div style="font-weight:800;color:var(--success)">68%</div>
+                                </div>
+                                <div style="display:flex;justify-content:space-between;align-items:center">
+                                    <div style="color:#6c7782">Desaprobados</div>
+                                    <div style="font-weight:800;color:var(--danger)">12</div>
+                                </div>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+            </section>
+        </div>
+    </main>
+
+<script>
+document.addEventListener('DOMContentLoaded', async function() {
+    const pathParts = window.location.pathname.split('/').filter(Boolean);
+    const contextPath = pathParts.length > 0 ? '/' + pathParts[0] : '';
+    
+    // Cargar datos del profesor
+    try {
+        const resp = await fetch(`${contextPath}/api/profesores/me`, {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' },
+            cache: 'no-store',
+            credentials: 'same-origin'
+        });
+
+        if (resp.status === 401) {
+            alert('No autenticado. Redirigiendo al inicio de sesión.');
+            window.location.href = contextPath + '/Inicio_Sesion.html';
+            return;
+        }
+
+        if (resp.ok) {
+            const profesor = await resp.json();
+            const nombre = profesor.apellidosNombres || 'Profesor';
+            const departamento = profesor.departamento || 'Docente';
+            const iniciales = nombre.split(' ').map(p => p[0]).slice(0,2).join('').toUpperCase();
+
+            document.getElementById('profesor-name').textContent = nombre;
+            document.getElementById('profesor-especialidad').textContent = departamento;
+            document.getElementById('userAvatar').textContent = iniciales;
+        }
+    } catch(err) {
+        console.error("Error cargando profesor:", err);
+    }
+});
+
+// Cargar estadísticas del curso seleccionado
+async function cargarEstadisticas() {
+    const selectCurso = document.getElementById('select-course');
+    const grupoId = selectCurso.value;
+    
+    if (!grupoId) {
+        alert('Seleccione un curso');
+        document.getElementById('stats-content').style.display = 'none';
+        return;
+    }
+
+    const pathParts = window.location.pathname.split('/').filter(Boolean);
+    const contextPath = pathParts.length > 0 ? '/' + pathParts[0] : '';
+
+    try {
+        // Mostrar loading
+        document.getElementById('stats-content').style.display = 'block';
+
+        // Cargar todas las estadísticas en paralelo
+        const [estudiantes, avance, asistencia, indicadores] = await Promise.all([
+            fetch(`${contextPath}/api/profesores/cursos/${grupoId}/estudiantes`, {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' },
+                credentials: 'same-origin'
+            }).then(r => r.json()),
+            
+            fetch(`${contextPath}/api/profesores/cursos/${grupoId}/avance-temario`, {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' },
+                credentials: 'same-origin'
+            }).then(r => r.json()),
+            
+            fetch(`${contextPath}/api/profesores/cursos/${grupoId}/estadisticas-asistencia`, {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' },
+                credentials: 'same-origin'
+            }).then(r => r.json()),
+            
+            fetch(`${contextPath}/api/profesores/cursos/${grupoId}/indicadores`, {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' },
+                credentials: 'same-origin'
+            }).then(r => r.json())
+        ]);
+        
+        // Actualizar UI con los datos reales
+        calcularYMostrarEstadisticas(estudiantes);
+        mostrarAvanceTemario(avance);
+        mostrarEstadisticasAsistencia(asistencia);
+        mostrarIndicadoresRapidos(indicadores);
+        
+    } catch(err) {
+        console.error('Error:', err);
+        alert('Error al cargar estadísticas: ' + err.message);
+    }
+}
+
+function mostrarAvanceTemario(avance) {
+    const progressSection = document.querySelector('.progress-section');
+    
+    if (!avance.unidades || avance.unidades.length === 0) {
+        progressSection.innerHTML = '<p style="text-align:center;color:#999">No hay datos de temario disponibles</p>';
+        return;
+    }
+
+    progressSection.innerHTML = '';
+    
+    avance.unidades.forEach(unidad => {
+        const porcentaje = Math.round(unidad.porcentaje);
+        let fillClass = 'low';
+        if (porcentaje >= 80) fillClass = 'full';
+        else if (porcentaje >= 50) fillClass = 'mid';
+
+        const item = document.createElement('div');
+        item.className = 'progress-item';
+        item.innerHTML = `
+            <div class="progress-label">
+                <span>Unidad ${unidad.numeroUnidad}: ${unidad.nombreUnidad}</span>
+                <span><strong>${porcentaje}%</strong></span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill ${fillClass}" style="width:${porcentaje}%">
+                    ${unidad.temasCompletados}/${unidad.totalTemas} temas
+                </div>
+            </div>
+        `;
+        progressSection.appendChild(item);
+    });
+}
+
+function mostrarEstadisticasAsistencia(stats) {
+    const porcentaje = Math.round(stats.porcentajeAsistencia || 0);
+    
+    // Actualizar porcentaje principal
+    document.querySelector('.attendance-percentage').textContent = porcentaje + '%';
+    
+    // Determinar clase de icono según porcentaje
+    const icon = document.querySelector('.attendance-icon');
+    icon.className = 'attendance-icon';
+    if (porcentaje >= 85) icon.classList.add('high');
+    else if (porcentaje >= 70) icon.classList.add('medium');
+    else icon.classList.add('low');
+
+    // Actualizar estadísticas detalladas
+    const unitStats = document.querySelector('.attendance-card .unit-stats');
+    const total = stats.totalEstudiantes || 0;
+    
+    const mayor90Pct = total > 0 ? Math.round((stats.estudiantesMayor90 / total) * 100) : 0;
+    const entre70Pct = total > 0 ? Math.round((stats.estudiantesEntre70y90 / total) * 100) : 0;
+    const menor70Pct = total > 0 ? Math.round((stats.estudiantesMenor70 / total) * 100) : 0;
+
+    unitStats.innerHTML = `
+        <div class="stat-row">
+            <span class="stat-label">Total de Clases:</span>
+            <span class="stat-value">${stats.totalClases || 0}</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-label">Estudiantes con > 90%:</span>
+            <span class="stat-value high">${stats.estudiantesMayor90 || 0} (${mayor90Pct}%)</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-label">Estudiantes 70–90%:</span>
+            <span class="stat-value">${stats.estudiantesEntre70y90 || 0} (${entre70Pct}%)</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-label">Estudiantes < 70%:</span>
+            <span class="stat-value low">${stats.estudiantesMenor70 || 0} (${menor70Pct}%)</span>
+        </div>
+    `;
+}
+
+function mostrarIndicadoresRapidos(indicadores) {
+    const container = document.querySelector('.card:last-child > div:last-child');
+    
+    const promedio = (indicadores.promedioGeneral || 0).toFixed(1);
+    const aprobacion = Math.round(indicadores.porcentajeAprobacion || 0);
+    const desaprobados = indicadores.desaprobados || 0;
+
+    container.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="color:#6c7782">Promedio General</div>
+            <div style="font-weight:800;color:var(--secondary)">${promedio}</div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="color:#6c7782">Aprobación</div>
+            <div style="font-weight:800;color:var(--success)">${aprobacion}%</div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="color:#6c7782">Desaprobados</div>
+            <div style="font-weight:800;color:var(--danger)">${desaprobados}</div>
+        </div>
+    `;
+}
+
+function calcularYMostrarEstadisticas(estudiantes) {
+    // Inicializar contadores
+    const estadisticasPorEval = {
+        '4': { max: 0, min: 20, suma: 0, count: 0 }, // EC1
+        '1': { max: 0, min: 20, suma: 0, count: 0 }, // EP1
+        '5': { max: 0, min: 20, suma: 0, count: 0 }, // EC2
+        '2': { max: 0, min: 20, suma: 0, count: 0 }, // EP2
+        '6': { max: 0, min: 20, suma: 0, count: 0 }, // EC3
+        '3': { max: 0, min: 20, suma: 0, count: 0 }  // EP3
+    };
+
+    // Procesar notas
+    estudiantes.forEach(est => {
+        Object.keys(est.notas).forEach(tipoId => {
+            const nota = est.notas[tipoId];
+            if (nota != null && estadisticasPorEval[tipoId]) {
+                const stats = estadisticasPorEval[tipoId];
+                stats.max = Math.max(stats.max, nota);
+                stats.min = Math.min(stats.min, nota);
+                stats.suma += nota;
+                stats.count++;
+            }
+        });
+    });
+
+    // Actualizar UI - Unidad 1
+    actualizarEstadisticasUI('4', '1', estadisticasPorEval);
+    
+    // Actualizar UI - Unidad 2
+    actualizarEstadisticasUI('5', '2', estadisticasPorEval);
+    
+    // Actualizar UI - Unidad 3
+    actualizarEstadisticasUI('6', '3', estadisticasPorEval);
+
+    // Calcular avance del temario (placeholder - necesitarías endpoint específico)
+    // Por ahora, usar valores de ejemplo
+}
+
+function actualizarEstadisticasUI(continua, parcial, stats) {
+    const unidadNum = continua === '4' ? 1 : continua === '5' ? 2 : 3;
+    
+    // Buscar los contenedores de estadísticas por unidad
+    const cards = document.querySelectorAll('.stat-card');
+    const card = cards[unidadNum - 1];
+    
+    if (!card) return;
+
+    const unitStats = card.querySelectorAll('.unit-stats');
+    
+    // Actualizar Continua
+    if (unitStats[0]) {
+        const rows = unitStats[0].querySelectorAll('.stat-row');
+        const statsCont = stats[continua];
+        
+        if (statsCont.count > 0) {
+            rows[0].querySelector('.stat-value').textContent = statsCont.max.toFixed(1);
+            rows[1].querySelector('.stat-value').textContent = statsCont.min.toFixed(1);
+            rows[2].querySelector('.stat-value').textContent = (statsCont.suma / statsCont.count).toFixed(1);
+        } else {
+            rows[0].querySelector('.stat-value').textContent = '-';
+            rows[1].querySelector('.stat-value').textContent = '-';
+            rows[2].querySelector('.stat-value').textContent = 'Sin datos';
+        }
+    }
+
+    // Actualizar Parcial
+    if (unitStats[1]) {
+        const rows = unitStats[1].querySelectorAll('.stat-row');
+        const statsPar = stats[parcial];
+        
+        if (statsPar.count > 0) {
+            rows[0].querySelector('.stat-value').textContent = statsPar.max.toFixed(1);
+            rows[1].querySelector('.stat-value').textContent = statsPar.min.toFixed(1);
+            rows[2].querySelector('.stat-value').textContent = (statsPar.suma / statsPar.count).toFixed(1);
+        } else {
+            rows[0].querySelector('.stat-value').textContent = '-';
+            rows[1].querySelector('.stat-value').textContent = '-';
+            rows[2].querySelector('.stat-value').textContent = 'Pendiente';
+        }
+    }
+}
+
+// Logout
+document.getElementById('logoutBtn').addEventListener('click', async function () {
+    if (!confirm('¿Está seguro de que desea cerrar sesión?')) return;
+
+    const pathParts = window.location.pathname.split('/').filter(Boolean);
+    const contextPath = pathParts.length > 0 ? '/' + pathParts[0] : '';
+
+    try {
+        await fetch(`${contextPath}/logout`, { method: 'POST', credentials: 'same-origin' });
+    } catch (e) {
+        console.warn('Logout fetch falló', e);
+    } finally {
+        localStorage.removeItem('profesorActual');
+        window.location.href = '/Inicio_Sesion.html';
+    }
+});
+
+// Cargar cursos al inicio
+window.addEventListener('DOMContentLoaded', async function() {
+    const pathParts = window.location.pathname.split('/').filter(Boolean);
+    const contextPath = pathParts.length > 0 ? '/' + pathParts[0] : '';
+    
+    try {
+        const resp = await fetch(`${contextPath}/api/profesores/me/cursos`, {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' },
+            credentials: 'same-origin'
+        });
+
+        if (resp.ok) {
+            const cursos = await resp.json();
+            const select = document.getElementById('select-course');
+            select.innerHTML = '<option value="">-- Seleccione un curso --</option>';
+            
+            cursos.forEach(c => {
+                const option = document.createElement('option');
+                option.value = c.grupoId;
+                option.textContent = `${c.codigoCurso} - ${c.nombreCurso} (Grupo ${c.letraGrupo})`;
+                select.appendChild(option);
+            });
+        }
+    } catch(err) {
+        console.error('Error cargando cursos:', err);
+    }
+});
+</script>
+
+</body>
+</html>

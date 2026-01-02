@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Horario - LUMINA STUDENT</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #9b59b6;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --sidebar-width: 250px;
+            --slot-height: 40px; /* Reducido de 80px a 40px */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+
+        /* Sidebar - Mismo estilo que el dashboard */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: linear-gradient(180deg, var(--primary) 0%, #1a2530 100%);
+            color: white;
+            height: 100vh;
+            position: fixed;
+            overflow-y: auto;
+            box-shadow: 3px 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .logo {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .logo i {
+            color: var(--secondary);
+            font-size: 1.8rem;
+        }
+
+        .user-info {
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .user-details h3 {
+            font-size: 1rem;
+            margin-bottom: 3px;
+        }
+
+        .user-details p {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+
+        .logout-btn {
+            margin-left: auto;
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+        }
+
+        .logout-btn:hover {
+            opacity: 1;
+        }
+
+        .menu {
+            padding: 20px 0;
+        }
+
+        .menu-section {
+            margin-bottom: 10px;
+        }
+
+        .menu-title {
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            opacity: 0.7;
+            letter-spacing: 1px;
+        }
+
+        .menu-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+            text-decoration: none;
+            color: white;
+        }
+
+        .menu-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-left: 3px solid var(--secondary);
+        }
+
+        .menu-item.active {
+            background-color: rgba(52, 152, 219, 0.2);
+            border-left: 3px solid var(--secondary);
+        }
+
+        .menu-item i {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .header h1 {
+            color: var(--primary);
+            font-size: 1.8rem;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        .breadcrumb i {
+            font-size: 0.7rem;
+        }
+
+        .page-content {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .semester-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .semester-btn {
+            padding: 8px 16px;
+            border: 1px solid var(--secondary);
+            background: white;
+            color: var(--secondary);
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .semester-btn.active {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .schedule-container {
+            overflow-x: auto;
+        }
+
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        .schedule-table th {
+            background: var(--primary);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .schedule-table td {
+            padding: 8px; /* Reducido de 15px */
+            border: 1px solid #e0e0e0;
+            vertical-align: top;
+            height: var(--slot-height);
+            transition: height .15s ease;
+        }
+
+        .time-slot {
+            background: var(--light);
+            font-weight: 600;
+            text-align: center;
+            width: 80px; /* Reducido de 100px */
+            font-size: 0.7rem; /* Más pequeño */
+            padding: 4px; /* Menos padding */
+        }
+
+        .course-block {
+            background: #e8f4ff;
+            border-left: 4px solid var(--secondary);
+            padding: 6px; /* Reducido de 10px */
+            border-radius: 5px;
+            margin-bottom: 5px; 
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .course-block:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+        }
+
+        .course-block.lab {
+            background: #e8f6f3;
+            border-left-color: var(--success);
+        }
+
+        .course-name {
+            font-weight: 600;
+            margin-bottom: 5px; 
+            font-size: 1.20rem; 
+        }
+
+        .course-details {
+            font-size: 1.10rem; 
+            color: #7f8c8d;
+        }
+
+        .empty-slot {
+            background: #f9f9f9;
+            color: #95a5a6;
+            text-align: center;
+            font-style: italic;
+        }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 70px;
+                overflow: visible;
+            }
+            
+            .logo h1, .user-details, .menu-title, .menu-item span {
+                display: none;
+            }
+            
+            .main-content {
+                margin-left: 70px;
+            }
+            
+            .logo {
+                justify-content: center;
+            }
+            
+            .user-info {
+                justify-content: center;
+            }
+            
+            .menu-item {
+                justify-content: center;
+                padding: 15px 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .semester-selector {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">
+            <i class="fas fa-graduation-cap"></i>
+            <h1>LUMINA STUDENT</h1>
+        </div>
+        
+        <div class="user-info">
+            <div class="user-avatar" id="userAvatar">A</div>
+            <div class="user-details">
+                <h3 id="userName">Estudiante</h3>
+                <p id="userCode">Código: ---</p>
+            </div>
+            <button class="logout-btn" id="logoutBtn">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </div>
+        
+        <div class="menu">
+            <div class="menu-section">
+                <a href="estudiante_dashboard.html" class="menu-item">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>DASHBOARD</span>
+                </a>
+                <div class="menu-title">Panel Principal</div>
+            </div>
+            
+            <div class="menu-section">
+                <a href="estudiante_horario.html" class="menu-item active">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>MI HORARIO</span>
+                </a>
+            </div>
+            
+            <div class="menu-section">
+                <a href="estudiante_matricula.html" class="menu-item">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span>MATRÍCULA LABORATORIOS</span>
+                </a>
+            </div>
+            
+            <div class="menu-section">
+                <a href="estudiante_notas.html" class="menu-item">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>MIS NOTAS</span>
+                </a>
+            </div>
+
+            <div class="menu-section">
+                <a href="estudiante_silabos.html" class="menu-item">
+                    <i class="fas fa-file-pdf"></i>
+                    <span>MIS SÍLABOS</span>
+                </a>
+            </div>
+                        
+            <div class="menu-section">
+                <a href="estudiante_contenido.html" class="menu-item">
+                    <i class="fas fa-book-open"></i>
+                    <span>CONTENIDO ACADÉMICO</span>
+                </a>
+            </div>
+            
+            <div class="menu-section">
+                <a href="estudiante_perfil.html" class="menu-item">
+                    <i class="fas fa-user"></i>
+                    <span>MI PERFIL</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="header">
+            <h1>Mi Horario Semanal</h1>
+            <div class="breadcrumb">
+                <span>Inicio</span>
+                <i class="fas fa-chevron-right"></i>
+                <span>Mi Horario</span>
+            </div>
+        </div>
+        
+        <div class="page-content">
+            <div class="section-title">
+                <span id="sectionSemestre">Horario Académico - Semestre 2025-B</span>
+            </div>
+            
+            <div class="semester-selector">
+                <button class="semester-btn active">2025-B</button>
+                <div style="margin-left:auto; display:flex; align-items:center; gap:10px">
+                    <label for="slotSize" style="font-size:0.9rem;color:#666">Tamaño bloque</label>
+                    <input id="slotSize" type="range" min="20" max="120" value="40" step="5" aria-label="Ajustar tamaño bloque" />
+                </div>
+            </div>
+            
+            <div class="schedule-container">
+                <table class="schedule-table">
+                    <thead>
+                        <tr>
+                            <th>Hora</th>
+                            <th>Lunes</th>
+                            <th>Martes</th>
+                            <th>Miércoles</th>
+                            <th>Jueves</th>
+                            <th>Viernes</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /***********************************************
+         * CARGAR DATOS DEL ESTUDIANTE (avatar, nombre)
+         ***********************************************/
+        document.addEventListener('DOMContentLoaded', async function() {
+            const pathParts = window.location.pathname.split('/').filter(Boolean);
+            const contextPath = pathParts.length > 0 ? '/' + pathParts[0] : '';
+            const urlEstudiante = `/est/api/estudiantes/me`;
+
+            try {
+                const resp = await fetch(urlEstudiante, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' },
+                    credentials: 'same-origin',
+                    cache: 'no-store'
+                });
+
+                if (resp.status === 401) {
+                    alert('No autenticado. Redirigiendo al inicio de sesión.');
+                    window.location.href = contextPath + '/Inicio_Sesion.html';
+                    return;
+                }
+
+                if (!resp.ok) {
+                    let errBody;
+                    try { errBody = await resp.json(); } 
+                    catch { errBody = { error: `HTTP ${resp.status}` }; }
+                    console.error('Error al obtener estudiante:', errBody);
+                    return;
+                }
+
+                const estudiante = await resp.json();
+                const nombre = estudiante.apellidosNombres || 'Estudiante';
+                const codigo = estudiante.numeroMatricula ? String(estudiante.numeroMatricula) : '---';
+                const iniciales = nombre.split(' ').map(p => p[0]).slice(0,2).join('').toUpperCase();
+
+                document.getElementById('userName').textContent = nombre;
+                document.getElementById('userCode').textContent = `Código: ${codigo}`;
+                document.getElementById('userAvatar').textContent = iniciales;
+
+            } catch(err) {
+                console.error("Error estudiante:", err);
+            }
+        });
+
+        /************************************************
+         * FUNCIONES PARA MOSTRAR HORARIO DESDE BACKEND
+         ************************************************/
+
+        const DIAS = ['LUNES','MARTES','MIERCOLES','JUEVES','VIERNES'];
+
+        function normalizeDia(d) {
+            if (!d) return null;
+            const raw = String(d).trim().toUpperCase();
+            const map = {
+                'LUN':'LUNES','LUNES':'LUNES',
+                'MAR':'MARTES','MARTES':'MARTES',
+                'MIE':'MIERCOLES','MIÉ':'MIERCOLES','MIÉRCOLES':'MIERCOLES','MIERCOLES':'MIERCOLES',
+                'JUE':'JUEVES','JUEVES':'JUEVES',
+                'VIE':'VIERNES','VIERNES':'VIERNES'
+            };
+            if (map[raw]) return map[raw];
+            const n = parseInt(raw.replace(/^0+/,''));
+            if (!isNaN(n)) {
+                const names = ['LUNES','MARTES','MIERCOLES','JUEVES','VIERNES','SABADO','DOMINGO'];
+                if (n >= 1 && n <= names.length) return names[n-1];
+            }
+            return raw;
+        }
+
+        function parseTimeStr(t) {
+            if (!t) return null;
+            const s = String(t).trim();
+            const cnt = (s.match(/:/g) || []).length;
+            const withSecs = cnt === 1 ? `${s}:00` : s;
+            return new Date(`1970-01-01T${withSecs}`);
+        }
+
+        function crearCursoBlock(h) {
+            const div = document.createElement('div');
+            const esLaboratorio = h.tipo_clase && h.tipo_clase.toUpperCase() === 'LABORATORIO';
+            div.className = 'course-block' + (esLaboratorio ? ' lab' : '');
+
+            const nombre = document.createElement('div');
+            nombre.className = 'course-name';
+            let title = '';
+            if (h.nombre_curso && h.nombre_curso.trim()) title = h.nombre_curso.trim();
+            else if (h.codigo_curso && h.codigo_curso.trim()) title = h.codigo_curso.trim();
+            else {
+                const keys = Object.keys(h || {}).filter(k => ['nombre_curso','codigo_curso','grupo_id','id_matricula'].indexOf(k)===-1);
+                const first = keys.slice(0,3).map(k => `${k}:${String(h[k])}`).join(' | ');
+                title = first || 'Curso (sin datos)';
+            }
+            
+            // Agregar badge de tipo de clase
+            const tipoBadge = esLaboratorio ? ' 🔬' : ' 📚';
+            nombre.textContent = title + (h.letra_grupo ? ' - ' + h.letra_grupo : '') + tipoBadge;
+
+            const detalles = document.createElement('div');
+            detalles.className = 'course-details';
+            const tipoTexto = esLaboratorio ? 'LAB' : 'TEORÍA';
+            detalles.textContent = `${tipoTexto} • ${h.numero_salon || '-'} • ${h.docente_nombre || '-'}`;
+
+            div.appendChild(nombre);
+            div.appendChild(detalles);
+            return div;
+        }
+
+function generarBloques() {
+    // Intervalos personalizados de 50 minutos con descansos (IGUAL que admin)
+    const intervalos = [
+        { inicio: '07:00', fin: '07:50' },
+        { inicio: '07:50', fin: '08:40' },
+        { inicio: '08:50', fin: '09:40' },
+        { inicio: '09:40', fin: '10:30' },
+        { inicio: '10:40', fin: '11:30' },
+        { inicio: '11:30', fin: '12:20' },
+        { inicio: '12:20', fin: '13:10' },
+        { inicio: '13:10', fin: '14:00' },
+        { inicio: '14:00', fin: '14:50' },
+        { inicio: '14:50', fin: '15:40' },
+        { inicio: '15:50', fin: '16:40' },
+        { inicio: '16:40', fin: '17:30' },
+        { inicio: '17:40', fin: '18:30' },
+        { inicio: '18:30', fin: '19:20' },
+        { inicio: '19:20', fin: '20:10' }
+    ];
+    
+    return intervalos.map(i => `${i.inicio} - ${i.fin}`);
+}
+
+function encontrarIndiceBloque(horaInicio, horaFin) {
+    const intervalos = [
+        { inicio: '07:00', fin: '07:50' },
+        { inicio: '07:50', fin: '08:40' },
+        { inicio: '08:50', fin: '09:40' },
+        { inicio: '09:40', fin: '10:30' },
+        { inicio: '10:40', fin: '11:30' },
+        { inicio: '11:30', fin: '12:20' },
+        { inicio: '12:20', fin: '13:10' },
+        { inicio: '13:10', fin: '14:00' },
+        { inicio: '14:00', fin: '14:50' },
+        { inicio: '14:50', fin: '15:40' },
+        { inicio: '15:50', fin: '16:40' },
+        { inicio: '16:40', fin: '17:30' },
+        { inicio: '17:40', fin: '18:30' },
+        { inicio: '18:30', fin: '19:20' },
+        { inicio: '19:20', fin: '20:10' }
+    ];
+    
+    let startIdx = -1;
+    let endIdx = -1;
+    
+    for (let i = 0; i < intervalos.length; i++) {
+        if (horaInicio >= intervalos[i].inicio && horaInicio < intervalos[i].fin) {
+            startIdx = i;
+        }
+        if (horaFin > intervalos[i].inicio && horaFin <= intervalos[i].fin) {
+            endIdx = i;
+        }
+    }
+    
+    if (startIdx === -1) {
+        for (let i = 0; i < intervalos.length; i++) {
+            if (horaInicio <= intervalos[i].inicio) {
+                startIdx = i;
+                break;
+            }
+        }
+    }
+    
+    if (endIdx === -1) {
+        for (let i = intervalos.length - 1; i >= 0; i--) {
+            if (horaFin >= intervalos[i].fin) {
+                endIdx = i;
+                break;
+            }
+        }
+    }
+    
+    return {
+        startIdx: Math.max(0, startIdx),
+        span: Math.max(1, endIdx - startIdx + 1)
+    };
+}
+
+
+        window._lastHorarios = [];
+
+function renderSchedule(horarios) {
+    window._lastHorarios = Array.isArray(horarios) ? horarios : [];
+    
+    const bloques = generarBloques();
+    const dayStarts = {};
+
+    // Procesar horarios usando los índices de bloques fijos
+    horarios.forEach(h => {
+        const dayKey = normalizeDia(h.dia_semana);
+        if (!dayKey) return;
+        
+        const horaInicio = h.hora_inicio.substring(0, 5); // HH:MM
+        const horaFin = h.hora_fin.substring(0, 5);       // HH:MM
+        
+        const indices = encontrarIndiceBloque(horaInicio, horaFin);
+        
+        if (!dayStarts[dayKey]) dayStarts[dayKey] = [];
+        dayStarts[dayKey].push({ 
+            startIdx: indices.startIdx, 
+            span: indices.span, 
+            horario: h 
+        });
+    });
+
+    // Ordenar por índice de inicio
+    Object.keys(dayStarts).forEach(k => {
+        dayStarts[k].sort((a, b) => a.startIdx - b.startIdx);
+    });
+
+    // Crear tabla
+    const tbody = document.createElement('tbody');
+    const activeSpans = {};
+    DIAS.forEach(d => activeSpans[d] = 0);
+
+    for (let i = 0; i < bloques.length; i++) {
+        const b = bloques[i];
+        const tr = document.createElement('tr');
+
+        const tdHora = document.createElement('td');
+        tdHora.className = 'time-slot';
+        tdHora.textContent = b;
+        tr.appendChild(tdHora);
+
+        DIAS.forEach(d => {
+            if (activeSpans[d] > 0) {
+                activeSpans[d]--;
+                return;
+            }
+
+            const starts = (dayStarts[d] || []).filter(x => x.startIdx === i);
+            
+            if (starts.length === 0) {
+                const td = document.createElement('td');
+                td.className = "empty-slot";
+                td.textContent = "Libre";
+                tr.appendChild(td);
+            } else {
+                const td = document.createElement('td');
+                
+                starts.forEach(s => {
+                    if (s.span > 1) {
+                        td.setAttribute('rowspan', String(s.span));
+                        activeSpans[d] = s.span - 1;
+                    }
+                    
+                    const div = crearCursoBlock(s.horario);
+                    td.appendChild(div);
+                });
+
+                tr.appendChild(td);
+            }
+        });
+
+        tbody.appendChild(tr);
+    }
+
+    const table = document.querySelector('.schedule-table');
+    table.querySelector("tbody").replaceWith(tbody);
+}
+
+        async function cargarHorarioDesdeBackend() {
+            try {
+                const url = `/est/api/estudiantes/me/horarios`;
+
+                const resp = await fetch(url, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' },
+                    credentials: 'same-origin'
+                });
+
+                if (!resp.ok) {
+                    console.warn('No se pudo obtener horarios desde backend, status:', resp.status);
+                    const raw = localStorage.getItem('horariosEstudiante') || localStorage.getItem('horarios');
+                    if (raw) {
+                        try {
+                            const horariosStored = JSON.parse(raw);
+                            return renderSchedule(horariosStored);
+                        } catch (e) { console.warn('falló parseo de localStorage horarios', e); }
+                    }
+                    return renderSchedule([]);
+                }
+
+                const horarios = await resp.json();
+                if (!Array.isArray(horarios)) {
+                    console.warn('Respuesta horarios no es array:', horarios);
+                    return renderSchedule([]);
+                }
+
+                try { localStorage.setItem('horariosEstudiante', JSON.stringify(horarios)); } catch(e) {}
+                renderSchedule(horarios);
+
+            } catch(e) {
+                console.error("Error horario:", e);
+                renderSchedule([]);
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", cargarHorarioDesdeBackend);
+
+        // Control de tamaño de bloque con slider
+        const slotSlider = document.getElementById('slotSize');
+        if (slotSlider) {
+            document.documentElement.style.setProperty('--slot-height', slotSlider.value + 'px');
+            slotSlider.addEventListener('input', (e) => {
+                const val = e.target.value;
+                document.documentElement.style.setProperty('--slot-height', val + 'px');
+                if (window._lastHorarios && window._lastHorarios.length) renderSchedule(window._lastHorarios);
+            });
+        }
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', function () {
+            if (confirm('¿Está seguro de que desea cerrar sesión?')) {
+                localStorage.clear();
+                window.location.href = '/Inicio_Sesion.html';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reportes - LUMINA ADMIN</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #9b59b6;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --sidebar-width: 250px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            background-color: #f5f7fa;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: linear-gradient(180deg, var(--primary) 0%, #1a2530 100%);
+            color: white;
+            height: 100vh;
+            position: fixed;
+            overflow-y: auto;
+            box-shadow: 3px 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .logo {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .logo i {
+            color: var(--secondary);
+            font-size: 1.8rem;
+        }
+
+        .user-info {
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .logout-btn {
+            margin-left: auto;
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+            font-size: 1.2rem;
+        }
+
+        .logout-btn:hover {
+            opacity: 1;
+            color: #e74c3c;
+        }
+
+        .menu {
+            padding: 20px 0;
+        }
+
+        .menu-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+            text-decoration: none;
+            color: white;
+        }
+
+        .menu-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-left: 3px solid var(--secondary);
+        }
+
+        .menu-item.active {
+            background-color: rgba(52, 152, 219, 0.2);
+            border-left: 3px solid var(--secondary);
+        }
+
+        .submenu {
+            padding-left: 40px;
+            display: none;
+        }
+
+        .submenu.active {
+            display: block;
+        }
+
+        .submenu-item {
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            opacity: 0.8;
+            cursor: pointer;
+            transition: opacity 0.3s;
+            text-decoration: none;
+            color: white;
+        }
+
+        /* MAIN CONTENT */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.9);
+            min-height: 100vh;
+        }
+
+        .header {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: var(--secondary);
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            font-size: 1.5rem;
+            color: var(--secondary);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .report-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .report-option {
+            background: linear-gradient(135deg, rgba(52, 152, 219, 0.1), rgba(155, 89, 182, 0.1));
+            border: 2px solid transparent;
+            border-radius: 12px;
+            padding: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .report-option:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 25px rgba(52, 152, 219, 0.3);
+        }
+
+        .report-option.selected {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .report-option i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+
+        .report-option.selected i { color: white; }
+
+        .report-option h3 {
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .report-option p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .filters-section {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .filters-section.active { display: block; }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--secondary);
+        }
+
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .btn {
+            background: linear-gradient(90deg, var(--primary), #5a9fd4);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(90deg, var(--success), #27ae60);
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead th {
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        tbody td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        tbody tr:hover {
+            background: rgba(52, 152, 219, 0.05);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--primary);
+        }
+
+        .loading i {
+            font-size: 3rem;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(52, 152, 219, 0.1), rgba(155, 89, 182, 0.1));
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .stat-card .label {
+            font-size: 0.9rem;
+            color: var(--secondary);
+        }
+    </style>
+</head>
+<body>
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="logo">
+            <i class="fas fa-graduation-cap"></i>
+            <h1>LUMINA ADMIN</h1>
+        </div>
+
+        <div class="user-info">
+            <div class="user-avatar">A</div>
+            <div class="user-details">
+                <h3>Administrador</h3>
+                <p>Sistema Universitario</p>
+            </div>
+            <button class="logout-btn" id="logoutBtn" title="Cerrar sesión">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </div>
+
+        <nav class="menu">
+            <a class="menu-item" href="admin.html">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>DASHBOARD</span>
+            </a>
+            <div class="menu-item" id="users-menu">
+                <i class="fas fa-users"></i>
+                <span>GESTIÓN DE USUARIOS</span>
+            </div>
+            <div class="submenu" id="users-submenu">
+                <a href="ad_gestion_usuarios.html" class="submenu-item">
+                    <i class="fas fa-chevron-right"></i>
+                    <span>Gestión de Usuarios</span>
+                </a>
+            </div>
+            <div class="menu-item" id="academic-menu">
+                <i class="fas fa-book-open"></i>
+                <span>GESTIÓN ACADÉMICA</span>
+            </div>
+            <div class="submenu" id="academic-submenu">
+                <a href="ad_asignar_horarios.html" class="submenu-item">
+                    <i class="fas fa-chevron-right"></i>
+                    <span>Asignar Horarios</span>
+                </a>
+                <a href="ad_docentes.html" class="submenu-item">
+                    <i class="fas fa-chevron-right"></i>
+                    <span>Docentes</span>
+                </a>
+                <a href="ad_gestion_cursos.html" class="submenu-item">
+                    <i class="fas fa-chevron-right"></i>
+                    <span>Información cursos</span>
+                </a>
+                <a href="ad_edita_estudiante.html" class="submenu-item">
+                    <i class="fas fa-chevron-right"></i>
+                    <span>Editar Estudiantes</span>
+                </a>
+            </div>
+            <div class="menu-item" id="reports-menu">
+                <i class="fas fa-chart-bar"></i>
+                <span>ARCHIVOS</span>
+            </div>
+            <div class="submenu" id="reports-submenu">
+                <a href="ad_reportes.html" class="submenu-item active">
+                    <i class="fas fa-file-download"></i>
+                    <span>Reportes Académicos</span>
+                </a>    
+                <a href="ad_pdfs.html" class="submenu-item">
+                    <i class="fas fa-file-pdf"></i>
+                    <span>Ver PDFs</span>
+                </a>             
+            </div>
+        </nav>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        <div class="header">
+            <h1><i class="fas fa-chart-bar"></i> Sistema de Reportes</h1>
+        </div>
+
+        <!-- SELECTOR DE TIPO DE REPORTE -->
+        <div class="card">
+            <h2><i class="fas fa-clipboard-list"></i> Seleccione el Tipo de Reporte</h2>
+            <div class="report-selector">
+                <div class="report-option" data-type="estudiantes">
+                    <i class="fas fa-user-graduate"></i>
+                    <h3>Estudiantes Matriculados</h3>
+                    <p>Reporte de estudiantes con sus matrículas y cursos</p>
+                </div>
+                <div class="report-option" data-type="cursos">
+                    <i class="fas fa-book-open"></i>
+                    <h3>Reporte por Curso</h3>
+                    <p>Docentes, estudiantes, grupos y notas por curso</p>
+                </div>
+                <div class="report-option" data-type="docentes">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    <h3>Reporte de Docentes</h3>
+                    <p>Información completa de todos los docentes</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- FILTROS PARA CURSOS -->
+        <div class="card filters-section" id="filtros-cursos">
+            <h2><i class="fas fa-filter"></i> Seleccione el Curso</h2>
+            <div class="form-group">
+                <label for="select-curso">Curso</label>
+                <select id="select-curso">
+                    <option value="">-- Seleccione un curso --</option>
+                </select>
+            </div>
+            <button class="btn" onclick="generarReporte()">
+                <i class="fas fa-file-alt"></i> Generar Reporte
+            </button>
+        </div>
+
+        <!-- BOTÓN PARA ESTUDIANTES Y DOCENTES -->
+        <div class="card filters-section" id="filtros-general">
+            <button class="btn" onclick="generarReporte()">
+                <i class="fas fa-file-alt"></i> Generar Reporte
+            </button>
+        </div>
+
+        <!-- LOADING -->
+        <div id="loading" class="loading" style="display:none">
+            <i class="fas fa-spinner"></i>
+            <p>Generando reporte...</p>
+        </div>
+
+        <!-- RESULTADOS -->
+        <div class="card" id="resultados" style="display:none">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2><i class="fas fa-table"></i> <span id="titulo-reporte">Resultados</span></h2>
+                <button class="btn btn-success" onclick="descargarPDF()">
+                    <i class="fas fa-file-pdf"></i> Descargar PDF
+                </button>
+            </div>
+
+            <!-- Estadísticas -->
+            <div class="stats-grid" id="stats-container" style="display:none"></div>
+
+            <!-- Tabla -->
+            <div class="table-container">
+                <table id="tabla-reporte">
+                    <thead id="tabla-head"></thead>
+                    <tbody id="tabla-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script th:inline="none">
+        let tipoReporteActual = null;
+        let datosActuales = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            cargarCursos();
+            setupEventListeners();
+            setupLogout();
+            setupSubmenus();
+        });
+
+        function setupEventListeners() {
+            document.querySelectorAll('.report-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('.report-option').forEach(opt => opt.classList.remove('selected'));
+                    this.classList.add('selected');
+                    
+                    tipoReporteActual = this.dataset.type;
+                    
+                    document.querySelectorAll('.filters-section').forEach(f => f.classList.remove('active'));
+                    document.getElementById('resultados').style.display = 'none';
+                    
+                    if (tipoReporteActual === 'cursos') {
+                        document.getElementById('filtros-cursos').classList.add('active');
+                    } else {
+                        document.getElementById('filtros-general').classList.add('active');
+                    }
+                });
+            });
+        }
+
+        function setupSubmenus() {
+            document.querySelectorAll('.menu-item').forEach(item => {
+                if (!item.hasAttribute('href')) {
+                    item.addEventListener('click', function() {
+                        const submenu = this.nextElementSibling;
+                        if (submenu && submenu.classList.contains('submenu')) {
+                            submenu.classList.toggle('active');
+                        }
+                    });
+                }
+            });
+        }
+
+        async function cargarCursos() {
+            try {
+                const response = await fetch('/admin/api/cursos-activos', {
+                    credentials: 'same-origin'
+                });
+                
+                if (response.ok) {
+                    const cursos = await response.json();
+                    const select = document.getElementById('select-curso');
+                    select.innerHTML = '<option value="">-- Seleccione un curso --</option>';
+                    
+                    cursos.forEach(curso => {
+                        const option = document.createElement('option');
+                        option.value = curso.codigo_curso;
+                        option.textContent = `${curso.codigo_curso} - ${curso.nombre_curso}`;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error cargando cursos:', error);
+            }
+        }
+
+        async function generarReporte() {
+            if (!tipoReporteActual) {
+                alert('Por favor seleccione un tipo de reporte');
+                return;
+            }
+
+            if (tipoReporteActual === 'cursos') {
+                const codigoCurso = document.getElementById('select-curso').value;
+                if (!codigoCurso) {
+                    alert('Por favor seleccione un curso');
+                    return;
+                }
+            }
+
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('resultados').style.display = 'none';
+
+            try {
+                let endpoint = '';
+
+                switch(tipoReporteActual) {
+                    case 'estudiantes':
+                        endpoint = '/admin/api/reportes/estudiantes-matriculados';
+                        break;
+                    case 'cursos':
+                        const codigo = document.getElementById('select-curso').value;
+                        endpoint = `/admin/api/reportes/curso/${codigo}`;
+                        break;
+                    case 'docentes':
+                        endpoint = '/admin/api/reportes/docentes';
+                        break;
+                }
+
+                const response = await fetch(endpoint, { credentials: 'same-origin' });
+                
+                if (response.ok) {
+                    datosActuales = await response.json();
+                    mostrarReporte();
+                } else {
+                    alert('Error al generar el reporte');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al generar el reporte: ' + error.message);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        function mostrarReporte() {
+            const resultados = document.getElementById('resultados');
+            const statsContainer = document.getElementById('stats-container');
+            const tbody = document.getElementById('tabla-body');
+            const thead = document.getElementById('tabla-head');
+
+            resultados.style.display = 'block';
+            tbody.innerHTML = '';
+            thead.innerHTML = '';
+            statsContainer.innerHTML = '';
+
+            switch(tipoReporteActual) {
+                case 'estudiantes':
+                    mostrarReporteEstudiantes();
+                    break;
+                case 'cursos':
+                    mostrarReporteCurso();
+                    break;
+                case 'docentes':
+                    mostrarReporteDocentes();
+                    break;
+            }
+        }
+
+        function mostrarReporteEstudiantes() {
+            document.getElementById('titulo-reporte').textContent = 'Estudiantes Matriculados';
+            
+            const statsContainer = document.getElementById('stats-container');
+            statsContainer.style.display = 'grid';
+            statsContainer.innerHTML = `
+                <div class="stat-card">
+                    <div class="value">${datosActuales.length}</div>
+                    <div class="label">Total Estudiantes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="value">${datosActuales.reduce((sum, e) => sum + e.cursosMatriculados, 0)}</div>
+                    <div class="label">Total Matrículas</div>
+                </div>
+            `;
+
+            const thead = document.getElementById('tabla-head');
+            thead.innerHTML = `
+                <tr>
+                    <th>CUI</th>
+                    <th>Apellidos y Nombres</th>
+                    <th>Correo</th>
+                    <th>Cursos Matriculados</th>
+                    <th>Detalle</th>
+                </tr>
+            `; 
+
+            const tbody = document.getElementById('tabla-body');
+            datosActuales.forEach(estudiante => {
+                const cursos = estudiante.cursosDetalle.map(c => 
+                    `${c.codigoCurso || c.codigo_curso} - ${c.tipoClase || c.tipo_clase} (${c.letraGrupo || c.letra_grupo})`
+                ).join(', ');
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${estudiante.cui}</td>
+                        <td>${estudiante.apellidosNombres}</td>
+                        <td>${estudiante.correoInstitucional}</td>
+                        <td>${estudiante.cursosMatriculados}</td>
+                        <td style="font-size: 0.85rem">${cursos || 'Sin cursos'}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        function mostrarReporteCurso() {
+            document.getElementById('titulo-reporte').textContent = `Reporte del Curso: ${datosActuales.nombreCurso}`;
+            
+            const statsContainer = document.getElementById('stats-container');
+            statsContainer.style.display = 'grid';
+            
+            const totalEstudiantes = datosActuales.estudiantes.length;
+            const aprobados = datosActuales.estudiantes.filter(e => e.promedio >= 10.5).length;
+            const promedioGeneral = totalEstudiantes > 0 
+                ? (datosActuales.estudiantes.reduce((sum, e) => sum + (e.promedio || 0), 0) / totalEstudiantes).toFixed(2)
+                : 0;
+
+            statsContainer.innerHTML = `
+                <div class="stat-card">
+                    <div class="value">${totalEstudiantes}</div>
+                    <div class="label">Total Estudiantes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="value">${aprobados}</div>
+                    <div class="label">Aprobados</div>
+                </div>
+                <div class="stat-card">
+                    <div class="value">${totalEstudiantes - aprobados}</div>
+                    <div class="label">Desaprobados</div>
+                </div>
+                <div class="stat-card">
+                    <div class="value">${promedioGeneral}</div>
+                    <div class="label">Promedio General</div>
+                </div>
+            `;
+
+            const thead = document.getElementById('tabla-head');
+            thead.innerHTML = `
+                <tr>
+                    <th colspan="8" style="background: rgba(52, 152, 219, 0.1); color: #2c3e50; text-align: left; padding: 15px;">
+                        <strong>Docentes del Curso:</strong><br>
+                        ${datosActuales.docentes.map(d => 
+                            `${d.nombreDocente} - ${d.tipo_clase || d.tipoClase} (Grupo ${d.letraGrupo || d.letra_grupo})`
+                        ).join(' | ')}
+                    </th>
+                </tr>
+                <tr>
+                    <th>CUI</th>
+                    <th>Estudiante</th>
+                    <th>Grupo</th>
+                    <th>EP1</th>
+                    <th>EP2</th>
+                    <th>EP3</th>
+                    <th>Promedio</th>
+                    <th>Estado</th>
+                </tr>
+            `;
+
+            const tbody = document.getElementById('tabla-body');
+            datosActuales.estudiantes.forEach(est => {
+                const ep1 = est.notas['1'] != null ? est.notas['1'].toFixed(1) : '-';
+                const ep2 = est.notas['2'] != null ? est.notas['2'].toFixed(1) : '-';
+                const ep3 = est.notas['3'] != null ? est.notas['3'].toFixed(1) : '-';
+                const promedio = est.promedio != null ? est.promedio.toFixed(1) : '-';
+                const estado = est.promedio >= 10.5 ? 'Aprobado' : 'Desaprobado';
+                const estiloEstado = est.promedio >= 10.5 ? 'color: #2ecc71; font-weight: 700;' : 'color: #e74c3c; font-weight: 700;';
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${est.cui}</td>
+                        <td>${est.nombreEstudiante}</td>
+                        <td>${est.letraGrupo}</td>
+                        <td>${ep1}</td>
+                        <td>${ep2}</td>
+                        <td>${ep3}</td>
+                        <td><strong>${promedio}</strong></td>
+                        <td style="${estiloEstado}">${estado}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        function mostrarReporteDocentes() {
+            document.getElementById('titulo-reporte').textContent = 'Reporte General de Docentes';
+            
+            const statsContainer = document.getElementById('stats-container');
+            statsContainer.style.display = 'grid';
+            statsContainer.innerHTML = `
+                <div class="stat-card">
+                    <div class="value">${datosActuales.length}</div>
+                    <div class="label">Total Docentes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="value">${datosActuales.reduce((sum, d) => sum + d.totalCursos, 0)}</div>
+                    <div class="label">Total Cursos Asignados</div>
+                </div>
+            `;
+
+            const thead = document.getElementById('tabla-head');
+            thead.innerHTML = `
+                <tr>
+                    <th>ID</th>
+                    <th>Docente</th>
+                    <th>Departamento</th>
+                    <th>Curso</th>
+                    <th>Grupo</th>
+                    <th>Tipo</th>
+                    <th>% Asistencia</th>
+                    <th>Aprobados</th>
+                    <th>Desaprobados</th>
+                </tr>
+            `;
+
+            const tbody = document.getElementById('tabla-body');
+            datosActuales.forEach(docente => {
+                if (docente.cursos && docente.cursos.length > 0) {
+                    docente.cursos.forEach(curso => {
+                        tbody.innerHTML += `
+                            <tr>
+                                <td>${docente.idUsuario}</td>
+                                <td>${docente.apellidosNombres}</td>
+                                <td>${docente.departamento}</td>
+                                <td>${curso.codigoCurso} - ${curso.nombreCurso}</td>
+                                <td>${curso.letraGrupo}</td>
+                                <td>${curso.tipoClase}</td>
+                                <td>${curso.porcentajeAsistencia.toFixed(1)}%</td>
+                                <td>${curso.aprobados}</td>
+                                <td>${curso.desaprobados}</td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${docente.idUsuario}</td>
+                            <td>${docente.apellidosNombres}</td>
+                            <td>${docente.departamento}</td>
+                            <td colspan="6" style="text-align: center; color: #7f8c8d;">Sin cursos asignados</td>
+                        </tr>
+                    `;
+                }
+            });
+        }
+
+        function descargarPDF() {
+            if (!datosActuales) return;
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('landscape');
+
+            doc.setFontSize(18);
+            const titulo = document.getElementById('titulo-reporte').textContent;
+            doc.text(titulo, 14, 20);
+
+            doc.setFontSize(10);
+            doc.text(`Fecha: ${new Date().toLocaleDateString('es-PE')}`, 14, 28);
+
+            let startY = 35;
+
+            switch(tipoReporteActual) {
+                case 'estudiantes':
+                    generarPDFEstudiantes(doc, startY);
+                    break;
+                case 'cursos':
+                    generarPDFCurso(doc, startY);
+                    break;
+                case 'docentes':
+                    generarPDFDocentes(doc, startY);
+                    break;
+            }
+        }
+
+        function generarPDFEstudiantes(doc, startY) {
+            //Estadísticas
+            doc.setFontSize(12);
+            doc.text(`Total Estudiantes: ${datosActuales.length}`, 14, startY);
+            doc.text(`Total Matrículas: ${datosActuales.reduce((sum, e) => sum + e.cursosMatriculados, 0)}`, 14, startY + 7);
+
+            //Tabla
+            const tableData = datosActuales.map(e => {
+                const cursos = e.cursosDetalle.map(c => 
+                    `${c.codigoCurso} - ${c.tipoClase} (${c.letraGrupo})`
+                ).join(', ');
+
+                return [
+                    e.cui,
+                    e.apellidosNombres,
+                    e.correoInstitucional,
+                    e.cursosMatriculados,
+                    cursos || 'Sin cursos'
+                ];
+            });
+
+            doc.autoTable({
+                startY: startY + 15,
+                head: [['CUI', 'Apellidos y Nombres', 'Correo', 'Cursos', 'Detalle']],
+                body: tableData,
+                styles: { fontSize: 8, cellPadding: 2 },
+                headStyles: { fillColor: [52, 152, 219] },
+                columnStyles: {
+                    4: { cellWidth: 80 }
+                }
+            });
+
+            doc.save(`Reporte_Estudiantes_${new Date().getTime()}.pdf`);
+        }
+
+        function generarPDFCurso(doc, startY) {
+            //Información del curso
+            doc.setFontSize(14);
+            doc.text(`Curso: ${datosActuales.codigoCurso} - ${datosActuales.nombreCurso}`, 14, startY);
+
+            //Docentes
+            doc.setFontSize(10);
+            let yPos = startY + 7;
+            doc.text('Docentes:', 14, yPos);
+            datosActuales.docentes.forEach(d => {
+                yPos += 5;
+                doc.text(`  - ${d.nombreDocente} (${d.tipoClase} - Grupo ${d.letraGrupo})`, 14, yPos);
+            });
+
+            //Estadísticas
+            yPos += 10;
+            const totalEst = datosActuales.estudiantes.length;
+            const aprobados = datosActuales.estudiantes.filter(e => e.promedio >= 10.5).length;
+            const promedioGen = totalEst > 0 
+                ? (datosActuales.estudiantes.reduce((sum, e) => sum + (e.promedio || 0), 0) / totalEst).toFixed(2)
+                : 0;
+
+            doc.text(`Total: ${totalEst} | Aprobados: ${aprobados} | Desaprobados: ${totalEst - aprobados} | Promedio: ${promedioGen}`, 14, yPos);
+
+            //Tabla de estudiantes
+            const tableData = datosActuales.estudiantes.map(est => {
+                const ep1 = est.notas['1'] != null ? est.notas['1'].toFixed(1) : '-';
+                const ep2 = est.notas['2'] != null ? est.notas['2'].toFixed(1) : '-';
+                const ep3 = est.notas['3'] != null ? est.notas['3'].toFixed(1) : '-';
+                const promedio = est.promedio != null ? est.promedio.toFixed(1) : '-';
+                const estado = est.promedio >= 10.5 ? 'Aprobado' : 'Desaprobado';
+
+                return [
+                    est.cui,
+                    est.nombreEstudiante,
+                    est.letraGrupo,
+                    ep1,
+                    ep2,
+                    ep3,
+                    promedio,
+                    estado
+                ];
+            });
+
+            doc.autoTable({
+                startY: yPos + 5,
+                head: [['CUI', 'Estudiante', 'Grupo', 'EP1', 'EP2', 'EP3', 'Promedio', 'Estado']],
+                body: tableData,
+                styles: { fontSize: 8, cellPadding: 2 },
+                headStyles: { fillColor: [52, 152, 219] },
+                columnStyles: {
+                    1: { cellWidth: 50 }
+                }
+            });
+
+            doc.save(`Reporte_Curso_${datosActuales.codigoCurso}_${new Date().getTime()}.pdf`);
+        }
+
+        function generarPDFDocentes(doc, startY) {
+            //Estadísticas
+            doc.setFontSize(12);
+            doc.text(`Total Docentes: ${datosActuales.length}`, 14, startY);
+            doc.text(`Total Cursos Asignados: ${datosActuales.reduce((sum, d) => sum + d.totalCursos, 0)}`, 14, startY + 7);
+
+            //Preparar datos para la tabla
+            const tableData = [];
+            datosActuales.forEach(docente => {
+                if (docente.cursos && docente.cursos.length > 0) {
+                    docente.cursos.forEach(curso => {
+                        tableData.push([
+                            docente.idUsuario,
+                            docente.apellidosNombres,
+                            docente.departamento,
+                            `${curso.codigoCurso} - ${curso.nombreCurso}`,
+                            curso.letraGrupo,
+                            curso.tipoClase,
+                            curso.porcentajeAsistencia.toFixed(1) + '%',
+                            curso.aprobados,
+                            curso.desaprobados
+                        ]);
+                    });
+                } else {
+                    tableData.push([
+                        docente.idUsuario,
+                        docente.apellidosNombres,
+                        docente.departamento,
+                        'Sin cursos asignados',
+                        '-',
+                        '-',
+                        '-',
+                        '-',
+                        '-'
+                    ]);
+                }
+            });
+
+            doc.autoTable({
+                startY: startY + 15,
+                head: [['ID', 'Docente', 'Depto', 'Curso', 'Grupo', 'Tipo', '%Asis', 'Aprob', 'Desap']],
+                body: tableData,
+                styles: { fontSize: 7, cellPadding: 2 },
+                headStyles: { fillColor: [52, 152, 219] },
+                columnStyles: {
+                    1: { cellWidth: 35 },
+                    3: { cellWidth: 45 }
+                }
+            });
+
+            doc.save(`Reporte_Docentes_${new Date().getTime()}.pdf`);
+        }
+
+        function setupLogout() {
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', async function() {
+                    if (!confirm('¿Está seguro de que desea cerrar sesión?')) return;
+                    try {
+                        await fetch('/logout', { method: 'POST', credentials: 'same-origin' });
+                    } catch(e) {}
+                    sessionStorage.clear();
+                    localStorage.clear();
+                    window.location.href = '/Inicio_Sesion.html';
+                });
+            }
+        }
+    </script>
+</body>
+</html>

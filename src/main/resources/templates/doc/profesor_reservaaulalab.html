@@ -1,0 +1,2398 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disponibilidad de Aulas - LUMINA PROFESOR</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #9b59b6;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --info: #1abc9c;
+            --sidebar-width: 250px;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+            --my-reservation: #2ecc71;
+            --ocupado-fijo: #3498db;
+            --ocupado-otros: #e74c3c;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+
+        /* ==== SIDEBAR === */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: linear-gradient(180deg, var(--primary) 0%, #1a2530 100%);
+            color: white;
+            height: 100vh;
+            position: fixed;
+            overflow-y: auto;
+            box-shadow: 3px 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .logo {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .logo i {
+            color: var(--secondary);
+            font-size: 1.8rem;
+        }
+
+        .user-info {
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .user-details h3 {
+            font-size: 1rem;
+            margin-bottom: 3px;
+        }
+
+        .user-details p {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+
+        .logout-btn {
+            margin-left: auto;
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            opacity: 0.85;
+            transition: opacity 0.3s;
+            font-size: 1rem;
+        }
+
+        .logout-btn:hover {
+            opacity: 1;
+        }
+
+        .menu {
+            padding: 20px 0;
+        }
+
+        .menu-section {
+            margin-bottom: 10px;
+        }
+
+        .menu-title {
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            opacity: 0.7;
+            letter-spacing: 1px;
+        }
+
+        .menu-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+            text-decoration: none;
+            color: white;
+        }
+
+        .menu-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-left: 3px solid var(--secondary);
+        }
+
+        .menu-item.active {
+            background-color: rgba(52, 152, 219, 0.2);
+            border-left: 3px solid var(--secondary);
+        }
+
+        .menu-item i {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* CONTENIDO PRINCIPAL */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            padding: 20px;
+        }
+
+        .header {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px 30px;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            color: var(--secondary);
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header h1 i {
+            color: var(--primary);
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        .breadcrumb i {
+            font-size: 0.7rem;
+        }
+
+        /* CONTROLES Y FILTROS*/
+        .controls-panel {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+        }
+
+        .filters-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+            min-width: 180px;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            color: var(--secondary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .filter-group select, 
+        .filter-group input {
+            padding: 10px 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            background: white;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .filter-group select:focus, 
+        .filter-group input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+            outline: none;
+        }
+
+        .actions-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #34495e;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(44, 62, 80, 0.4);
+        }
+
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #27ae60;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4);
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c0392b;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+        }
+
+        .btn-info {
+            background-color: var(--info);
+            color: white;
+        }
+
+        .btn-info:hover {
+            background-color: #16a085;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(26, 188, 156, 0.4);
+        }
+
+        .btn-secondary {
+            background-color: #95a5a6;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #7f8c8d;
+            transform: translateY(-2px);
+        }
+
+        /* AMBIENTES */
+        .ambientes-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            transition: all 0.3s;
+        }
+
+        .ambientes-container.compact {
+            grid-template-columns: 350px 1fr;
+        }
+
+        .ambientes-panel {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s;
+            max-height: 600px;
+            overflow: hidden;
+        }
+
+        .ambientes-panel.compact {
+            position: sticky;
+            top: 20px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .ambientes-panel.compact::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .ambientes-panel.compact::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .ambientes-panel.compact::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+        }
+
+        .ambientes-panel.compact::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        .panel-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .panel-title h2 {
+            margin: 0;
+            color: var(--secondary);
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ambientes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            transition: all 0.3s;
+        }
+
+        .ambientes-panel.compact .ambientes-grid {
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        .ambiente-card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border-left: 4px solid var(--primary);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ambiente-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .ambiente-card.lab {
+            border-left-color: var(--accent);
+        }
+
+        .ambiente-card.lab::before {
+            background: linear-gradient(90deg, var(--accent), var(--info));
+        }
+
+        .ambiente-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .ambiente-card:hover::before {
+            opacity: 1;
+        }
+
+        .ambiente-card.selected {
+            border-color: var(--secondary);
+            background-color: #f0f9ff;
+            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.2);
+        }
+
+        .ambiente-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .ambiente-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .ambiente-type {
+            background: var(--primary);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .ambiente-type.lab {
+            background: var(--accent);
+        }
+
+        .ambiente-details {
+            font-size: 0.9rem;
+            color: #555;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .ambiente-detail {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ambiente-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .favorite-btn {
+            background: none;
+            border: none;
+            color: #ddd;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            padding: 5px;
+            border-radius: 50%;
+        }
+
+        .favorite-btn:hover {
+            color: #f1c40f;
+            background: rgba(241, 196, 15, 0.1);
+        }
+
+        .favorite-btn.active {
+            color: #f1c40f;
+        }
+
+        /* PANEL DE HORARIO */
+        .horario-panel {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s;
+            display: none;
+        }
+
+        .ambientes-container.compact .horario-panel {
+            display: block;
+        }
+
+        .horario-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .horario-header h2 {
+            margin: 0;
+            color: var(--secondary);
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .horario-title {
+            color: var(--primary);
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .schedule-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .schedule-table th, 
+        .schedule-table td {
+            border: 1px solid #e8e8e8;
+            text-align: center;
+            padding: 12px 8px;
+        }
+
+        .schedule-table th {
+            background-color: var(--secondary);
+            color: white;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+
+        .schedule-table td {
+            height: 70px;
+            vertical-align: top;
+            position: relative;
+        }
+
+        .time-cell {
+            font-weight: 600;
+            background-color: #f8f9fa;
+            color: var(--secondary);
+        }
+
+        /* Cursos fijos del profesor (azul) */
+        .ocupado-fijo {
+            background-color: var(--ocupado-fijo);
+            color: white;
+            border-radius: 6px;
+            padding: 4px;
+            font-size: 0.75rem;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-left: 3px solid #2980b9;
+        }
+
+        .parte-fija {
+            background-color: var(--ocupado-fijo);
+            color: white;
+            padding: 2px 4px;
+            font-size: 0.7rem;
+            position: absolute;
+            left: 0;
+            right: 0;
+            border-left: 3px solid #4c8eb9ff;
+        }
+
+        /* Horarios de otros profesores (rojo) */
+        .ocupado {
+            background-color: var(--ocupado-otros);
+            color: white;
+            border-radius: 6px;
+            padding: 4px;
+            font-size: 0.75rem;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-left: 3px solid #c0392b;
+        }
+
+        .parte-reservada {
+            background-color: var(--ocupado-otros);
+            color: white;
+            padding: 2px 4px;
+            font-size: 0.7rem;
+            position: absolute;
+            left: 0;
+            right: 0;
+            border-left: 3px solid #7c2e8fff;
+        }
+
+        /* Mis reservas personales */
+        .mi-reserva {
+            background-color: var(--my-reservation);
+            color: white;
+            border-radius: 6px;
+            padding: 4px;
+            font-size: 0.75rem;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-left: 3px solid #c5af67ff;
+        }
+
+        /* Espacios disponibles */
+        .disponible {
+            background-color: #d4edda;
+            color: #155724;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 6px;
+            padding: 4px;
+            font-size: 0.75rem;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-left: 3px solid #28a745;
+        }
+
+        .disponible:hover {
+            background-color: #c3e6cb;
+            transform: scale(1.02);
+        }
+
+        .parte-disponible {
+            background-color: #d4edda;
+            color: #155724;
+            cursor: pointer;
+            transition: all 0.2s;
+            padding: 2px 4px;
+            font-size: 0.7rem;
+            position: absolute;
+            left: 0;
+            right: 0;
+            border-left: 3px solid #28a745;
+        }
+
+        .parte-disponible:hover {
+            background-color: #c3e6cb;
+            transform: scale(1.02);
+        }
+
+        .reserva-parcial {
+            position: relative;
+            height: 100%;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .curso-nombre {
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
+
+        .curso-detalle {
+            font-size: 0.65rem;
+            margin-top: 2px;
+        }
+
+        /* MIS RESERVAS PANEL */
+        .mis-reservas-panel {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .mis-reservas-panel.active {
+            display: block;
+        }
+
+        .mis-reservas-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .mis-reservas-header h2 {
+            margin: 0;
+            color: var(--secondary);
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .reservas-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+        }
+
+        .reserva-card {
+            background-color: white;
+            border-left: 4px solid var(--primary);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .reserva-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+        }
+
+        .reserva-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .reserva-info h4 {
+            margin: 0 0 5px 0;
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+
+        .reserva-details {
+            font-size: 0.85rem;
+            color: #444;
+            line-height: 1.4;
+        }
+
+        .reserva-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 5px;
+        }
+
+        .no-reservas {
+            text-align: center;
+            padding: 40px 20px;
+            color: #7f8c8d;
+            grid-column: 1 / -1;
+        }
+
+        .no-reservas i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #bdc3c7;
+        }
+
+        /*MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: modalAppear 0.3s ease-out;
+        }
+
+        @keyframes modalAppear {
+            from {
+                opacity: 0;
+                transform: translateY(-20px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .modal-header h2 {
+            color: var(--secondary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #7f8c8d;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .close-modal:hover {
+            color: var(--danger);
+        }
+
+        .reserva-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: var(--secondary);
+            font-size: 0.9rem;
+        }
+
+        .form-group input, 
+        .form-group select, 
+        .form-group textarea {
+            padding: 12px 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            background: white;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus, 
+        .form-group select:focus, 
+        .form-group textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+            outline: none;
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .rango-info {
+            background: #f0f9ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border-left: 4px solid var(--info);
+            font-size: 0.9rem;
+            grid-column: 1 / -1;
+        }
+
+        .form-actions {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        /* NOTIFICACIÓN */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            z-index: 1100;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transform: translateX(150%);
+            transition: transform 0.5s;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: var(--success);
+        }
+
+        .notification.error {
+            background: var(--danger);
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 1024px) {
+            .ambientes-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+            
+            .reserva-form {
+                grid-template-columns: 1fr;
+            }
+            
+            .ambientes-container.compact {
+                grid-template-columns: 1fr;
+            }
+            
+            .ambientes-panel.compact {
+                position: relative;
+                max-height: 400px;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 70px;
+                overflow: visible;
+            }
+
+            .logo h1, 
+            .user-details, 
+            .menu-title, 
+            .menu-item span {
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 70px;
+            }
+
+            .logo {
+                justify-content: center;
+            }
+
+            .user-info {
+                justify-content: center;
+            }
+
+            .menu-item {
+                justify-content: center;
+                padding: 15px 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .filters-row {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .filter-group {
+                min-width: 100%;
+            }
+            
+            .actions-row {
+                justify-content: center;
+            }
+            
+            .reservas-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .modal-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- ====SIDEBAR ==== -->
+    <div class="sidebar">
+        <div class="logo">
+            <i class="fas fa-university"></i>
+            <h1>LUMINA PROFESOR</h1>
+        </div>
+        
+        <div class="user-info">
+            <div class="user-avatar" id="userAvatar">P</div>
+            <div class="user-details">
+                <h3 id="profesor-name">Profesor</h3>
+                <p id="profesor-especialidad">Docente</p>
+            </div>
+            <button class="logout-btn" id="logoutBtn">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </div>
+        
+        <div class="menu">
+            <div class="menu-section">
+                <a href="nuevo_profesor.html" class="menu-item">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>DASHBOARD</span>
+                </a>
+                <div class="menu-title">Panel Principal</div>
+            </div>
+            
+            <div class="menu-section">
+                <a href="nuevo_profesor_asistenciabloqueada.html" class="menu-item">
+                    <i class="fas fa-clipboard-check"></i>
+                    <span>REGISTRAR ASISTENCIA</span>
+                </a>
+            </div>
+            
+            <div class="menu-section">
+                <a href="profesor_notas.html" class="menu-item">
+                    <i class="fas fa-edit"></i>
+                    <span>INGRESAR NOTAS</span>
+                </a>
+            </div>
+            
+            <div class="menu-section">
+                <a href="profesor_estadisticas.html" class="menu-item">
+                    <i class="fas fa-chart-line"></i>
+                    <span>ESTADISTICAS</span>
+                </a>
+            </div>
+            
+            <div class="menu-section">
+                <a href="profesor_horario.html" class="menu-item">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>VER HORARIO</span>
+                </a>
+            </div>
+            
+            <div class="menu-section">
+                <a href="profesor_reservaaulalab.html" class="menu-item active">
+                    <i class="fas fa-door-open"></i>
+                    <span>DISPONIBILIDAD DE AULAS</span>
+                </a>
+            </div>
+            
+            <div class="menu-section">
+                <a href="nuevo_profesor_contenido.html" class="menu-item">
+                    <i class="fas fa-upload"></i>
+                    <span>SUBIR SÍLABOS / CONTENIDO</span>
+                </a>
+            </div>
+            
+            <div class="menu-section">
+                <a href="profesor_reportes.html" class="menu-item">
+                    <i class="fas fa-file-pdf"></i>
+                    <span>REPORTES PDF</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!--CONTENIDO PRINCIPAL -->
+    <main class="main-content">
+        <div class="header">
+            <div>
+                <h1><i class="fas fa-door-open"></i> Disponibilidad de Aulas y Laboratorios</h1>
+                <div class="breadcrumb">
+                    <span>Inicio</span>
+                    <i class="fas fa-chevron-right"></i>
+                    <span>Disponibilidad de Aulas</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel de controles y filtros -->
+        <div class="controls-panel">
+            <div class="filters-row">
+                <div class="filter-group">
+                    <label for="filter-type"><i class="fas fa-door-open"></i> Tipo de Ambiente</label>
+                    <select id="filter-type">
+                        <option value="">Todos los tipos</option>
+                        <option value="theory">Aula de Teoría</option>
+                        <option value="lab">Laboratorio</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="filter-capacity"><i class="fas fa-users"></i> Capacidad Mínima</label>
+                    <input type="number" id="filter-capacity" min="1" max="200" placeholder="Ej: 30">
+                </div>
+                
+                <div class="filter-group">
+                    <label for="filter-favorites"><i class="fas fa-star"></i> Mostrar</label>
+                    <select id="filter-favorites">
+                        <option value="all">Todos los ambientes</option>
+                        <option value="favorites">Solo favoritos</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="actions-row">
+                <button class="btn btn-info" id="btnMisReservas">
+                    <i class="fas fa-list-check"></i> Mis Reservas
+                </button>
+            </div>
+        </div>
+
+        <!-- Contenedor de ambientes y horario -->
+        <div class="ambientes-container" id="ambientesContainer">
+            <!-- Panel de ambientes -->
+            <div class="ambientes-panel" id="ambientesPanel">
+                <div class="panel-title">
+                    <h2><i class="fas fa-list"></i> Ambientes Disponibles</h2>
+                    <span id="ambiente-count">0 ambientes</span>
+                </div>
+                
+                <div class="ambientes-grid" id="ambientesGrid">
+                    <!-- Los ambientes se cargarán dinámicamente -->
+                </div>
+            </div>
+
+            <!-- Panel de horario -->
+            <div class="horario-panel" id="horarioSection">
+                <div class="horario-header">
+                    <h2><i class="fas fa-calendar-alt"></i> Horario del Ambiente</h2>
+                    <button class="btn btn-secondary" onclick="cambiarAmbiente()">
+                        <i class="fas fa-exchange-alt"></i> Cambiar Ambiente
+                    </button>
+                </div>
+                <div class="horario-title" id="nombreAmbiente"></div>
+                
+                <div class="schedule-container">
+                    <table class="schedule-table">
+                        <thead>
+                            <tr>
+                                <th>Hora</th>
+                                <th>Lunes</th>
+                                <th>Martes</th>
+                                <th>Miércoles</th>
+                                <th>Jueves</th>
+                                <th>Viernes</th>
+                            </tr>
+                        </thead>
+                        <tbody id="horarioCompleto">
+                            <!-- Los horarios se cargarán dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel de mis Reservas -->
+        <div class="mis-reservas-panel" id="misReservasSection">
+            <div class="mis-reservas-header">
+                <h2><i class="fas fa-list-check"></i> Mis Reservas</h2>
+                <button class="btn btn-secondary" onclick="cerrarMisReservas()">
+                    <i class="fas fa-times"></i> Cerrar
+                </button>
+            </div>
+            
+            <div class="reservas-container" id="listaReservas">
+                <!-- Las reservas se cargarán dinámicamente -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal de Reserva -->
+    <div class="modal" id="reservaModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-calendar-plus"></i> Nueva Reserva</h2>
+                <button class="close-modal" id="closeModal">&times;</button>
+            </div>
+            
+            <div class="rango-info">
+                <strong><i class="fas fa-calendar-day"></i> Día seleccionado:</strong> <span id="diaSeleccionado">-</span><br>
+                <strong><i class="fas fa-clock"></i> Bloque seleccionado:</strong> <span id="bloqueSeleccionado">-</span><br>
+                <strong><i class="fas fa-hourglass"></i> Rango disponible:</strong> <span id="rangoDisponible">-</span><br>
+                <strong><i class="fas fa-user-tie"></i> Responsable:</strong> <span id="responsableInfo">-</span>
+            </div>
+            
+            <form class="reserva-form" id="reservaForm">
+                <div class="form-group">
+                    <label><i class="fas fa-play-circle"></i> Hora inicio</label>
+                    <select id="horaInicio" required>
+                        <option value="">Seleccionar hora inicio</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-stop-circle"></i> Hora fin</label>
+                    <select id="horaFin" required>
+                        <option value="">Seleccionar hora fin</option>
+                    </select>
+                </div>
+                
+                <div class="form-group full-width">
+                    <label><i class="fas fa-tag"></i> Motivo</label>
+                    <select id="motivoReserva" required>
+                        <option value="">Seleccionar motivo</option>
+                        <option value="Taller">Taller</option>
+                        <option value="Laboratorio">Laboratorio</option>
+                        <option value="Recuperación de clase">Recuperación de clase</option>
+                        <option value="Reunión">Reunión</option>
+                        <option value="Examen">Examen</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                </div>
+                
+                <div class="form-group full-width">
+                    <label><i class="fas fa-sticky-note"></i> Descripción adicional (opcional)</label>
+                    <textarea id="reservaDescripcion" placeholder="Describe el propósito de tu reserva..."></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-success">Confirmar Reserva</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notificación -->
+    <div class="notification" id="notification">
+        <i class="fas fa-check-circle"></i>
+        <span id="notification-text">Operación exitosa</span>
+    </div>
+
+
+<script>
+// VARIABLES GLOBALES
+let fechaActual = null;
+const dias = ["Lunes","Martes","Miércoles","Jueves","Viernes"];
+const horarios = [];
+for (let h = 7; h <= 18; h++) {
+    for (let m = 0; m < 60; m += 10) {
+        if (h === 18 && m > 40) break;
+        horarios.push(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`);
+    }
+}
+
+let ambienteSel = null;
+let misReservas = [];
+let ambientesFavoritos = JSON.parse(localStorage.getItem('ambientesFavoritos')) || [];
+let ambientes = [];
+let reservasExistentes = [];
+let horariosFijosProfesor = [];
+let profesorActual = null;
+
+// Variables para reserva
+let diaActual = null;
+let bloqueInicio = null;
+let bloqueFin = null;
+
+// CARGA INICIAL
+document.addEventListener('DOMContentLoaded', async function() {
+    console.log('🚀 Iniciando carga de página...');
+    
+    // Cargar datos del profesor y autenticación
+    const autenticado = await cargarDatosProfesor();
+    if (!autenticado) return;
+    
+    // IMPORTANTE: Cargar en el orden correcto
+    console.log('Cargando horarios fijos del profesor...');
+    await cargarHorariosFijos();    
+    console.log('Cargando reservas del profesor...');
+    await cargarReservasDesdeBD();    
+    console.log('Cargando horarios generales (OTROS DOCENTES)...');
+    await cargarHorariosGenerales();    
+    console.log('Cargando ambientes...');
+    await cargarAmbientesDesdeBD();
+    
+    console.log('✅ Carga completada');
+    console.log('📈 Resumen:');
+    console.log('  - Ambientes:', ambientes.length);
+    console.log('  - Horarios generales:', reservasExistentes.length);
+    console.log('  - Mis horarios fijos:', horariosFijosProfesor.length);
+    console.log('  - Mis reservas:', misReservas.length);
+    
+    // Diagnóstico detallado
+    setTimeout(diagnosticar, 1000);
+});
+
+async function diagnosticar() {
+    console.log('🔍 === DIAGNÓSTICO COMPLETO ===');
+    console.log('Ambientes cargados:', ambientes.length);
+    console.log('Horarios generales (otros docentes):', reservasExistentes.length);
+    console.log('Mis horarios fijos:', horariosFijosProfesor.length);
+    console.log('Mis reservas:', misReservas.length);
+    
+    if (reservasExistentes.length > 0) {
+        console.log('📋 Detalle horarios generales (primeros 5):');
+        reservasExistentes.slice(0, 5).forEach((r, i) => {
+            console.log(`  ${i+1}. ${r.ambiente} - ${r.dia} ${r.horaInicio}-${r.horaFin} - ${r.profesor} (${r.tipo})`);
+        });
+    } else {
+        console.warn('⚠️ NO HAY HORARIOS GENERALES CARGADOS');
+        console.log('Verificando endpoint...');
+        
+        // Intentar cargar manualmente
+        const pathParts = window.location.pathname.split('/').filter(Boolean);
+        const contextPath = pathParts.length > 0 ? '/' + pathParts[0] : '';
+        
+        try {
+            const testResponse = await fetch(`${contextPath}/api/profesores/horarios-generales`, {
+                method: 'GET',
+                credentials: 'same-origin'
+            });
+            
+            console.log('Test response status:', testResponse.status);
+            const testData = await testResponse.json();
+            console.log('Test data recibida:', testData);
+            
+        } catch (e) {
+            console.error('Error en test manual:', e);
+        }
+    }
+    
+    if (horariosFijosProfesor.length > 0) {
+        console.log('📋 Mis horarios fijos:');
+        horariosFijosProfesor.forEach((r, i) => {
+            console.log(`  ${i+1}. ${r.ambiente} - ${r.dia} ${r.horaInicio}-${r.horaFin} - ${r.curso}`);
+        });
+    }
+    
+    if (misReservas.length > 0) {
+        console.log('📋 Mis reservas:');
+        misReservas.forEach((r, i) => {
+            console.log(`  ${i+1}. ${r.ambiente} - ${r.dia} ${r.horaInicio}-${r.horaFin} - ${r.motivo}`);
+        });
+    }
+}
+
+// Llamar al diagnóstico después de cargar todo
+setTimeout(diagnosticar, 2000);
+
+
+// AUTENTICACIÓN Y DATOS DEL PROFESOR
+async function cargarDatosProfesor() {
+    try {
+        const pathParts = window.location.pathname.split('/').filter(Boolean);
+        const contextPath = pathParts.length > 0 ? '/' + pathParts[0] : '';
+        
+        const response = await fetch(`${contextPath}/api/profesores/me`, {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' },
+            cache: 'no-store',
+            credentials: 'same-origin'
+        });
+
+        if (response.status === 401) {
+            alert('No autenticado. Redirigiendo al inicio de sesión.');
+            window.location.href = '/Inicio_Sesion.html';
+            return false;
+        }
+
+        if (!response.ok) {
+            console.error('Error al obtener profesor:', response.status);
+            return false;
+        }
+
+        const profesor = await response.json();
+        console.log('✅ Profesor autenticado:', profesor);
+        
+        profesorActual = profesor.apellidosNombres || 'Profesor';
+        const departamento = profesor.departamento || 'Docente';
+        const iniciales = profesorActual.split(' ').map(p => p[0]).slice(0,2).join('').toUpperCase();
+
+        document.getElementById('profesor-name').textContent = profesorActual;
+        document.getElementById('profesor-especialidad').textContent = departamento;
+        document.getElementById('userAvatar').textContent = iniciales;
+
+        return true;
+
+    } catch(err) {
+        console.error("Error al cargar datos del profesor:", err);
+        return false;
+    }
+}
+
+// CARGA DE DATOS DESDE BD
+async function cargarAmbientesDesdeBD() {
+    try {
+        console.log('📦 Cargando ambientes desde BD...');
+        const pathParts = window.location.pathname.split('/').filter(Boolean);
+        const contextPath = pathParts.length > 0 ? '/' + pathParts[0] : '';
+        
+        const response = await fetch(`${contextPath}/api/profesores/ambientes`, {
+            method: 'GET',
+            credentials: 'same-origin'
+        });
+        
+        if (response.ok) {
+            const ambientesBD = await response.json();
+            console.log('✅ Ambientes cargados:', ambientesBD);
+            
+            if (ambientesBD.length === 0) {
+                console.warn('⚠️ No hay ambientes');
+                ambientes = [];
+                cargarAmbientes();
+                return;
+            }
+            
+            ambientes = ambientesBD.map(ambiente => {
+                let equipos = [];
+                if (ambiente.tipo === 'theory') {
+                    equipos = ['Proyector', 'WiFi', 'Pizarra'];
+                    if (ambiente.capacidad > 40) equipos.push('Pizarra Digital');
+                } else if (ambiente.tipo === 'lab') {
+                    equipos = ['Computadoras', 'Red', 'Software'];
+                }
+                
+                return {
+                    id: ambiente.id,
+                    nombre: ambiente.nombre || `Ambiente ${ambiente.id}`,
+                    tipo: ambiente.tipo,
+                    capacidad: ambiente.capacidad,
+                    equipos: equipos
+                };
+            });
+            
+            cargarAmbientes();
+            
+        } else {
+            console.error('❌ Error HTTP:', response.status);
+            ambientes = [];
+            cargarAmbientes();
+        }
+    } catch (error) {
+        console.error('💥 Error de conexión:', error);
+        ambientes = [];
+        cargarAmbientes();
+    }
+}
+
+async function cargarHorariosGenerales() {
+    try {
+        console.log('=== CARGANDO HORARIOS GENERALES (OTROS DOCENTES) ===');
+        const pathParts = window.location.pathname.split('/').filter(Boolean);
+        const contextPath = pathParts.length > 0 ? '/' + pathParts[0] : '';
+        
+        const response = await fetch(`${contextPath}/api/profesores/horarios-generales`, {
+            method: 'GET',
+            credentials: 'same-origin'
+        });
+        
+        console.log('Response status:', response.status);
+        
+        if (response.ok) {
+            const horariosBD = await response.json();
+            console.log('✅ Horarios generales recibidos:', horariosBD.length);
+            
+            if (horariosBD.length === 0) {
+                console.warn('⚠️ No se recibieron horarios generales');
+            }
+            
+            // Convertir a formato esperado
+            reservasExistentes = horariosBD.map(h => {
+                const horario = {
+                    ambiente: h.ambiente,
+                    dia: h.dia ? h.dia.toUpperCase() : '',
+                    horaInicio: convertirHora(h.horaInicio),
+                    horaFin: convertirHora(h.horaFin),
+                    curso: h.motivo || h.curso || 'Clase',
+                    profesor: h.profesor || 'Docente',
+                    tipo: h.tipo_clase || h.origen || 'CLASE'
+                };
+                
+                console.log('  📌 Horario:', horario.ambiente, horario.dia, 
+                           horario.horaInicio + '-' + horario.horaFin, 
+                           horario.profesor);
+                
+                return horario;
+            });
+            
+            console.log('✅ Total horarios procesados:', reservasExistentes.length);
+            
+        } else {
+            console.error('❌ Error HTTP al cargar horarios generales:', response.status);
+            const errorText = await response.text();
+            console.error('Error details:', errorText);
+            reservasExistentes = [];
+        }
+    } catch (error) {
+        console.error('💥 Error de conexión al cargar horarios generales:', error);
+        reservasExistentes = [];
+    }
+}
+
+async function cargarHorariosFijos() {
+    try {
+        console.log('📚 Cargando horarios fijos del profesor...');
+        const pathParts = window.location.pathname.split('/').filter(Boolean);
+        const contextPath = pathParts.length > 0 ? '/' + pathParts[0] : '';
+        
+        const response = await fetch(`${contextPath}/api/profesores/me/horarios`, {
+            method: 'GET',
+            credentials: 'same-origin'
+        });
+        
+        if (response.ok) {
+            const horarios = await response.json();
+            horariosFijosProfesor = horarios.map(h => ({
+                ambiente: h.numero_salon,
+                dia: h.dia_semana.toUpperCase(),
+                horaInicio: convertirHora(h.hora_inicio),
+                horaFin: convertirHora(h.hora_fin),
+                curso: h.nombre_curso || h.motivo || 'Curso',
+                profesor: profesorActual,
+                tipo: 'FIJO'
+            }));
+            console.log('✅ Horarios fijos cargados:', horariosFijosProfesor.length);
+        }
+    } catch (error) {
+        console.error('❌ Error al cargar horarios fijos:', error);
+        horariosFijosProfesor = [];
+    }
+}
+
+async function cargarReservasDesdeBD() {
+    try {
+        console.log('🎫 Cargando mis reservas...');
+        const pathParts = window.location.pathname.split('/').filter(Boolean);
+        const contextPath = pathParts.length > 0 ? '/' + pathParts[0] : '';
+        
+        const response = await fetch(`${contextPath}/api/profesores/me/reservas`, {
+            method: 'GET',
+            credentials: 'same-origin'
+        });
+        
+        if (response.ok) {
+            const reservasBD = await response.json();
+            console.log('📦 Reservas recibidas desde BD:', reservasBD);
+            
+            misReservas = reservasBD.map(r => {
+                // Usar fecha_reserva directamente de la BD
+                const fecha = r.fecha_reserva || obtenerFechaDelDia(r.dia_semana);
+                
+                console.log('Procesando reserva:', {
+                    id: r.id_reserva,
+                    salon: r.numero_salon,
+                    dia: r.dia_semana,
+                    fecha: fecha,
+                    hora: `${r.hora_inicio}-${r.hora_fin}`
+                });
+                
+                return {
+                    id_reserva: r.id_reserva,
+                    ambiente: r.numero_salon,
+                    dia: r.dia_semana ? r.dia_semana.toUpperCase() : '',
+                    horaInicio: convertirHora(r.hora_inicio),
+                    horaFin: convertirHora(r.hora_fin),
+                    motivo: r.motivo || 'Sin motivo',
+                    descripcion: r.descripcion || '',
+                    fecha: fecha,
+                    responsable: profesorActual,
+                    estado: r.estado_reserva || 'CONFIRMADA'
+                };
+            });
+            
+            console.log('✅ Mis reservas procesadas:', misReservas.length);
+            console.log('Reservas finales:', misReservas);
+            
+            // Actualizar la vista inmediatamente
+            actualizarMisReservas();
+            
+        } else {
+            console.error('❌ Error al cargar reservas:', response.status);
+            const errorText = await response.text();
+            console.error('Error details:', errorText);
+            misReservas = [];
+            actualizarMisReservas();
+        }
+    } catch (error) {
+        console.error('❌ Error de conexión al cargar reservas:', error);
+        misReservas = [];
+        actualizarMisReservas();
+    }
+}
+
+// FUNCIONES DE UTILIDAD
+function convertirHora(horaBD) {
+    if (!horaBD) return '00:00';
+    
+    // Convertir a string
+    const horaStr = String(horaBD).trim();
+    
+    // Si ya tiene formato HH:MM correcto, retornar
+    if (/^\d{2}:\d{2}$/.test(horaStr)) {
+        return horaStr;
+    }
+    
+    // Si tiene formato 00:HH:MM:SS o HH:MM:SS (desde BD)
+    const parts = horaStr.split(':');
+    
+    if (parts.length >= 3) {
+        // Formato 00:HH:MM:SS o HH:MM:SS
+        const horas = parts[parts.length - 3].padStart(2, '0');
+        const minutos = parts[parts.length - 2].padStart(2, '0');
+        return `${horas}:${minutos}`;
+    }
+    
+    if (parts.length === 2) {
+        // Formato HH:MM
+        return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}`;
+    }
+    
+    console.warn('Formato de hora no reconocido:', horaBD);
+    return '00:00';
+}
+
+function normalizeDia(dia) {
+    if (!dia) return null;
+    const raw = String(dia).trim().toUpperCase();
+    const map = {
+        'LUN':'LUNES','LUNES':'LUNES',
+        'MAR':'MARTES','MARTES':'MARTES',
+        'MIE':'MIERCOLES','MIÉ':'MIERCOLES','MIÉRCOLES':'MIERCOLES','MIERCOLES':'MIERCOLES',
+        'JUE':'JUEVES','JUEVES':'JUEVES',
+        'VIE':'VIERNES','VIERNES':'VIERNES'
+    };
+    return map[raw] || raw;
+}
+
+function horaAMinutos(hora) {
+    const [h, m] = hora.split(':').map(Number);
+    return h * 60 + m;
+}
+
+function minutosAHora(minutos) {
+    const h = Math.floor(minutos / 60);
+    const m = minutos % 60;
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+}
+
+// GESTIÓN DE AMBIENTES
+function cargarAmbientes() {
+    const grid = document.getElementById("ambientesGrid");
+    
+    const tipoFiltro = document.getElementById("filter-type").value;
+    const capacidadFiltro = document.getElementById("filter-capacity").value;
+    const favoritosFiltro = document.getElementById("filter-favorites").value;
+    
+    let ambientesFiltrados = ambientes.filter(a => {
+        return (!tipoFiltro || a.tipo === tipoFiltro) &&
+               (!capacidadFiltro || a.capacidad >= parseInt(capacidadFiltro));
+    });
+    
+    if (favoritosFiltro === "favorites") {
+        ambientesFiltrados = ambientesFiltrados.filter(a => ambientesFavoritos.includes(a.id));
+    }
+    
+    document.getElementById("ambiente-count").textContent = `${ambientesFiltrados.length} ambientes`;
+    
+    if (ambientesFiltrados.length === 0) {
+        grid.innerHTML = `
+            <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #7f8c8d;">
+                <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 15px; color: #bdc3c7;"></i>
+                <h3>No se encontraron ambientes</h3>
+                <p>Intenta ajustar los filtros o verifica que existan ambientes en la base de datos</p>
+            </div>
+        `;
+        return;
+    }
+    
+    grid.innerHTML = ambientesFiltrados.map(a => {
+        const esFavorito = ambientesFavoritos.includes(a.id);
+        const tipoTexto = a.tipo === "theory" ? "Aula Teoría" : "Laboratorio";
+        const tipoClase = a.tipo === "theory" ? "" : "lab";
+        const esSeleccionado = ambienteSel && ambienteSel.id === a.id;
+        
+        return `<div class="ambiente-card ${tipoClase} ${esSeleccionado ? 'selected' : ''}" onclick="seleccionarAmbiente('${a.id}')">
+            <div class="ambiente-header">
+                <div class="ambiente-name">${a.nombre}</div>
+                <div class="ambiente-type ${tipoClase}">${tipoTexto}</div>
+            </div>
+            <div class="ambiente-details">
+                <div class="ambiente-detail">
+                    <i class="fas fa-users"></i>
+                    <span>Capacidad: ${a.capacidad} personas</span>
+                </div>
+                <div class="ambiente-detail">
+                    <i class="fas fa-microchip"></i>
+                    <span>${a.equipos.join(", ")}</span>
+                </div>
+            </div>
+            <div class="ambiente-footer">
+                <span class="status-available">Disponible</span>
+                <button class="favorite-btn ${esFavorito ? 'active' : ''}" onclick="toggleFavorito(event, '${a.id}')">
+                    <i class="${esFavorito ? 'fas' : 'far'} fa-star"></i>
+                </button>
+            </div>
+        </div>`;
+    }).join("");
+}
+
+function obtenerFechaDelDia(diaSemana) {
+    const diasIndex = {
+        "LUNES": 1,
+        "MARTES": 2,
+        "MIERCOLES": 3,
+        "MIÉRCOLES": 3,
+        "JUEVES": 4,
+        "VIERNES": 5
+    };
+
+    // Normalizar el día a mayúsculas
+    const diaNormalizado = diaSemana.toUpperCase();
+    
+    let hoy = new Date();
+    let diaActualSemana = hoy.getDay(); // 0=Domingo, 1=Lunes, ..., 6=Sábado
+
+    // Convertir domingo (0) a 7 para facilitar cálculo
+    if (diaActualSemana === 0) diaActualSemana = 7;
+
+    let target = diasIndex[diaNormalizado];
+    
+    if (!target) {
+        console.warn('Día no válido:', diaSemana);
+        return hoy.toISOString().split("T")[0];
+    }
+    
+    let diff = target - diaActualSemana;
+
+    // Si el día ya pasó esta semana, buscar en la próxima
+    if (diff < 0) {
+        diff += 7;
+    }
+
+    let fecha = new Date();
+    fecha.setDate(hoy.getDate() + diff);
+
+    const fechaFormateada = fecha.toISOString().split("T")[0];
+    console.log(`📅 Día: ${diaSemana} -> Fecha: ${fechaFormateada}`);
+    
+    return fechaFormateada;
+}
+
+function seleccionarAmbiente(id) {
+    console.log('🎯 Seleccionando ambiente:', id);
+    ambienteSel = ambientes.find(a => a.id === id);
+    
+    if (!ambienteSel) {
+        console.error('❌ No se encontró el ambiente:', id);
+        return;
+    }
+    
+    const container = document.getElementById("ambientesContainer");
+    const panel = document.getElementById("ambientesPanel");
+    
+    container.classList.add("compact");
+    panel.classList.add("compact");
+    
+    document.getElementById("nombreAmbiente").textContent = ambienteSel.nombre;
+    cargarAmbientes();
+    
+    setTimeout(() => {
+        cargarHorario();
+    }, 100);
+}
+
+function cambiarAmbiente() {
+    ambienteSel = null;
+    const container = document.getElementById("ambientesContainer");
+    const panel = document.getElementById("ambientesPanel");
+    container.classList.remove("compact");
+    panel.classList.remove("compact");
+    cargarAmbientes();
+}
+
+function toggleFavorito(event, idAmbiente) {
+    event.stopPropagation();
+    const index = ambientesFavoritos.indexOf(idAmbiente);
+    if (index > -1) {
+        ambientesFavoritos.splice(index, 1);
+        mostrarNotificacion("Eliminado de favoritos", "success");
+    } else {
+        ambientesFavoritos.push(idAmbiente);
+        mostrarNotificacion("Añadido a favoritos", "success");
+    }
+    localStorage.setItem('ambientesFavoritos', JSON.stringify(ambientesFavoritos));
+    cargarAmbientes();
+}
+
+// GENERACIÓN DE HORARIO
+function cargarHorario() {
+    console.log('📅 === cargarHorario() EJECUTÁNDOSE ===');
+    console.log('ambienteSel:', ambienteSel);
+    
+    const tbody = document.getElementById("horarioCompleto");
+    
+    if (!ambienteSel) {
+        console.log('⚠️ No hay ambiente seleccionado');
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 40px; color: #7f8c8d;">
+            <i class="fas fa-door-open" style="font-size: 2rem; margin-bottom: 10px;"></i><br>
+            Selecciona un ambiente para ver su horario
+        </td></tr>`;
+        return;
+    }
+    
+    tbody.innerHTML = "";
+    
+    // Bloques de horario fijos (igual que admin)
+    const bloques = [
+        { inicio: '07:00', fin: '07:50' },
+        { inicio: '07:50', fin: '08:40' },
+        { inicio: '08:50', fin: '09:40' },
+        { inicio: '09:40', fin: '10:30' },
+        { inicio: '10:40', fin: '11:30' },
+        { inicio: '11:30', fin: '12:20' },
+        { inicio: '12:20', fin: '13:10' },
+        { inicio: '13:10', fin: '14:00' },
+        { inicio: '14:00', fin: '14:50' },
+        { inicio: '14:50', fin: '15:40' },
+        { inicio: '15:50', fin: '16:40' },
+        { inicio: '16:40', fin: '17:30' },
+        { inicio: '17:40', fin: '18:30' },
+        { inicio: '18:30', fin: '19:20' },
+        { inicio: '19:20', fin: '20:10' }
+    ];
+    
+    console.log('📊 Bloques horarios creados:', bloques.length);
+    
+    const ambienteId = String(ambienteSel.id);
+    
+    bloques.forEach((bloque, index) => {
+        console.log(`📅 Procesando bloque ${index + 1}: ${bloque.inicio} - ${bloque.fin}`);
+        
+        let fila = `<tr><td class="time-cell">${bloque.inicio} - ${bloque.fin}</td>`;
+        
+        dias.forEach(dia => {
+            const diaUpper = dia.toUpperCase();
+            console.log(`   🔍 Día: ${diaUpper}`);
+            
+            // 1. Horarios fijos del profesor actual
+            const misHorariosFijos = horariosFijosProfesor.filter(r => {
+                const ambienteMatch = String(r.ambiente) === ambienteId;
+                const diaMatch = r.dia === diaUpper;
+                const bloqueMatch = estaEnBloque(r.horaInicio, r.horaFin, bloque.inicio, bloque.fin);
+        
+                if (ambienteMatch && diaMatch && bloqueMatch) {
+                    console.log(`      🎯 Mi horario fijo: ${r.curso} (${r.horaInicio}-${r.horaFin})`);
+                }
+        
+                return ambienteMatch && diaMatch && bloqueMatch;
+            });
+    
+            // 2. Horarios de otros profesores
+            const horariosOtrosProfesores = reservasExistentes.filter(r => {
+                const ambienteMatch = String(r.ambiente) === ambienteId;
+                const diaMatch = r.dia === diaUpper;
+                const bloqueMatch = estaEnBloque(r.horaInicio, r.horaFin, bloque.inicio, bloque.fin);
+        
+                const noEsMiHorarioFijo = !misHorariosFijos.some(miH => 
+                    miH.horaInicio === r.horaInicio && 
+                    miH.horaFin === r.horaFin
+                );
+        
+                if (ambienteMatch && diaMatch && bloqueMatch && noEsMiHorarioFijo) {
+                    console.log(`      👥 Horario/Reserva de otros: ${r.motivo || r.curso} - ${r.profesor} (${r.horaInicio}-${r.horaFin})`);
+                }
+        
+                return ambienteMatch && diaMatch && bloqueMatch && noEsMiHorarioFijo;
+            });
+    
+            // 3. Mis reservas personales
+            const misReservasEnBloque = misReservas.filter(r => {
+                const ambienteMatch = String(r.ambiente) === ambienteId;
+                const diaMatch = r.dia === diaUpper;
+                const bloqueMatch = estaEnBloque(r.horaInicio, r.horaFin, bloque.inicio, bloque.fin);
+        
+                if (ambienteMatch && diaMatch && bloqueMatch) {
+                    console.log(`      📌 Mi reserva: ${r.motivo} (${r.horaInicio}-${r.horaFin})`);
+                }
+        
+                return ambienteMatch && diaMatch && bloqueMatch;
+            });
+            
+            const todasOcupaciones = [...misHorariosFijos, ...horariosOtrosProfesores, ...misReservasEnBloque];
+            
+            console.log(`      📋 Total ocupaciones en este bloque: ${todasOcupaciones.length}`);
+            
+            if (todasOcupaciones.length === 0) {
+                // Bloque completamente disponible
+                fila += `<td><div class="disponible" onclick="abrirModal('${dia}','${bloque.inicio}','${bloque.fin}')">
+                    <i class="fas fa-check-circle"></i> Disponible
+                </div></td>`;
+            } else if (todasOcupaciones.length === 1 && 
+                       todasOcupaciones[0].horaInicio === bloque.inicio && 
+                       todasOcupaciones[0].horaFin === bloque.fin) {
+                // Una ocupación que cubre todo el bloque
+                const reserva = todasOcupaciones[0];
+                
+                if (misReservasEnBloque.includes(reserva)) {
+                    fila += `<td><div class="mi-reserva">
+                        <div class="curso-nombre">Mi reserva</div>
+                        <div class="curso-detalle">${reserva.motivo}</div>
+                    </div></td>`;
+                } else if (misHorariosFijos.includes(reserva)) {
+                    fila += `<td><div class="ocupado-fijo">
+                        <div class="curso-nombre">${reserva.curso}</div>
+                        <div class="curso-detalle">Mi curso</div>
+                    </div></td>`;
+                } else {
+                    fila += `<td><div class="ocupado">
+                        <div class="curso-nombre">${reserva.curso}</div>
+                        <div class="curso-detalle">${reserva.profesor}</div>
+                    </div></td>`;
+                }
+            } else {
+                // Ocupación parcial - NO PERMITIR RESERVA
+                fila += `<td><div class="ocupado">
+                    <div class="curso-nombre">Ocupado parcial</div>
+                    <div class="curso-detalle">No disponible</div>
+                </div></td>`;
+            }
+        });
+        
+        fila += "</tr>";
+        tbody.innerHTML += fila;
+    });
+    
+    console.log('✅ Horario generado correctamente');
+}
+
+
+function abrirModalDesdeParte(dia, horaInicio, horaFin) {
+    console.log(`🎯 Abriendo modal desde parte: ${dia} ${horaInicio}-${horaFin}`);
+    abrirModal(dia, horaInicio, horaFin);
+}
+
+// Función auxiliar para verificar si un horario está dentro de un bloque
+function estaEnBloque(horaInicio, horaFin, bloqueInicio, bloqueFin) {
+    return horaInicio < bloqueFin && horaFin > bloqueInicio;
+}
+
+// Función auxiliar para calcular posición
+function calcularPosicion(hora, bloque) {
+    const inicioMinutos = horaAMinutos(bloque.inicio);
+    const finMinutos = horaAMinutos(bloque.fin);
+    const horaMinutos = horaAMinutos(hora);
+    return ((horaMinutos - inicioMinutos) / (finMinutos - inicioMinutos)) * 100;
+}
+
+// Función auxiliar para calcular altura
+function calcularAltura(horaInicio, horaFin, bloque) {
+    const inicioMinutos = horaAMinutos(bloque.inicio);
+    const finMinutos = horaAMinutos(bloque.fin);
+    const inicioSegmento = horaAMinutos(horaInicio);
+    const finSegmento = horaAMinutos(horaFin);
+    return ((finSegmento - inicioSegmento) / (finMinutos - inicioMinutos)) * 100;
+}
+
+// MODAL DE RESERVA
+function abrirModal(dia, horaInicioBloque, horaFinBloque) {
+    diaActual = dia;
+    fechaActual = obtenerFechaDelDia(dia);
+    bloqueInicio = horaInicioBloque;
+    bloqueFin = horaFinBloque;
+    
+    console.log('📅 Abriendo modal para:', {dia, fecha: fechaActual, horaInicioBloque, horaFinBloque});
+    
+    const modal = document.getElementById("reservaModal");
+    modal.classList.add("active");
+    
+    document.getElementById("motivoReserva").value = "";
+    document.getElementById("reservaDescripcion").value = "";
+    
+    document.getElementById("diaSeleccionado").textContent = dia;
+    document.getElementById("bloqueSeleccionado").textContent = `${horaInicioBloque} - ${horaFinBloque}`;
+    document.getElementById("responsableInfo").textContent = profesorActual;
+    
+    // Horas fijas disponibles
+    const horasFijas = [
+        '07:00', '07:50', '08:40', '08:50', '09:40', '10:30', '10:40', '11:30',
+        '12:20', '13:10', '14:00', '14:50', '15:40', '15:50', '16:40', '17:30',
+        '17:40', '18:30', '19:20', '20:10'
+    ];
+    
+    const s1 = document.getElementById("horaInicio");
+    const s2 = document.getElementById("horaFin");
+    
+    s1.innerHTML = '<option value="">Seleccionar hora inicio</option>';
+    s2.innerHTML = '<option value="">Seleccionar hora fin</option>';
+    
+    // Solo mostrar horas dentro del bloque disponible
+    const indexInicio = horasFijas.indexOf(horaInicioBloque);
+    const indexFin = horasFijas.indexOf(horaFinBloque);
+    
+    if (indexInicio !== -1) {
+        for (let i = indexInicio; i <= indexFin && i < horasFijas.length; i++) {
+            const option = document.createElement('option');
+            option.value = horasFijas[i];
+            option.textContent = horasFijas[i];
+            s1.appendChild(option);
+        }
+    }
+    
+    s1.onchange = function() {
+        s2.innerHTML = '<option value="">Seleccionar hora fin</option>';
+        const inicioSeleccionado = this.value;
+        
+        if (inicioSeleccionado) {
+            const idxInicio = horasFijas.indexOf(inicioSeleccionado);
+            if (idxInicio !== -1) {
+                for (let i = idxInicio + 1; i <= indexFin + 1 && i < horasFijas.length; i++) {
+                    const option = document.createElement('option');
+                    option.value = horasFijas[i];
+                    option.textContent = horasFijas[i];
+                    s2.appendChild(option);
+                }
+            }
+        }
+    };
+    
+    // Seleccionar el bloque completo por defecto
+    s1.value = horaInicioBloque;
+    s1.onchange();
+    s2.value = horaFinBloque;
+    
+    const rangoDisponible = `${horaInicioBloque} - ${horaFinBloque}`;
+    document.getElementById("rangoDisponible").textContent = rangoDisponible;
+}
+
+console.log('✅ Correcciones para reservas cargadas');
+
+
+
+function calcularRangoDisponible(dia, horaInicio) {
+// Todas las reservas para este ambiente y día
+const reservasDia = reservasExistentes
+.filter(r => r.ambiente === ambienteSel.id && r.dia === dia.toUpperCase())
+.concat(misReservas.filter(r => r.ambiente === ambienteSel.id && r.dia === dia.toUpperCase()))
+.concat(horariosFijosProfesor.filter(r => r.ambiente === ambienteSel.id && r.dia === dia.toUpperCase()))
+.sort((a, b) => horarios.indexOf(a.horaInicio) - horarios.indexOf(b.horaInicio));
+
+let inicioDisponible = horaInicio;
+let finDisponible = horarios[horarios.length - 1]; // Última hora disponible
+
+// Encontrar la primera reserva que empiece después del inicio
+for(const reserva of reservasDia) {
+    if(horarios.indexOf(reserva.horaInicio) >= horarios.indexOf(horaInicio)) {
+        finDisponible = reserva.horaInicio;
+        break;
+    }
+}
+
+return {
+    inicio: inicioDisponible,
+    fin: finDisponible
+};
+
+}
+function cerrarModal() {
+    document.getElementById("reservaModal").classList.remove("active");
+}
+async function confirmarReserva() {
+    const hi = document.getElementById("horaInicio").value;
+    const hf = document.getElementById("horaFin").value;
+    const motivo = document.getElementById("motivoReserva").value;
+    const descripcion = document.getElementById("reservaDescripcion").value;
+
+    if(!hi || !hf || !motivo) {
+        mostrarNotificacion("Debes completar todos los campos obligatorios", "error");
+        return;
+    }
+
+    const pathParts = window.location.pathname.split('/').filter(Boolean);
+    const contextPath = pathParts.length > 0 ? '/' + pathParts[0] : '';
+
+    console.log('📝 Confirmando reserva...');
+    console.log('Datos:', {
+        ambiente: ambienteSel.id,
+        dia: diaActual,
+        fecha: fechaActual, // IMPORTANTE: incluir fecha
+        horaInicio: hi + ":00", 
+        horaFin: hf + ":00",
+        motivo: motivo,
+        descripcion: descripcion
+    });
+
+    try {
+        const reservaData = {
+            ambiente: ambienteSel.id,
+            dia: diaActual.toUpperCase(),
+            fecha: fechaActual, // IMPORTANTE: incluir fecha
+            horaInicio: hi + ":00",
+            horaFin: hf + ":00",
+            motivo: motivo,
+            descripcion: descripcion
+        };
+        
+        const response = await fetch(`${contextPath}/api/profesores/reservas`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(reservaData),
+            credentials: 'same-origin'
+        });
+        
+        console.log('Response status:', response.status);
+        
+        if (response.ok) {
+            const result = await response.json();
+            console.log('✅ Reserva exitosa:', result);
+            
+            // Recargar reservas desde BD
+            await cargarReservasDesdeBD();
+            cerrarModal();
+            cargarHorario();
+            mostrarNotificacion("Reserva confirmada exitosamente", "success");
+            
+        } else {
+            let errorMessage = "Error al crear reserva";
+            try {
+                const errorData = await response.json();
+                errorMessage = errorData.error || errorData.message || JSON.stringify(errorData);
+            } catch (e) {
+                errorMessage = await response.text();
+            }
+            console.error('❌ Error del servidor:', errorMessage);
+            mostrarNotificacion(errorMessage, "error");
+        }
+    } catch (error) {
+        console.error('❌ Error de conexión:', error);
+        mostrarNotificacion("Error de conexión al crear reserva", "error");
+    }
+}
+
+// MIS RESERVAS
+function abrirMisReservas() {
+    document.getElementById("misReservasSection").classList.add("active");
+    document.getElementById("misReservasSection").scrollIntoView({ behavior: 'smooth' });
+}
+function cerrarMisReservas() {
+    document.getElementById("misReservasSection").classList.remove("active");
+}
+
+function actualizarMisReservas() {
+    const cont = document.getElementById("listaReservas");
+    
+    console.log('📋 Actualizando vista de reservas. Total:', misReservas.length);
+    
+    if(misReservas.length === 0) {
+        cont.innerHTML = `
+            <div class="no-reservas">
+                <i class="far fa-calendar-times"></i>
+                <h3>No tienes reservas activas</h3>
+                <p>Selecciona un ambiente y un horario disponible para crear tu primera reserva.</p>
+            </div>
+        `;
+    } else {
+        cont.innerHTML = misReservas.map(r => {
+            // Formatear la fecha para mostrar
+            let fechaMostrar = 'Sin fecha';
+            if (r.fecha) {
+                try {
+                    const fechaObj = new Date(r.fecha + 'T00:00:00');
+                    fechaMostrar = fechaObj.toLocaleDateString('es-PE', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                } catch(e) {
+                    fechaMostrar = r.fecha;
+                }
+            }
+            
+            return `<div class="reserva-card">
+                <div class="reserva-header">
+                    <div class="reserva-info">
+                        <h4>
+                            <i class="fas fa-door-open"></i> 
+                            ${r.ambiente} - ${r.dia}
+                        </h4>
+                        <div class="reserva-details">
+                            <div style="margin-bottom: 8px;">
+                                <i class="fas fa-calendar-day"></i>
+                                <strong>Fecha:</strong> ${fechaMostrar}
+                            </div>
+                            <div style="margin-bottom: 8px;">
+                                <i class="fas fa-clock"></i>
+                                <strong>Horario:</strong> ${r.horaInicio} a ${r.horaFin}
+                            </div>
+                            <div style="margin-bottom: 8px;">
+                                <i class="fas fa-tag"></i>
+                                <strong>Motivo:</strong> ${r.motivo}
+                            </div>
+                            ${r.descripcion ? `
+                            <div style="margin-bottom: 8px;">
+                                <i class="fas fa-sticky-note"></i>
+                                <strong>Descripción:</strong> ${r.descripcion}
+                            </div>
+                            ` : ''}
+                            <div>
+                                <i class="fas fa-info-circle"></i>
+                                <strong>Estado:</strong> 
+                                <span style="color: var(--success); font-weight: bold;">
+                                    ${r.estado || 'CONFIRMADA'}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="reserva-actions">
+                    <button class="btn btn-danger" onclick="cancelarReserva('${r.ambiente}', '${r.dia}', '${r.horaInicio}', '${r.fecha}')">
+                        <i class="fas fa-trash"></i> Cancelar
+                    </button>
+                </div>
+            </div>`;
+        }).join("");
+    }
+}
+
+async function cancelarReserva(ambiente, dia, horaInicio, fecha) {
+    console.log('🗑️ Intentando cancelar reserva:', {ambiente, dia, horaInicio, fecha});
+    
+    if(!confirm("¿Estás seguro de que deseas cancelar esta reserva?")) {
+        return;
+    }
+    
+    try {
+        // Asegurarnos que horaInicio tiene formato correcto
+        let horaInicioBD = horaInicio;
+        if (!horaInicio.includes(':00')) {
+            horaInicioBD = `${horaInicio}:00`;
+        }
+        
+        const cancelData = {
+            ambiente: ambiente,
+            dia: dia.toUpperCase(),
+            horaInicio: horaInicioBD,
+            fecha: fecha
+        };
+        
+        console.log('📤 Enviando datos de cancelación:', cancelData);
+        
+        const pathParts = window.location.pathname.split('/').filter(Boolean);
+        const contextPath = pathParts.length > 0 ? '/' + pathParts[0] : '';
+        
+        const response = await fetch(`${contextPath}/api/profesores/reservas`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(cancelData),
+            credentials: 'same-origin'
+        });
+        
+        console.log('📥 Respuesta del servidor:', response.status);
+        
+        if (response.ok) {
+            // Eliminar de la lista local
+            misReservas = misReservas.filter(r => 
+                !(r.ambiente === ambiente && 
+                  r.dia === dia && 
+                  r.horaInicio === horaInicio &&
+                  r.fecha === fecha)
+            );
+            
+            // Actualizar vistas
+            cargarHorario();
+            actualizarMisReservas();
+            mostrarNotificacion("Reserva cancelada exitosamente", "success");
+            
+            // Recargar desde BD para asegurar sincronización
+            setTimeout(() => cargarReservasDesdeBD(), 1000);
+            
+        } else {
+            let errorMessage = "Error desconocido";
+            try {
+                const errorData = await response.json();
+                errorMessage = errorData.error || errorData.message || JSON.stringify(errorData);
+            } catch (e) {
+                errorMessage = await response.text();
+            }
+            console.error('❌ Error del servidor:', errorMessage);
+            mostrarNotificacion("Error al cancelar reserva: " + errorMessage, "error");
+        }
+    } catch (error) {
+        console.error('❌ Error de conexión al cancelar:', error);
+        mostrarNotificacion("Error de conexión al cancelar reserva", "error");
+    }
+}
+
+// NOTIFICACIONES
+function mostrarNotificacion(mensaje, tipo) {
+    const notification = document.getElementById("notification");
+    const notificationText = document.getElementById("notification-text");
+    notificationText.textContent = mensaje;
+    notification.className = "notification " + tipo + " show";
+    setTimeout(() => notification.classList.remove("show"), 3000);
+}
+// EVENT LISTENERS
+    document.getElementById("filter-type").addEventListener("change", cargarAmbientes);
+    document.getElementById("filter-capacity").addEventListener("input", cargarAmbientes);
+    document.getElementById("filter-favorites").addEventListener("change", cargarAmbientes);
+    document.getElementById("btnMisReservas").addEventListener("click", abrirMisReservas);
+    document.getElementById("closeModal").addEventListener("click", cerrarModal);
+    document.getElementById("reservaForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    confirmarReserva();
+    });
+    document.getElementById("reservaModal").addEventListener("click", function(e) {
+    if (e.target === this) cerrarModal();
+    });
+// Logout
+    document.getElementById('logoutBtn').addEventListener('click', async function () {
+        if (!confirm('¿Está seguro de que desea cerrar sesión?')) return;
+            const pathParts = window.location.pathname.split('/').filter(Boolean);
+            const contextPath = pathParts.length > 0 ? '/' + pathParts[0] : '';
+
+        try {
+            await fetch(`${contextPath}/logout`, { method: 'POST', credentials: 'same-origin' });
+        } catch (e) {
+            console.warn('Logout fetch falló', e);
+        } finally {
+            localStorage.removeItem('profesorActual');
+            window.location.href = '/Inicio_Sesion.html';
+        }
+    });
+
+</script>
+</body>
+</html>

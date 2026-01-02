@@ -1,0 +1,1587 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ingreso de Notas - LUMINA</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <style>
+        :root{
+            --bg-1: #667eea;
+            --bg-2: #764ba2;
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --muted: #7f8c8d;
+            --card-bg: #ffffff;
+            --glass: rgba(255,255,255,0.92);
+            --sidebar-w: 280px;
+            --radius: 12px;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
+            --shadow-lg: 0 10px 30px rgba(0,0,0,0.12);
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+        }
+
+        /* Reset y base */
+        *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%;font-family:"Segoe UI",Tahoma,Geneva,Verdana,sans-serif}
+    body{
+        background:linear-gradient(135deg,var(--bg-1) 0%,var(--bg-2) 100%);
+        color:var(--primary);
+        -webkit-font-smoothing:antialiased;
+        -moz-osx-font-smoothing:grayscale;
+        display:flex;
+        min-height:100vh;
+    }
+
+        /* SIDEBAR */
+    .sidebar{
+        width:var(--sidebar-w);
+        background:linear-gradient(180deg,rgba(44,62,80,0.98),rgba(26,35,44,0.98));
+        color:#fff;
+        position:fixed;
+        inset:0 auto 0 0;
+        height:100vh;
+        padding:22px 18px;
+        box-shadow:var(--shadow-lg);
+        display:flex;
+        flex-direction:column;
+        gap:18px;
+        overflow-y:auto;
+        z-index:1000;
+    }
+
+    .logo{
+        display:flex;
+        align-items:center;
+        gap:12px;
+        padding-bottom:12px;
+        border-bottom:1px solid rgba(255,255,255,0.1);
+    }
+    .logo i{font-size:1.6rem;color:var(--accent)}
+    .logo h1{
+        font-size:1.25rem;
+        font-weight:700;
+        letter-spacing:0.2px;
+    }
+
+    .user-info{
+        display:flex;
+        align-items:center;
+        gap:12px;
+        padding:12px 0;
+        border-bottom:1px solid rgba(255,255,255,0.1);
+    }
+    .user-avatar{
+        width:48px;
+        height:48px;
+        border-radius:12px;
+        background:linear-gradient(135deg,var(--accent),#5dade2);
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-weight:bold;
+        font-size:1.1rem;
+        box-shadow:0 4px 12px rgba(52,152,219,0.3);
+    }
+    .user-details h3{margin:0;font-size:1rem;font-weight:600}
+    .user-details p{margin:4px 0 0;font-size:0.85rem;opacity:0.8}
+
+    .logout-btn{
+        margin-left:auto;
+        background:rgba(231,76,60,0.2);
+        border:1px solid rgba(231,76,60,0.4);
+        color:#fff;
+        cursor:pointer;
+        padding:8px 12px;
+        border-radius:8px;
+        transition:all 0.3s;
+        font-size:0.9rem;
+    }
+    .logout-btn:hover{
+        background:rgba(231,76,60,0.4);
+        transform:translateY(-2px);
+    }
+    .logout-btn i{margin-right:6px}
+
+    .menu{
+        display:flex;
+        flex-direction:column;
+        gap:4px;
+        padding-top:8px;
+    }
+
+    .menu-section{
+        margin-bottom:8px;
+    }
+
+    .menu-title{
+        padding:8px 12px;
+        font-size:0.75rem;
+        text-transform:uppercase;
+        opacity:0.6;
+        letter-spacing:1px;
+        font-weight:600;
+    }
+
+    .menu-item{
+        display:flex;
+        align-items:center;
+        gap:12px;
+        padding:12px 16px;
+        border-radius:10px;
+        color:#fff;
+        text-decoration:none;
+        font-weight:500;
+        transition:all 0.2s ease;
+        border-left:3px solid transparent;
+        font-size:0.95rem;
+    }
+    .menu-item i{
+        width:20px;
+        text-align:center;
+        font-size:1.1rem;
+    }
+    .menu-item:hover{
+        background:rgba(255,255,255,0.08);
+        border-left:3px solid var(--accent);
+        transform:translateX(4px);
+    }
+    .menu-item.active{
+        background:rgba(52,152,219,0.2);
+        border-left:3px solid var(--accent);
+    }
+
+    /* MAIN */
+    .main-content{
+        margin-left:var(--sidebar-w);
+        padding:36px 40px;
+        width:100%;
+        min-height:100vh;
+    }
+
+    .top-row{
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        gap:20px;
+        margin-bottom:28px;
+    }
+    .header h1{
+        font-size:1.8rem;
+        margin:0;
+        display:flex;
+        align-items:center;
+        gap:14px;
+        color:var(--primary);
+        font-weight:700;
+    }
+    .header h1 i{color:var(--accent);font-size:1.6rem}
+
+    .breadcrumb{
+        display:flex;
+        align-items:center;
+        gap:10px;
+        color:var(--muted);
+        font-size:0.9rem;
+    }
+    .breadcrumb i{font-size:0.7rem}
+
+    /* Contenedor central */
+    .container{
+        max-width:1400px;
+        margin:0 auto;
+    }
+
+    /* Alerts */
+    .alert{
+        display:flex;
+        gap:14px;
+        align-items:flex-start;
+        padding:18px;
+        border-radius:12px;
+        box-shadow:var(--shadow-sm);
+        margin-bottom:20px;
+        animation:slideIn 0.3s ease;
+    }
+    @keyframes slideIn{
+        from{opacity:0;transform:translateY(-10px)}
+        to{opacity:1;transform:translateY(0)}
+    }
+    .alert .icon{
+        font-size:1.6rem;
+        min-width:44px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+    }
+    .alert .content strong{
+        display:block;
+        margin-bottom:6px;
+        font-weight:700;
+        font-size:1.05rem;
+    }
+    .alert-info{
+        background:linear-gradient(90deg,#e6f7fb,#f0fbff);
+        color:#0c5460;
+        border-left:6px solid #17a2b8;
+    }
+    .alert-warning{
+        background:linear-gradient(90deg,#fffaf0,#fff8e6);
+        color:#856404;
+        border-left:6px solid #ffc107;
+    }
+    .alert-success{
+        background:linear-gradient(90deg,#e9fbe9,#f3fff3);
+        color:#155724;
+        border-left:6px solid #28a745;
+    }
+    .alert-danger{
+        background:linear-gradient(90deg,#ffe6e6,#fff0f0);
+        color:#721c24;
+        border-left:6px solid #dc3545;
+    }
+
+    /* Card */
+    .card{
+        background:var(--glass);
+        border-radius:var(--radius);
+        padding:24px;
+        box-shadow:var(--shadow-sm);
+        margin-bottom:24px;
+        border:1px solid rgba(255,255,255,0.3);
+    }
+    .card h2{
+        margin:0 0 20px 0;
+        font-size:1.3rem;
+        color:var(--primary);
+        font-weight:700;
+        display:flex;
+        align-items:center;
+        gap:10px;
+    }
+    .card h2 i{color:var(--accent);font-size:1.2rem}
+
+    .form-row{
+        display:flex;
+        gap:18px;
+        align-items:end;
+        flex-wrap:wrap;
+    }
+
+    .form-group{
+        flex:1;
+        min-width:220px;
+    }
+    .form-group label{
+        display:block;
+        margin-bottom:10px;
+        font-weight:600;
+        color:var(--primary);
+        font-size:0.95rem;
+    }
+    .form-group label i{
+        margin-right:8px;
+        color:var(--accent);
+    }
+    .form-group select,
+    .form-group input[type="file"]{
+        width:100%;
+        padding:12px 16px;
+        border-radius:10px;
+        border:2px solid #e6e9ee;
+        font-size:1rem;
+        background:#fff;
+        transition:all 0.3s;
+        font-family:inherit;
+    }
+    .form-group select:focus,
+    .form-group input[type="file"]:focus{
+        outline:none;
+        box-shadow:0 6px 20px rgba(52,152,219,0.15);
+        border-color:var(--accent);
+    }
+
+    .form-group input[type="file"]{
+        padding:10px;
+        cursor:pointer;
+    }
+
+    /* Tabla de notas */
+    .notes-table-container{
+        background:var(--card-bg);
+        border-radius:var(--radius);
+        padding:20px;
+        box-shadow:var(--shadow-sm);
+        overflow:auto;
+        margin-top:24px;
+    }
+
+    table{
+        width:100%;
+        border-collapse:separate;
+        border-spacing:0 10px;
+        font-size:0.95rem;
+    }
+    thead th{
+        text-align:center;
+        padding:14px 16px;
+        font-weight:700;
+        background:linear-gradient(90deg,var(--accent),#6aa8d9);
+        color:#fff;
+        font-size:0.9rem;
+        text-transform:uppercase;
+        letter-spacing:0.5px;
+    }
+    thead th:first-child{
+        border-top-left-radius:10px;
+        border-bottom-left-radius:10px;
+        text-align:left;
+        padding-left:20px;
+    }
+    thead th:last-child{
+        border-top-right-radius:10px;
+        border-bottom-right-radius:10px;
+        padding-right:20px;
+    }
+
+    tbody tr{
+        background:#fff;
+        border-radius:10px;
+        box-shadow:0 2px 8px rgba(0,0,0,0.04);
+        transition:all 0.3s;
+    }
+    tbody td{
+        padding:14px 16px;
+        text-align:center;
+        border:0;
+        color:var(--primary);
+    }
+    tbody td:first-child{
+        border-top-left-radius:10px;
+        border-bottom-left-radius:10px;
+        text-align:left;
+        padding-left:20px;
+        font-weight:600;
+    }
+    tbody td:last-child{
+        border-top-right-radius:10px;
+        border-bottom-right-radius:10px;
+        padding-right:20px;
+    }
+
+    tbody tr:hover{
+        transform:translateY(-4px);
+        box-shadow:0 8px 20px rgba(0,0,0,0.08);
+    }
+
+    td input[type="number"]{
+        width:90px;
+        padding:10px;
+        border-radius:8px;
+        border:2px solid #e6e9ee;
+        text-align:center;
+        font-size:1rem;
+        font-weight:600;
+        transition:all 0.3s;
+    }
+    td input[type="number"]:focus{
+        outline:none;
+        box-shadow:0 8px 20px rgba(52,152,219,0.15);
+        border-color:var(--accent);
+    }
+
+    .promedio{
+        font-weight:700;
+        font-size:1.1rem;
+    }
+    .estado.aprobado{
+        color:var(--success);
+        font-weight:700;
+        background:rgba(46,204,113,0.1);
+        padding:6px 12px;
+        border-radius:8px;
+    }
+    .estado.desaprobado{
+        color:var(--danger);
+        font-weight:700;
+        background:rgba(231,76,60,0.1);
+        padding:6px 12px;
+        border-radius:8px;
+    }
+
+    /* Botones */
+    .btn{
+        background:linear-gradient(90deg,var(--accent),#5dade2);
+        color:#fff;
+        border:none;
+        padding:12px 24px;
+        border-radius:10px;
+        font-weight:700;
+        cursor:pointer;
+        display:inline-flex;
+        align-items:center;
+        gap:10px;
+        box-shadow:0 6px 18px rgba(52,152,219,0.2);
+        transition:all 0.3s ease;
+        font-size:1rem;
+        text-decoration:none;
+    }
+    .btn:hover{
+        transform:translateY(-3px);
+        box-shadow:0 12px 30px rgba(52,152,219,0.3);
+    }
+    .btn i{font-size:1.1rem}
+
+    .btn-success{
+        background:linear-gradient(90deg,var(--success),#27ae60);
+        box-shadow:0 6px 18px rgba(46,204,113,0.2);
+    }
+    .btn-success:hover{
+        box-shadow:0 12px 30px rgba(46,204,113,0.3);
+    }
+
+    .btn-warning{
+        background:linear-gradient(90deg,var(--warning),#e67e22);
+        box-shadow:0 6px 18px rgba(243,156,18,0.2);
+    }
+    .btn-warning:hover{
+        box-shadow:0 12px 30px rgba(243,156,18,0.3);
+    }
+
+    .btn-secondary{
+        background:linear-gradient(90deg,#95a5a6,#7f8c8d);
+        box-shadow:0 6px 18px rgba(149,165,166,0.2);
+    }
+    .btn-secondary:hover{
+        box-shadow:0 12px 30px rgba(149,165,166,0.3);
+    }
+
+    /* Controls y estadísticas */
+    .controls{
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        gap:20px;
+        margin-top:24px;
+        flex-wrap:wrap;
+    }
+
+    .stats-row{
+        display:flex;
+        gap:16px;
+        align-items:stretch;
+        flex-wrap:wrap;
+    }
+    .stat-box{
+        background:linear-gradient(135deg,rgba(255,255,255,0.9),rgba(255,255,255,0.7));
+        padding:16px 20px;
+        border-radius:12px;
+        min-width:160px;
+        text-align:center;
+        box-shadow:var(--shadow-sm);
+        border:2px solid rgba(52,152,219,0.1);
+        transition:all 0.3s;
+    }
+    .stat-box:hover{
+        transform:translateY(-4px);
+        box-shadow:0 8px 20px rgba(0,0,0,0.1);
+        border-color:rgba(52,152,219,0.3);
+    }
+    .stat-box h4{
+        margin:0;
+        font-size:0.85rem;
+        color:var(--muted);
+        text-transform:uppercase;
+        letter-spacing:0.5px;
+    }
+    .stat-box .value{
+        margin-top:8px;
+        font-size:1.6rem;
+        font-weight:800;
+        color:var(--primary);
+    }
+
+    /* Sección de upload examenes */
+    .upload-section{
+        display:grid;
+        grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+        gap:20px;
+        margin-top:20px;
+    }
+
+    .upload-box{
+        background:#fff;
+        padding:20px;
+        border-radius:12px;
+        border:2px dashed #e6e9ee;
+        transition:all 0.3s;
+        text-align:center;
+    }
+    .upload-box:hover{
+        border-color:var(--accent);
+        box-shadow:0 4px 12px rgba(52,152,219,0.1);
+    }
+    .upload-box h3{
+        margin:0 0 16px 0;
+        font-size:1.1rem;
+        color:var(--primary);
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        gap:10px;
+    }
+    .upload-box .file-info{
+        margin:12px 0;
+        padding:12px;
+        background:#f8f9fa;
+        border-radius:8px;
+        font-size:0.9rem;
+        color:var(--muted);
+    }
+    .upload-box .file-name{
+        font-weight:600;
+        color:var(--primary);
+        word-break:break-all;
+    }
+    .upload-box .hint{
+        font-size:0.85rem;
+        color:var(--muted);
+        margin-top:8px;
+        font-style:italic;
+    }
+
+    /* Mensaje de modo */
+    .mode-message{
+        width:100%;
+        margin-top:12px;
+        padding:12px 16px;
+        background:rgba(243,156,18,0.1);
+        border-left:4px solid var(--warning);
+        border-radius:8px;
+        color:#856404;
+        font-size:0.9rem;
+        display:none;
+    }
+    .mode-message i{
+        margin-right:8px;
+    }
+
+    /* Loading spinner */
+    .loading{
+        text-align:center;
+        padding:40px;
+        color:var(--muted);
+    }
+    .loading i{
+        font-size:3rem;
+        animation:spin 1s linear infinite;
+    }
+    @keyframes spin{
+        to{transform:rotate(360deg)}
+    }
+
+    /* Responsive */
+    @media (max-width:1200px){
+        .main-content{padding:24px 30px}
+    }
+    @media (max-width:992px){
+        .sidebar{
+            width:70px;
+        }
+        .logo h1,.user-details,.menu-title,.menu-item span{
+            display:none;
+        }
+        .main-content{
+            margin-left:70px;
+            padding:20px;
+        }
+        .logo{justify-content:center}
+        .user-info{justify-content:center}
+        .menu-item{
+            justify-content:center;
+            padding:15px 0;
+        }
+    }
+    @media (max-width:768px){
+        .form-row{
+            flex-direction:column;
+            align-items:stretch;
+        }
+        .form-group{
+            min-width:100%;
+        }
+        .controls{
+            flex-direction:column;
+            align-items:stretch;
+        }
+        .stats-row{
+            width:100%;
+        }
+        .stat-box{
+            flex:1;
+            min-width:140px;
+        }
+        thead th{
+            font-size:0.8rem;
+            padding:10px 8px;
+        }
+        td input[type="number"]{
+            width:70px;
+            font-size:0.9rem;
+        }
+        .upload-section{
+            grid-template-columns:1fr;
+        }
+    }
+    @media (max-width:576px){
+        .main-content{padding:16px}
+        .header h1{font-size:1.4rem}
+        .card{padding:16px}
+        table{font-size:0.85rem}
+    }
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+.btn:disabled:hover {
+    transform: none !important;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.2) !important;
+}
+
+    </style>
+</head>
+<body>
+    <aside class="sidebar" aria-label="Barra lateral">
+        <div class="logo">
+            <i class="fas fa-university" aria-hidden="true"></i>
+            <h1>LUMINA PROFESOR</h1>
+        </div>
+
+        <div class="user-info" role="group" aria-label="Información del profesor">
+        <div class="user-avatar" id="userAvatar">P</div>
+        <div class="user-details">
+            <h3 id="profesor-name">Profesor</h3>
+            <p id="profesor-especialidad">Docente</p>
+        </div>
+        <button class="logout-btn" id="logoutBtn">
+            <i class="fas fa-sign-out-alt"></i> Salir
+        </button>
+    </div>
+
+    <nav class="menu" aria-label="Menú principal">
+        <div class="menu-section">
+            <a href="nuevo_profesor.html" class="menu-item">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>DASHBOARD</span>
+            </a>
+        </div>
+        
+        <div class="menu-section">
+            <div class="menu-title">Panel Principal</div>
+            <a href="nuevo_profesor_asistenciabloqueada.html" class="menu-item">
+                <i class="fas fa-clipboard-check"></i>
+                <span>REGISTRAR ASISTENCIA</span>
+            </a>
+        </div>
+        
+        <div class="menu-section">
+            <a href="profesor_notas.html" class="menu-item active">
+                <i class="fas fa-edit"></i>
+                <span>INGRESAR NOTAS</span>
+            </a>
+        </div>
+        
+        <div class="menu-section">
+            <a href="profesor_estadisticas.html" class="menu-item">
+                <i class="fas fa-chart-line"></i>
+                <span>ESTADISTICAS</span>
+            </a>
+        </div>
+        
+        <div class="menu-section">
+            <a href="profesor_horario.html" class="menu-item">
+                <i class="fas fa-calendar-alt"></i>
+                <span>VER HORARIO</span>
+            </a>
+        </div>
+        
+        <div class="menu-section">
+            <a href="profesor_reservaaulalab.html" class="menu-item">
+                <i class="fas fa-door-open"></i>
+                <span>DISPONIBILIDAD DE AULAS</span>
+            </a>
+        </div>
+        
+        <div class="menu-section">
+            <a href="nuevo_profesor_contenido.html" class="menu-item">
+                <i class="fas fa-upload"></i>
+                <span>SUBIR SÍLABOS / CONTENIDO</span>
+            </a>
+        </div>
+        
+        <div class="menu-section">
+            <a href="profesor_reportes.html" class="menu-item">
+                <i class="fas fa-file-pdf"></i>
+                <span>REPORTES PDF</span>
+            </a>
+        </div>
+    </nav>
+</aside>
+
+<!-- Main Content -->
+<main class="main-content">
+    <div class="top-row">
+        <div class="header">
+            <h1><i class="fas fa-edit"></i> Ingreso de Notas</h1>
+        </div>
+        <div class="breadcrumb">
+            <span>Inicio</span>
+            <i class="fas fa-chevron-right"></i>
+            <span>Ingreso de Notas</span>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="periodo-info-container"></div>
+
+        <section id="content-notas" style="display:none">
+            <!-- SECCIÓN 1: Parámetros de ingreso -->
+            <div class="card" aria-labelledby="titulo-parametros">
+                <h2 id="titulo-parametros">
+                    <i class="fas fa-sliders-h"></i> Parámetros de ingreso
+                </h2>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="select-course">
+                            <i class="fas fa-book"></i> Seleccionar Curso
+                        </label>
+                        <select id="select-course">
+                            <option value="">-- Seleccione un curso --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="select-evaluation">
+                            <i class="fas fa-clipboard-list"></i> Tipo de Evaluación
+                        </label>
+                        <select id="select-evaluation">
+                            <option value="">-- Seleccione evaluación --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="modo-ingreso">
+                            <i class="fas fa-exchange-alt"></i> Modo de Ingreso
+                        </label>
+                        <select id="modo-ingreso">
+                            <option value="">-- Seleccione modo --</option>
+                            <option value="manual">Ingresar Manualmente</option>
+                            <option value="archivo">Subir Archivo Excel/CSV</option>
+                        </select>
+                    </div>
+
+                    <div style="flex:0 0 160px;display:flex;align-items:center;">
+                        <button class="btn" id="btn-cargar">
+                            <i class="fas fa-filter"></i> Cargar
+                        </button>
+                    </div>
+                </div>
+
+                <div id="upload-container" style="display:none;margin-top:20px;">
+                    <div class="form-group">
+                        <label>
+                            <i class="fas fa-file-upload"></i> Subir Archivo Excel/CSV
+                        </label>
+                        <input type="file" id="file-excel" accept=".csv,.xls,.xlsx,.txt" />
+                    </div>
+                    <button class="btn btn-success" style="margin-top:16px;" id="btn-procesar-archivo">
+                        <i class="fas fa-upload"></i> Procesar Archivo
+                    </button>
+                </div>
+
+                <div class="mode-message" id="modo-msg">
+                    <i class="fas fa-info-circle"></i>
+                    Seleccione un curso y un tipo de evaluación antes de ingresar manualmente o procesar un archivo.
+                </div>
+            </div>
+
+            <!-- SECCIÓN 2: Subir exámenes (NUEVA) -->
+            <div class="card" aria-labelledby="titulo-examenes">
+                <h2 id="titulo-examenes">
+                    <i class="fas fa-file-pdf"></i> Subir Exámenes
+                </h2>
+
+                <div class="alert alert-info">
+                    <div class="icon"><i class="fas fa-info-circle"></i></div>
+                    <div class="content">
+                        <strong>Formato sugerido de nombres:</strong>
+                        <p>
+                            • Nota más alta: <code>NOTA-[Curso]_[Grupo]_alta_[Unidad].pdf</code><br>
+                            • Nota más baja: <code>NOTA-[Curso]_[Grupo]_baja_[Unidad].pdf</code><br>
+                            <em>Ejemplo: NOTA-Matemática Aplicada_A_alta_1.pdf</em>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="upload-section">
+                    <!-- Upload Examen Nota Alta -->
+                    <div class="upload-box">
+                        <h3>
+                            <i class="fas fa-arrow-up" style="color:var(--success)"></i>
+                            Examen Nota Más Alta
+                        </h3>
+                        <div class="form-group">
+                            <input type="file" id="file-examen-alta" accept=".pdf" />
+                        </div>
+                        <div class="file-info" id="info-alta" style="display:none">
+                            <i class="fas fa-file-pdf"></i>
+                            <div class="file-name" id="nombre-alta"></div>
+                        </div>
+                        <button class="btn btn-success" style="width:100%;margin-top:12px" id="btn-subir-alta">
+                            <i class="fas fa-cloud-upload-alt"></i> Subir Examen
+                        </button>
+                        <div class="hint">
+                            Solo archivos PDF
+                        </div>
+                    </div>
+
+                    <!-- Upload Examen Nota Baja -->
+                    <div class="upload-box">
+                        <h3>
+                            <i class="fas fa-arrow-down" style="color:var(--danger)"></i>
+                            Examen Nota Más Baja
+                        </h3>
+                        <div class="form-group">
+                            <input type="file" id="file-examen-baja" accept=".pdf" />
+                        </div>
+                        <div class="file-info" id="info-baja" style="display:none">
+                                <i class="fas fa-file-pdf"></i>
+                                <div class="file-name" id="nombre-baja"></div>
+                            </div>
+                            <button class="btn btn-warning" style="width:100%;margin-top:12px" id="btn-subir-baja">
+                                <i class="fas fa-cloud-upload-alt"></i> Subir Examen
+                            </button>
+                            <div class="hint">
+                                Solo archivos PDF
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN 3: Tabla de notas -->
+                <div id="table-container" class="notes-table-container" style="display:none">
+                    <table id="tabla-notas" aria-label="Tabla de notas">
+                        <thead>
+                            <tr>
+                                <th>CUI</th>
+                                <th>Alumno</th>
+                                <th>Cont1</th>
+                                <th>Parcial1</th>
+                                <th>Cont2</th>
+                                <th>Parcial2</th>
+                                <th>Cont3</th>
+                                <th>Parcial3</th>
+                                <th>Promedio</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-body">
+                            <!-- filas dinámicas -->
+                        </tbody>
+                    </table>
+
+                    <div class="controls">
+                        <div class="stats-row">
+                            <div class="stat-box">
+                                <h4>Total Alumnos</h4>
+                                <div class="value" id="total-alumnos">0</div>
+                            </div>
+                            <div class="stat-box">
+                                <h4>Aprobados</h4>
+                                <div class="value" id="aprobados">0</div>
+                            </div>
+                            <div class="stat-box">
+                                <h4>Desaprobados</h4>
+                                <div class="value" id="desaprobados">0</div>
+                            </div>
+                            <div class="stat-box">
+                                <h4>Promedio General</h4>
+                                <div class="value" id="promedio-general">0.0</div>
+                            </div>
+                        </div>
+
+                        <div style="margin-left:auto;">
+                            <button class="btn btn-success" id="btn-guardar-notas">
+                                <i class="fas fa-save"></i> Guardar Cambios
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+    const API_BASE = '/doc/api/profesores';
+
+    // INICIALIZACIÓN
+    document.addEventListener("DOMContentLoaded", () => {
+        cargarProfesor();
+        cargarCursos();
+        cargarPeriodos();
+        setupEventListeners();
+    });
+
+    function setupEventListeners() {
+        const selectCurso = document.getElementById("select-course");
+        const selectEval = document.getElementById("select-evaluation");
+        const modoIngreso = document.getElementById("modo-ingreso");
+
+        selectCurso.addEventListener("change", () => {
+            cargarEvaluacionesHabilitadas();
+            resetModoIngreso();
+            verificarExamenesSubidos();
+        });
+
+        selectEval.addEventListener("change", resetModoIngreso);
+        modoIngreso.addEventListener("change", toggleModoIngreso);
+
+        document.getElementById("btn-cargar").addEventListener("click", cargarEstudiantes);
+        document.getElementById("btn-procesar-archivo").addEventListener("click", subirArchivo);
+        document.getElementById("btn-guardar-notas").addEventListener("click", guardarNotas);
+
+        // Event listeners para subida de exámenes
+        document.getElementById("file-examen-alta").addEventListener("change", (e) => {
+            mostrarNombreArchivo(e.target, "info-alta", "nombre-alta");
+        });
+        document.getElementById("file-examen-baja").addEventListener("change", (e) => {
+            mostrarNombreArchivo(e.target, "info-baja", "nombre-baja");
+        });
+
+        document.getElementById("btn-subir-alta").addEventListener("click", () => {
+            subirExamen("alta");
+        });
+        document.getElementById("btn-subir-baja").addEventListener("click", () => {
+            subirExamen("baja");
+        });
+
+        // Logout
+        document.getElementById("logoutBtn").addEventListener("click", cerrarSesion);
+    }
+
+    function resetModoIngreso() {
+        document.getElementById("modo-ingreso").value = "";
+        document.getElementById("table-container").style.display = "none";
+        document.getElementById("upload-container").style.display = "none";
+        document.getElementById("modo-msg").style.display = "none";
+    }
+
+    // CARGAR DATOS DEL PROFESOR
+    async function cargarProfesor() {
+        try {
+            const resp = await fetch(`${API_BASE}/me`, {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' },
+                credentials: 'same-origin'
+            });
+
+            if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+
+            const profesor = await resp.json();
+
+            document.getElementById('profesor-name').textContent = profesor.apellidosNombres || 'Profesor';
+            document.getElementById('profesor-especialidad').textContent = profesor.departamento || 'Docente';
+
+            // Avatar iniciales
+            const iniciales = (profesor.apellidosNombres || 'P')
+                .split(' ')
+                .map(p => p[0])
+                .slice(0, 2)
+                .join('')
+                .toUpperCase();
+
+            document.getElementById('userAvatar').textContent = iniciales;
+
+        } catch (err) {
+            console.error('Error al cargar datos del profesor:', err);
+            mostrarAlerta('error', 'Error al cargar los datos del profesor');
+        }
+    }
+
+    // CARGAR CURSOS Y EVALUACIONES de teoría
+async function cargarCursos() {
+    try {
+        // Usar el nuevo endpoint que solo trae cursos de TEORÍA
+        const resp = await fetch(`${API_BASE}/me/cursos-teoria`, {
+            credentials: 'same-origin'
+        });
+        const cursos = await resp.json();
+
+        const select = document.getElementById("select-course");
+        select.innerHTML = `<option value="">-- Seleccione un curso --</option>`;
+
+        cursos.forEach(c => {
+            select.innerHTML += `
+                <option value="${c.codigoCurso}" data-grupo="${c.grupoId}">
+                    ${c.codigoCurso} - ${c.nombreCurso} (Grupo ${c.letraGrupo})
+                </option>`;
+        });
+    } catch (err) {
+        console.error('Error cargando cursos:', err);
+    }
+}
+
+    async function cargarPeriodos() {
+        try {
+            const resp = await fetch(`${API_BASE}/periodos-activos`, {
+                credentials: 'same-origin'
+            });
+            const periodos = await resp.json();
+
+            const cont = document.getElementById("periodo-info-container");
+
+            if (periodos.length === 0) {
+                cont.innerHTML = `
+                    <div class="alert alert-warning">
+                        <div class="icon"><i class="fas fa-exclamation-triangle"></i></div>
+                        <div class="content">
+                            <strong>No hay período activo para notas.</strong>
+                        </div>
+                    </div>`;
+                return;
+            }
+
+            cont.innerHTML = `
+                <div class="alert alert-success">
+                    <div class="icon"><i class="fas fa-check-circle"></i></div>
+                    <div class="content">
+                        <strong>Período activo para notas</strong><br>
+                        Puede subir notas de: ${periodos[0].nombreCurso || "Cursos asignados"}
+                    </div>
+                </div>`;
+
+            document.getElementById("content-notas").style.display = "block";
+        } catch (err) {
+            console.error('Error cargando períodos:', err);
+        }
+    }
+
+async function cargarEvaluacionesHabilitadas() {
+    const curso = document.getElementById("select-course").value;
+    const selectEval = document.getElementById("select-evaluation");
+
+    if (!curso) return;
+
+    try {
+        const resp = await fetch(`${API_BASE}/evaluaciones-habilitadas?codigoCurso=${curso}`, {
+            credentials: 'same-origin'
+        });
+        const evals = await resp.json();
+
+        selectEval.innerHTML = `<option value="">-- Seleccione evaluación --</option>`;
+
+        evals.forEach(ev => {
+            selectEval.innerHTML += `
+                <option value="${ev.tipo_eval_id}">
+                    ${ev.codigo} - ${ev.nombre}
+                </option>`;
+        });
+        
+        // Llamar para verificar exámenes cuando cambie evaluación
+        selectEval.addEventListener('change', verificarExamenesSubidos);
+        
+    } catch (err) {
+        console.error('Error cargando evaluaciones:', err);
+    }
+}
+
+async function verificarExamenesSubidos() {
+    const cursoSelect = document.getElementById("select-course");
+    const evalSelect = document.getElementById("select-evaluation");
+    
+    const grupoId = cursoSelect.options[cursoSelect.selectedIndex]?.dataset?.grupo;
+    const tipoEvalId = evalSelect.value;
+    
+    // Ocultar sección de upload si no hay selección
+    const uploadSection = document.querySelector('.card[aria-labelledby="titulo-examenes"]');
+    if (!uploadSection) return;
+    
+    if (!grupoId || !tipoEvalId) {
+        uploadSection.style.display = 'none';
+        return;
+    }
+    
+    // Verificar si es evaluación parcial (1, 2 o 3)
+    const tipoEvalIdNum = parseInt(tipoEvalId);
+    if (tipoEvalIdNum < 1 || tipoEvalIdNum > 3) {
+        // Es evaluación continua, ocultar
+        uploadSection.style.display = 'none';
+        return;
+    }
+    
+    // Es evaluación parcial, mostrar
+    uploadSection.style.display = 'block';
+    
+    try {
+        const resp = await fetch(`${API_BASE}/examenes/verificar?grupoId=${grupoId}&tipoEvalId=${tipoEvalId}`, {
+            credentials: 'same-origin'
+        });
+        const examenes = await resp.json();
+        
+        // Actualizar UI según exámenes subidos
+        actualizarEstadoExamenes(examenes);
+        
+    } catch (err) {
+        console.error('Error verificando exámenes:', err);
+    }
+}
+
+function actualizarEstadoExamenes(examenes) {
+    // Examen nota alta
+    const btnSubirAlta = document.getElementById('btn-subir-alta');
+    const fileAltaInput = document.getElementById('file-examen-alta');
+    const infoAlta = document.getElementById('info-alta');
+    const nombreAlta = document.getElementById('nombre-alta');
+    
+    if (examenes.alta) {
+        btnSubirAlta.disabled = true;
+        btnSubirAlta.innerHTML = '<i class="fas fa-check-circle"></i> Ya subido';
+        btnSubirAlta.classList.remove('btn-success');
+        btnSubirAlta.classList.add('btn-secondary');
+        fileAltaInput.disabled = true;
+        
+        nombreAlta.textContent = 'Archivo ya subido previamente';
+        infoAlta.style.display = 'block';
+    } else {
+        btnSubirAlta.disabled = false;
+        btnSubirAlta.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Subir Examen';
+        btnSubirAlta.classList.remove('btn-secondary');
+        btnSubirAlta.classList.add('btn-success');
+        fileAltaInput.disabled = false;
+        infoAlta.style.display = 'none';
+    }
+    
+    // Examen nota baja
+    const btnSubirBaja = document.getElementById('btn-subir-baja');
+    const fileBajaInput = document.getElementById('file-examen-baja');
+    const infoBaja = document.getElementById('info-baja');
+    const nombreBaja = document.getElementById('nombre-baja');
+    
+    if (examenes.baja) {
+        btnSubirBaja.disabled = true;
+        btnSubirBaja.innerHTML = '<i class="fas fa-check-circle"></i> Ya subido';
+        btnSubirBaja.classList.remove('btn-warning');
+        btnSubirBaja.classList.add('btn-secondary');
+        fileBajaInput.disabled = true;
+        
+        nombreBaja.textContent = 'Archivo ya subido previamente';
+        infoBaja.style.display = 'block';
+    } else {
+        btnSubirBaja.disabled = false;
+        btnSubirBaja.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Subir Examen';
+        btnSubirBaja.classList.remove('btn-secondary');
+        btnSubirBaja.classList.add('btn-warning');
+        fileBajaInput.disabled = false;
+        infoBaja.style.display = 'none';
+    }
+}
+
+    // CARGAR ESTUDIANTES Y NOTAS
+    async function cargarEstudiantes() {
+        const cursoSelect = document.getElementById("select-course");
+        const evalSelect = document.getElementById("select-evaluation");
+
+        const grupoId = cursoSelect.options[cursoSelect.selectedIndex]?.dataset?.grupo;
+        const tipoEvalId = evalSelect.value;
+
+        if (!grupoId || !tipoEvalId) {
+            mostrarAlerta('warning', 'Seleccione un curso y un tipo de evaluación');
+            return;
+        }
+
+        try {
+            const resp = await fetch(`${API_BASE}/cursos/${grupoId}/estudiantes`, {
+                credentials: 'same-origin'
+            });
+
+            if (!resp.ok) throw new Error('Error en la petición: ' + resp.status);
+
+            const estudiantes = await resp.json();
+            pintarTabla(estudiantes);
+        } catch (err) {
+            console.error('Error cargando estudiantes:', err);
+            mostrarAlerta('error', 'Error al cargar estudiantes: ' + err.message);
+        }
+    }
+
+    function pintarTabla(estudiantes) {
+        const tbody = document.getElementById("tabla-body");
+        const tipoEvalId = document.getElementById("select-evaluation").value;
+        tbody.innerHTML = "";
+
+        const evaluacionesOrdenadas = [
+            { key: '4', nombre: 'Cont1' },
+            { key: '1', nombre: 'Parcial1' },
+            { key: '5', nombre: 'Cont2' },
+            { key: '2', nombre: 'Parcial2' },
+            { key: '6', nombre: 'Cont3' },
+            { key: '3', nombre: 'Parcial3' }
+        ];
+
+        estudiantes.forEach(e => {
+            let filaNotas = "";
+
+            evaluacionesOrdenadas.forEach(evalDef => {
+                const codigoEval = evalDef.key;
+                const nota = e.notas[codigoEval];
+
+                if (codigoEval == tipoEvalId) {
+                    filaNotas += `
+                        <td>
+                            <input 
+                                type="number" 
+                                min="0" max="20" step="0.1" 
+                                class="nota-editable"
+                                name="nota_${e.idMatricula}_${codigoEval}"
+                                value="${nota !== null && nota !== undefined ? nota : ''}" 
+                            />
+                        </td>`;
+                } else {
+                    filaNotas += `<td>${nota !== null && nota !== undefined ? nota : "-"}</td>`;
+                }
+            });
+
+            tbody.innerHTML += `
+                <tr data-id="${e.idMatricula}">
+                    <td>${e.cui}</td>
+                    <td>${e.nombreEstudiante}</td>
+                    ${filaNotas}
+                    <td class="promedio">${e.promedio !== null && e.promedio !== undefined ? e.promedio.toFixed(1) : "-"}</td>
+                    <td class="estado ${e.promedio >= 10.5 ? 'aprobado' : 'desaprobado'}">
+                        ${e.promedio >= 10.5 ? "Aprobado" : "Desaprobado"}
+                    </td>
+                </tr>`;
+        });
+
+        document.getElementById("table-container").style.display = "block";
+        actualizarEstadisticas(estudiantes);
+    }
+
+    function actualizarEstadisticas(estudiantes) {
+        const total = estudiantes.length;
+        const aprobados = estudiantes.filter(e => e.promedio >= 10.5).length;
+        const desaprobados = total - aprobados;
+
+        let sumaPromedios = 0;
+        let countConNota = 0;
+
+        estudiantes.forEach(e => {
+            if (e.promedio !== null && e.promedio !== undefined && !isNaN(e.promedio)) {
+                sumaPromedios += e.promedio;
+                countConNota++;
+            }
+        });
+
+        const promedioGeneral = countConNota > 0 ? (sumaPromedios / countConNota).toFixed(1) : "0.0";
+
+        document.getElementById("total-alumnos").textContent = total;
+        document.getElementById("aprobados").textContent = aprobados;
+        document.getElementById("desaprobados").textContent = desaprobados;
+        document.getElementById("promedio-general").textContent = promedioGeneral;
+    }
+
+    // GUARDAR NOTAS
+    async function guardarNotas() {
+        const tbody = document.querySelectorAll("#tabla-body tr");
+        const tipoEvalId = document.getElementById("select-evaluation").value;
+
+        const promises = [];
+        tbody.forEach(row => {
+            const idMatricula = row.dataset.id;
+            const inputName = `nota_${idMatricula}_${tipoEvalId}`;
+            const input = row.querySelector(`input[name="${inputName}"]`);
+
+            if (!input) return;
+            const rawNota = input.value;
+            if (rawNota == null) return;
+            const notaTrim = rawNota.toString().trim();
+            if (notaTrim === "") return;
+
+            const payload = {
+                idMatricula: parseInt(idMatricula, 10),
+                tipoEvalId: parseInt(tipoEvalId, 10),
+                calificacion: parseFloat(notaTrim)
+            };
+
+            promises.push(
+                fetch(`${API_BASE}/notas/guardar`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
+                    credentials: 'same-origin'
+                }).then(r => r.json()).catch(e => ({ success: false, mensaje: e.message }))
+            );
+        });
+
+        if (promises.length === 0) {
+            mostrarAlerta('warning', 'No hay cambios para guardar');
+            return;
+        }
+
+        try {
+            const results = await Promise.all(promises);
+            const failures = results.filter(r => !r || r.success === false);
+
+            if (failures.length === 0) {
+                mostrarAlerta('success', 'Todas las notas se guardaron correctamente');
+            } else {
+                let msg = `Se guardaron ${results.length - failures.length} notas. ${failures.length} fallaron.`;
+                mostrarAlerta('warning', msg);
+            }
+
+            cargarEstudiantes();
+        } catch (err) {
+            console.error('Error guardando notas:', err);
+            mostrarAlerta('error', 'Error al guardar notas');
+        }
+    }
+
+    // SUBIR ARCHIVO DE NOTAS
+    async function subirArchivo() {
+        const archivo = document.getElementById("file-excel").files[0];
+        const cursoSelect = document.getElementById("select-course");
+        const grupoId = cursoSelect.options[cursoSelect.selectedIndex]?.dataset?.grupo;
+        const tipoEvalId = document.getElementById("select-evaluation").value;
+
+        if (!archivo) {
+            mostrarAlerta('warning', "Seleccione un archivo primero");
+            return;
+        }
+
+        if (!grupoId || !tipoEvalId) {
+            mostrarAlerta('warning', "Necesita seleccionar un curso y un tipo de evaluación");
+            return;
+        }
+
+        const name = archivo.name.toLowerCase();
+        if (!name.endsWith('.csv') && !name.endsWith('.txt') && !name.endsWith('.xls') && !name.endsWith('.xlsx')) {
+            if (!confirm('Formato no reconocido. ¿Desea intentar subirlo de todos modos?')) {
+                return;
+            }
+        }
+
+        const formData = new FormData();
+        formData.append("file", archivo);
+        formData.append("grupoId", grupoId);
+        formData.append("tipoEvalId", tipoEvalId);
+
+        try {
+            const resp = await fetch(`${API_BASE}/notas/upload`, {
+                method: "POST",
+                body: formData,
+                credentials: 'same-origin'
+            });
+            const data = await resp.json();
+
+            if (data.success) {
+                const procesados = data.procesados ?? 0;
+                const errores = data.errores ?? 0;
+                const mensajes = data.mensajes ?? [];
+
+                let msg = `Archivo procesado. Procesados: ${procesados}. Errores: ${errores}.`;
+                if (mensajes.length) {
+                    msg += '\nDetalles:\n' + mensajes.join('\n');
+                }
+
+                mostrarAlerta(errores > 0 ? 'warning' : 'success', msg);
+                cargarEstudiantes();
+            } else {
+                mostrarAlerta('error', data.mensaje || 'Error procesando archivo');
+            }
+        } catch (err) {
+            console.error(err);
+            mostrarAlerta('error', "Error procesando archivo");
+        }
+    }
+
+    function toggleModoIngreso() {
+        const modo = document.getElementById("modo-ingreso").value;
+        const upload = document.getElementById("upload-container");
+        const tabla = document.getElementById("table-container");
+        const modoMsg = document.getElementById('modo-msg');
+
+        const cursoSelect = document.getElementById('select-course');
+        const evalSelect = document.getElementById('select-evaluation');
+
+        const grupoId = cursoSelect.options[cursoSelect.selectedIndex]?.dataset?.grupo;
+        const tipoEvalId = evalSelect.value;
+
+        if (modo === "archivo") {
+            if (!grupoId || !tipoEvalId) {
+                modoMsg.style.display = 'block';
+                upload.style.display = 'none';
+                tabla.style.display = 'none';
+                return;
+            }
+
+            modoMsg.style.display = 'none';
+            upload.style.display = 'block';
+            tabla.style.display = 'none';
+
+        } else if (modo === "manual") {
+            if (!grupoId || !tipoEvalId) {
+                modoMsg.style.display = 'block';
+                upload.style.display = 'none';
+                tabla.style.display = 'none';
+                return;
+            }
+
+            modoMsg.style.display = 'none';
+            upload.style.display = 'none';
+
+            cargarEstudiantes();
+
+        } else {
+            modoMsg.style.display = 'none';
+            upload.style.display = 'none';
+            tabla.style.display = 'none';
+        }
+    }
+
+    // SUBIR EXÁMENES PDF
+    function mostrarNombreArchivo(input, infoId, nombreId) {
+        const file = input.files[0];
+        const infoDiv = document.getElementById(infoId);
+        const nombreDiv = document.getElementById(nombreId);
+
+        if (file) {
+            nombreDiv.textContent = file.name;
+            infoDiv.style.display = 'block';
+        } else {
+            infoDiv.style.display = 'none';
+        }
+    }
+
+async function subirExamen(tipo) {
+    const inputId = tipo === 'alta' ? 'file-examen-alta' : 'file-examen-baja';
+    const archivo = document.getElementById(inputId).files[0];
+
+    if (!archivo) {
+        mostrarAlerta('warning', 'Seleccione un archivo PDF primero');
+        return;
+    }
+
+    if (!archivo.name.toLowerCase().endsWith('.pdf')) {
+        mostrarAlerta('error', 'Solo se permiten archivos PDF');
+        return;
+    }
+
+    const cursoSelect = document.getElementById("select-course");
+    const evalSelect = document.getElementById("select-evaluation");
+    
+    const grupoId = cursoSelect.options[cursoSelect.selectedIndex]?.dataset?.grupo;
+    const tipoEvalId = evalSelect.value;
+
+    if (!grupoId || !tipoEvalId) {
+        mostrarAlerta('warning', 'Seleccione un curso y evaluación primero');
+        return;
+    }
+
+    // Validar que sea parcial
+    const tipoEvalIdNum = parseInt(tipoEvalId);
+    if (tipoEvalIdNum < 1 || tipoEvalIdNum > 3) {
+        mostrarAlerta('error', 'Solo se pueden subir exámenes para evaluaciones parciales');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", archivo);
+    formData.append("grupoId", grupoId);
+    formData.append("tipoEvalId", tipoEvalId);
+    formData.append("tipo", tipo);
+
+    try {
+        const resp = await fetch(`${API_BASE}/examenes/upload`, {
+            method: "POST",
+            body: formData,
+            credentials: 'same-origin'
+        });
+
+        const data = await resp.json();
+
+        if (data.success) {
+            mostrarAlerta('success', `Examen ${tipo === 'alta' ? 'de nota alta' : 'de nota baja'} subido correctamente`);
+            document.getElementById(inputId).value = '';
+            
+            // Recargar estado
+            verificarExamenesSubidos();
+        } else {
+            mostrarAlerta('error', data.mensaje || 'Error al subir examen');
+        }
+    } catch (err) {
+        console.error('Error subiendo examen:', err);
+        mostrarAlerta('error', 'Error al subir examen');
+    }
+}
+
+    // CERRAR SESIÓN
+    async function cerrarSesion() {
+        if (!confirm('¿Está seguro de que desea cerrar sesión?')) return;
+
+        const pathParts = window.location.pathname.split('/').filter(Boolean);
+        const contextPath = pathParts.length > 0 ? '/' + pathParts[0] : '';
+
+        try {
+            await fetch(`${contextPath}/logout`, { 
+                method: 'POST', 
+                credentials: 'same-origin' 
+            });
+        } catch (e) {
+            console.warn('Logout fetch falló', e);
+        } finally {
+            localStorage.removeItem('profesorActual');
+            window.location.href = '/Inicio_Sesion.html';
+        }
+    }
+
+    // UTILIDADES
+    function mostrarAlerta(tipo, mensaje) {
+        const container = document.getElementById("periodo-info-container");
+        const iconos = {
+            success: 'check-circle',
+            warning: 'exclamation-triangle',
+            error: 'times-circle',
+            info: 'info-circle'
+        };
+
+        const alerta = document.createElement('div');
+        alerta.className = `alert alert-${tipo}`;
+        alerta.innerHTML = `
+            <div class="icon"><i class="fas fa-${iconos[tipo] || 'info-circle'}"></i></div>
+            <div class="content">
+                <strong>${mensaje}</strong>
+            </div>
+        `;
+
+        const alertaExistente = container.querySelector('.alert');
+        if (alertaExistente) {
+            container.removeChild(alertaExistente);
+        }
+
+        container.appendChild(alerta);
+
+        setTimeout(() => {
+            if (alerta.parentNode) {
+                alerta.remove();
+            }
+        }, 5000);
+    }
+    </script>
+</body>
+</html>

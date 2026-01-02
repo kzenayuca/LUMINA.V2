@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subida de Datos - LUMINA</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #3498db;
+            --secondary: #2c3e50;
+            --accent: #9b59b6;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --light: #ecf0f1;
+            --sidebar-width: 280px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: rgba(44, 62, 80, 0.95);
+            color: white;
+            height: 100vh;
+            position: fixed;
+            overflow-y: auto;
+            box-shadow: 3px 0 15px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+
+        .logo {
+            padding: 25px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            background: rgba(52, 73, 94, 0.8);
+        }
+
+        .logo h1 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            background: linear-gradient(45deg, #3498db, #9b59b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo i {
+            color: #3498db;
+            font-size: 1.8rem;
+        }
+
+        .user-info {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(52, 73, 94, 0.5);
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #3498db, #9b59b6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: white;
+        }
+
+        .user-details h3 {
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+
+        .user-details p {
+            font-size: 0.85rem;
+            opacity: 0.8;
+        }
+
+        .logout-btn {
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid rgba(231, 76, 60, 0.4);
+            color: #fff;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+            margin-left: auto;
+        }
+
+        .logout-btn:hover {
+            background: rgba(231, 76, 60, 0.4);
+        }
+
+        .menu {
+            padding: 20px 0;
+        }
+
+        .menu-section {
+            margin-bottom: 15px;
+        }
+
+        .menu-title {
+            padding: 12px 20px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            opacity: 0.7;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .menu-item {
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+            text-decoration: none;
+            color: white;
+        }
+
+        .menu-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-left: 4px solid var(--primary);
+            padding-left: 25px;
+        }
+
+        .menu-item.active {
+            background: rgba(52, 152, 219, 0.2);
+            border-left: 4px solid var(--primary);
+        }
+
+        .menu-item i {
+            width: 20px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.9);
+            min-height: 100vh;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: var(--secondary);
+            font-size: 2rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header h1 i {
+            color: var(--primary);
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        .breadcrumb i {
+            font-size: 0.7rem;
+        }
+
+        /* Upload Cards */
+        .upload-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .upload-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            border-left: 5px solid var(--primary);
+        }
+
+        .upload-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .upload-card h3 {
+            color: var(--secondary);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.2rem;
+        }
+
+        .upload-card h3 i {
+            color: var(--primary);
+            font-size: 1.5rem;
+        }
+
+        .upload-card p {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .file-input-wrapper input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px dashed #bdc3c7;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .file-input-wrapper input[type="file"]:hover {
+            border-color: var(--primary);
+            background: #f8f9fa;
+        }
+
+        .file-name {
+            margin-top: 8px;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            display: none;
+        }
+
+        .file-name.show {
+            display: block;
+        }
+
+        .btn-upload {
+            background: linear-gradient(90deg, var(--primary), #67bfc5ff);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            font-weight: 600;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .btn-upload:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-upload:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-upload i {
+            font-size: 1.1rem;
+        }
+
+        /* Status Messages */
+        .status-container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-top: 30px;
+        }
+
+        .status-container h3 {
+            color: var(--secondary);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-container h3 i {
+            color: var(--primary);
+        }
+
+        .status-messages {
+            min-height: 100px;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px dashed #bdc3c7;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .status-message {
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .status-message i {
+            font-size: 1.2rem;
+            margin-top: 2px;
+        }
+
+        .status-success {
+            background: #d5f4e6;
+            color: #27ae60;
+            border-left: 4px solid #27ae60;
+        }
+
+        .status-error {
+            background: #ffe6e6;
+            color: #e74c3c;
+            border-left: 4px solid #e74c3c;
+        }
+
+        .status-warning {
+            background: #fff4e6;
+            color: #f39c12;
+            border-left: 4px solid #f39c12;
+        }
+
+        .status-info {
+            background: #e6f7fb;
+            color: #3498db;
+            border-left: 4px solid #3498db;
+        }
+
+        .status-content {
+            flex: 1;
+        }
+
+        .status-content strong {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 0.95rem;
+        }
+
+        .status-content p {
+            font-size: 0.85rem;
+            margin: 0;
+            opacity: 0.9;
+        }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading-spinner.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Info Box */
+        .info-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .info-box h3 {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-box p {
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        .info-box ul {
+            margin-top: 10px;
+            margin-left: 20px;
+        }
+
+        .info-box li {
+            margin-bottom: 5px;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">
+            <i class="fas fa-university"></i>
+            <h1>LUMINA SECRETARÍA</h1>
+        </div>
+
+        <div class="user-info">
+            <div class="user-avatar">
+                <i class="fas fa-user-tie"></i>
+            </div>
+            <div class="user-details">
+                <h3 id="secretaria-name">Secretaría</h3>
+                <p>Sistema Universitario</p>
+            </div>
+            <button class="logout-btn" id="logoutBtn" title="Cerrar sesión">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </div>
+
+        <div class="menu">
+            <div class="menu-section">
+                <div class="menu-item" onclick="window.location.href='secretaria.html'">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>DASHBOARD</span>
+                </div>
+                <div class="menu-title">Panel Principal</div>
+            </div>
+
+            <div class="menu-section">
+                <div class="menu-item active" onclick="window.location.href='sec_subida_datos.html'">
+                    <i class="fas fa-upload"></i>
+                    <span>SUBIR DE DATOS</span>
+                </div>
+                <div class="menu-title">Gestión de Datos</div>
+            </div>
+
+            <div class="menu-section">
+                <div class="menu-item" onclick="window.location.href='sec_ver_usuarios.html'">
+                    <i class="fas fa-users"></i>
+                    <span>VER USUARIOS</span>
+                </div>
+            </div>
+
+            <div class="menu-section">
+                <div class="menu-item" onclick="window.location.href='sec_ver_ingreso_notas.html'">
+                    <i class="fas fa-edit"></i>
+                    <span>FECHA: INGRESO DE NOTAS</span>
+                </div>
+            </div>
+
+            <div class="menu-section">
+                <div class="menu-item" onclick="window.location.href='sec_matricula_laboratorios.html'">
+                    <i class="fas fa-flask"></i>
+                    <span>FECHA: MATRÍCULAS DE LABORATORIOS</span>
+                </div>
+            </div>
+
+            <div class="menu-section">
+                <div class="menu-item" onclick="window.location.href='sec_ver_cursos.html'">
+                    <i class="fas fa-book"></i>
+                    <span>VER CURSOS</span>
+                </div>
+            </div>
+
+            <div class="menu-section">
+                <div class="menu-item" onclick="window.location.href='sec_ver_horarios.html'">
+                    <i class="fas fa-calendar-day"></i>
+                    <span>VER HORARIOS</span>
+                </div>
+            </div>
+
+            <div class="menu-section">
+                <div class="menu-item" onclick="window.location.href='sec_ver_pdfs.html'">
+                    <i class="fas fa-file-pdf"></i>
+                    <span>VER PDFs</span>
+                </div>
+            </div>
+
+            <div class="menu-section">
+                <div class="menu-item" onclick="window.location.href='sec_reportes.html'">
+                    <i class="fas fa-file-pdf"></i>
+                    <span>HACER REPORTES</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="header">
+            <h1><i class="fas fa-upload"></i> Subida de Datos</h1>
+            <div class="breadcrumb">
+                <span>Inicio</span>
+                <i class="fas fa-chevron-right"></i>
+                <span>Subida de Datos</span>
+            </div>
+        </div>
+
+        <!-- Info Box -->
+        <div class="info-box">
+            <h3><i class="fas fa-info-circle"></i> Información Importante</h3>
+            <p>Formatos de archivo admitidos: <strong>.xlsx, .xls, .csv</strong></p>
+            <ul>
+                <li>Estudiantes: ID, CUI, INICIO, APELLIDOS Y NOMBRES, CORREO</li>
+                <li>Docentes: Nro, Codigo, Asignatura, Código del curso, Ciclo, Grupo, Apellidos y nombres, Correo, Departamento</li>
+                <li>Alumnos por Asignatura: Nro, CUI, Apellidos y Nombres (reconoce curso y grupo en la fila 4 y 5)</li>
+                <li>Horarios: Nro, Ciclo, Curso, Día, Hora de Inicio, Hora de Fin, Tipo de Clase, Grupo, Número de Salón</li>
+                <li>Pesos de Evaluación: Nro, Curso, EP1, EP2, EP3, EC1, EC2, EC3, Total</li>
+            </ul>
+        </div>
+
+        <!-- Upload Grid -->
+        <div class="upload-grid">
+            <!-- 1. Estudiantes -->
+            <div class="upload-card">
+                <h3><i class="fas fa-user-graduate"></i> Estudiantes</h3>
+                <p>Sube el archivo Excel con los datos de estudiantes (CUI, nombres, correo, año de inicio)</p>
+                <div class="file-input-wrapper">
+                    <input type="file" id="file-estudiantes" accept=".xlsx,.xls,.csv" />
+                    <div class="file-name" id="name-estudiantes"></div>
+                </div>
+                <button class="btn-upload" id="btn-upload-estudiantes">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    Subir Estudiantes
+                </button>
+            </div>
+
+            <!-- 2. Docentes -->
+            <div class="upload-card">
+                <h3><i class="fas fa-chalkboard-teacher"></i> Docentes</h3>
+                <p>Sube el archivo Excel con los datos de docentes (código, nombres, correo, departamento)</p>
+                <div class="file-input-wrapper">
+                    <input type="file" id="file-docentes" accept=".xlsx,.xls,.csv" />
+                    <div class="file-name" id="name-docentes"></div>
+                </div>
+                <button class="btn-upload" id="btn-upload-docentes">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    Subir Docentes
+                </button>
+            </div>
+
+            <!-- 3. Alumnos por Asignatura -->
+            <div class="upload-card">
+                <h3><i class="fas fa-users-class"></i> Alumnos por Asignatura</h3>
+                <p>Sube el archivo que asigna estudiantes a cursos específicos (reconoce curso y grupo automáticamente)</p>
+                <div class="file-input-wrapper">
+                    <input type="file" id="file-alumnos-asignatura" accept=".xlsx,.xls,.csv" />
+                    <div class="file-name" id="name-alumnos-asignatura"></div>
+                </div>
+                <button class="btn-upload" id="btn-upload-alumnos-asignatura">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    Subir Asignaciones
+                </button>
+            </div>
+
+            <!-- 4. Horarios -->
+            <div class="upload-card">
+                <h3><i class="fas fa-calendar-alt"></i> Horarios</h3>
+                <p>Sube el archivo con los horarios de clases (día, hora, salón, tipo de clase)</p>
+                <div class="file-input-wrapper">
+                    <input type="file" id="file-horarios" accept=".xlsx,.xls,.csv" />
+                    <div class="file-name" id="name-horarios"></div>
+                </div>
+                <button class="btn-upload" id="btn-upload-horarios">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    Subir Horarios
+                </button>
+            </div>
+
+            <!-- 5. Pesos de Evaluación -->
+            <div class="upload-card">
+                <h3><i class="fas fa-balance-scale"></i> Pesos de Evaluación</h3>
+                <p>Sube el archivo con los porcentajes de evaluación por curso (EP1, EP2, EP3, EC1, EC2, EC3)</p>
+                <div class="file-input-wrapper">
+                    <input type="file" id="file-pesos" accept=".xlsx,.xls,.csv" />
+                    <div class="file-name" id="name-pesos"></div>
+                </div>
+                <button class="btn-upload" id="btn-upload-pesos">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    Subir Pesos
+                </button>
+            </div>
+        </div>
+
+        <!-- Status Container -->
+        <div class="status-container">
+            <h3><i class="fas fa-tasks"></i> Estado de las Operaciones</h3>
+            <div class="loading-spinner" id="loading-spinner">
+                <div class="spinner"></div>
+                <p>Procesando archivo...</p>
+            </div>
+            <div class="status-messages" id="status-messages">
+                <div class="status-message status-info">
+                    <i class="fas fa-info-circle"></i>
+                    <div class="status-content">
+                        <strong>Sistema listo</strong>
+                        <p>Selecciona un archivo y haz clic en "Subir" para comenzar</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/sec/api/secretaria';
+
+        // Event listeners para mostrar nombres de archivo
+        document.getElementById('file-estudiantes').addEventListener('change', function(e) {
+            mostrarNombreArchivo(e.target, 'name-estudiantes');
+        });
+
+        document.getElementById('file-docentes').addEventListener('change', function(e) {
+            mostrarNombreArchivo(e.target, 'name-docentes');
+        });
+
+        document.getElementById('file-alumnos-asignatura').addEventListener('change', function(e) {
+            mostrarNombreArchivo(e.target, 'name-alumnos-asignatura');
+        });
+
+        document.getElementById('file-horarios').addEventListener('change', function(e) {
+            mostrarNombreArchivo(e.target, 'name-horarios');
+        });
+
+        document.getElementById('file-pesos').addEventListener('change', function(e) {
+            mostrarNombreArchivo(e.target, 'name-pesos');
+        });
+
+        // Event listeners para botones de subida
+        document.getElementById('btn-upload-estudiantes').addEventListener('click', () => {
+            subirArchivo('estudiantes', 'file-estudiantes');
+        });
+
+        document.getElementById('btn-upload-docentes').addEventListener('click', () => {
+            subirArchivo('docentes', 'file-docentes');
+        });
+
+        document.getElementById('btn-upload-alumnos-asignatura').addEventListener('click', () => {
+            subirArchivo('alumnos-asignatura', 'file-alumnos-asignatura');
+        });
+
+        document.getElementById('btn-upload-horarios').addEventListener('click', () => {
+            subirArchivo('horarios', 'file-horarios');
+        });
+
+        document.getElementById('btn-upload-pesos').addEventListener('click', () => {
+            subirArchivo('pesos-evaluacion', 'file-pesos');
+        });
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', async function() {
+            if (!confirm('¿Está seguro de que desea cerrar sesión?')) return;
+            try {
+                await fetch('/secr/logout', { method: 'POST', credentials: 'same-origin' });
+            } catch(e) {}
+            sessionStorage.clear();
+            localStorage.clear();
+            window.location.href = '/Inicio_Sesion.html';
+        });
+
+        function mostrarNombreArchivo(input, elementId) {
+            const nameElement = document.getElementById(elementId);
+            if (input.files.length > 0) {
+                nameElement.textContent = `📄 ${input.files[0].name}`;
+                nameElement.classList.add('show');
+            } else {
+                nameElement.classList.remove('show');
+            }
+        }
+
+        async function subirArchivo(tipo, inputId) {
+            const fileInput = document.getElementById(inputId);
+            const file = fileInput.files[0];
+
+            if (!file) {
+                mostrarMensaje('warning', 'Advertencia', 'Por favor selecciona un archivo primero');
+                return;
+            }
+
+            // Validar extensión
+            const validExtensions = ['.xlsx', '.xls', '.csv'];
+            const fileName = file.name.toLowerCase();
+            const isValid = validExtensions.some(ext => fileName.endsWith(ext));
+
+            if (!isValid) {
+                mostrarMensaje('error', 'Error', 'Formato de archivo no válido. Use .xlsx, .xls o .csv');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            mostrarCargando(true);
+
+            try {
+                const response = await fetch(`${API_BASE}/upload/${tipo}`, {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'same-origin'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    mostrarMensaje('success', 'Éxito', 
+                        `${data.procesados || 0} registros procesados correctamente. ${data.errores || 0} errores.`);
+                    
+                    if (data.mensajes && data.mensajes.length > 0) {
+                        data.mensajes.forEach(msg => {
+                            mostrarMensaje('info', 'Detalle', msg);
+                        });
+                    }
+
+                    // Limpiar input
+                    fileInput.value = '';
+                    const nameElement = document.getElementById(inputId.replace('file-', 'name-'));
+                    nameElement.classList.remove('show');
+
+                } else {
+                    mostrarMensaje('error', 'Error', data.mensaje || 'Error al procesar el archivo');
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarMensaje('error', 'Error', 'Error de conexión con el servidor');
+            } finally {
+                mostrarCargando(false);
+            }
+        }
+
+        function mostrarCargando(mostrar) {
+            const spinner = document.getElementById('loading-spinner');
+            spinner.classList.toggle('show', mostrar);
+        }
+
+        function mostrarMensaje(tipo, titulo, mensaje) {
+            const container = document.getElementById('status-messages');
+            
+            const iconos = {
+                success: 'check-circle',
+                error: 'times-circle',
+                warning: 'exclamation-triangle',
+                info: 'info-circle'
+            };
+
+            const mensajeDiv = document.createElement('div');
+            mensajeDiv.className = `status-message status-${tipo}`;
+            mensajeDiv.innerHTML = `
+                <i class="fas fa-${iconos[tipo]}"></i>
+                <div class="status-content">
+                    <strong>${titulo}</strong>
+                    <p>${mensaje}</p>
+                </div>
+            `;
+
+            container.appendChild(mensajeDiv);
+            container.scrollTop = container.scrollHeight;
+
+            // Eliminar mensajes antiguos si hay más de 10
+            while (container.children.length > 10) {
+                container.removeChild(container.firstChild);
+            }
+        }
+
+        // Cargar nombre de usuario al inicio
+        document.addEventListener('DOMContentLoaded', function() {
+            const userName = sessionStorage.getItem("usuarioNombre") || "Secretaría Principal";
+            document.getElementById('secretaria-name').textContent = userName;
+        });
+    </script>
+</body>
+</html>
