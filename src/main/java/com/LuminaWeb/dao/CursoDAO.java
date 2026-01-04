@@ -13,6 +13,7 @@ import java.sql.*;
 import java.util.*;
 
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.dao.DuplicateKeyException;
 
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -272,18 +273,25 @@ public class CursoDAO {
             // Insert silabo (usamos idDocenteFinal dentro de la lambda)
             String insert = "INSERT INTO silabos (codigo_curso, id_ciclo, grupo_teoria, ruta_archivo, id_docente, fecha_subida, estado) VALUES (?, ?, ?, ?, ?, NOW(), 'APROBADO')";
             KeyHolder kh = new GeneratedKeyHolder();
-            jdbc.update(con -> {
-                PreparedStatement ps = con.prepareStatement(insert, Statement.RETURN_GENERATED_KEYS);
-                ps.setString(1, codigoCurso);
-                ps.setInt(2, idCiclo);
-                ps.setString(3, grupoTeoriaFinal);
-                ps.setString(4, rutaArchivo);
-                ps.setInt(5, idDocenteFinal);
-                return ps;
-            }, kh);
-            Number key = kh.getKey();
-            if (key != null) idSilabo = key.intValue();
-            else throw new RuntimeException("No se pudo obtener id_silabo tras insert.");
+            try {
+                jdbc.update(con -> {
+                    PreparedStatement ps = con.prepareStatement(insert, Statement.RETURN_GENERATED_KEYS);
+                    ps.setString(1, codigoCurso);
+                    ps.setInt(2, idCiclo);
+                    ps.setString(3, grupoTeoriaFinal);
+                    ps.setString(4, rutaArchivo);
+                    ps.setInt(5, idDocenteFinal);
+                    return ps;
+                }, kh);
+                Number key = kh.getKey();
+                if (key != null) idSilabo = key.intValue();
+                else throw new RuntimeException("No se pudo obtener id_silabo tras insert.");
+            } catch (DuplicateKeyException e) {
+                // Si ya existe, buscarlo y actualizar (sin cambiar id_docente, asumiendo que es del mismo docente)
+                idSilabo = jdbc.queryForObject("SELECT id_silabo FROM silabos WHERE codigo_curso = ? AND id_ciclo = ? AND grupo_teoria = ? LIMIT 1", Integer.class, codigoCurso, idCiclo, grupoTeoriaFinal);
+                String update = "UPDATE silabos SET ruta_archivo = ?, fecha_subida = NOW(), estado = 'APROBADO' WHERE id_silabo = ?";
+                jdbc.update(update, rutaArchivo, idSilabo);
+            }
         } else {
             // Update ruta y fecha
             String upd = "UPDATE silabos SET ruta_archivo = ?, fecha_subida = NOW(), estado = 'APROBADO' WHERE id_silabo = ?";

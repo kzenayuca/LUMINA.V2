@@ -264,7 +264,6 @@ public class ProfesorDAO {
         List<Integer> ids = jdbcTemplate.queryForList(sql, new Object[]{idUsuario}, Integer.class);
         return ids.isEmpty() ? Optional.empty() : Optional.of(ids.get(0));
     }
-
     //Obtiene estudiantes de un grupo con sus notas
     public List<NotaEstudiante> obtenerEstudiantesConNotas(int grupoId) {
         String sqlEstudiantes = """

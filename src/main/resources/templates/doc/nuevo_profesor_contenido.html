@@ -140,7 +140,7 @@
     }
 
     function createUnitHtml(courseCode, unitNumber, unitName = `Unidad ${unitNumber}`, themes = []) {
-        const themesHtml = themes.map(t => createThemeHtml(t)).join('');
+        const themesHtml = themes.map(t => createThemeHtml(t.nombreTema || t.nombre_tema || '')).join('');
         return `
             <div class="unit-item" data-unit-id="${unitNumber}">
                 <div class="unit-header" onclick="toggleThemes(this.closest('.unit-item'))">
@@ -223,7 +223,6 @@
     }
 
     let COURSE_DATA = [];
-    let unitCounter = 0;
 
     /***** Core: carga, render y lógica dinámica *****/
     async function loadCoursesFromServer() {
@@ -252,6 +251,9 @@
 
             });
             COURSE_DATA = Array.from(map.values());
+            
+            //visualizar COURSE_DATA en consola
+            console.log('CARGADOS CURSOS:', COURSE_DATA);
 
             // Consultar silabos por curso (si tu backend lo soporta)
             await Promise.all(COURSE_DATA.map(async course => {
@@ -308,7 +310,7 @@
             return;
         }
         COURSE_DATA.forEach(course => container.insertAdjacentHTML('beforeend', generateCourseBlock(course)));
-        //renderUnitsForCourse(); //TENGO PROBLEMAS CON ESTO FUCK
+        COURSE_DATA.forEach(course => renderUnitsForCourse(course));
     }
 
     function renderUnitsForCourse(course) {
@@ -316,16 +318,11 @@
     if (!unitList) return;
     unitList.innerHTML = '';
     if (Array.isArray(course.units) && course.units.length > 0) {
-        // Ajustar unitCounter para no colisionar
-        let maxId = unitCounter;
         course.units.forEach(u => {
-            // u.numero_unidad, u.nombre_unidad, u.temas -> array de temas con nombre_tema
-            const numero = u.numeroUnidad || u.numero_unidad || ++unitCounter;
-            maxId = Math.max(maxId, numero);
-            const temas = (u.temas || []).map(t => t.nombreTema || t.nombre_tema || t.name || '');
+            const numero = u.numeroUnidad || u.numero_unidad || 1;
+            const temas = u.temas || [];
             unitList.insertAdjacentHTML('beforeend', createUnitHtml(course.code, numero, u.nombreUnidad || u.nombre_unidad || `Unidad ${numero}`, temas));
         });
-        unitCounter = Math.max(unitCounter, maxId);
     }
     updateSaveButtonState(course.code);
 }
@@ -417,10 +414,16 @@
     };
 
     function addUnit(courseCode) {
-        unitCounter++;
         const unitList = document.getElementById(`units-${courseCode}`);
         if (!unitList) return;
-        unitList.insertAdjacentHTML('beforeend', createUnitHtml(courseCode, unitCounter));
+        let maxUnit = 0;
+        unitList.querySelectorAll('.unit-item').forEach(unitEl => {
+            const id = parseInt(unitEl.getAttribute('data-unit-id'), 10) || 0;
+            if (id > maxUnit) maxUnit = id;
+        });
+        const newUnitNumber = maxUnit + 1;
+        const unitHtml = createUnitHtml(courseCode, newUnitNumber);
+        unitList.insertAdjacentHTML('beforeend', unitHtml);
         updateSaveButtonState(courseCode);
     }
 

@@ -147,7 +147,7 @@ public class CursoController {
             @RequestBody Map<String, Object> payload) {
 
         try {
-            Integer idUsuario = payload.get("idUsuario") instanceof Number ? ((Number)payload.get("idDocente")).intValue() : null;
+            Integer idUsuario = payload.get("idDocente") instanceof Number ? ((Number)payload.get("idDocente")).intValue() : null;
             // Nota: "idDocente" en tu frontend contiene idUsuario; ajustar si es distinto
             @SuppressWarnings("unchecked")
             List<Map<String,Object>> unitsRaw = (List<Map<String,Object>>) payload.get("units");
@@ -178,7 +178,7 @@ public class CursoController {
             Integer idCiclo = payload.get("idCiclo") instanceof Number ? ((Number)payload.get("idCiclo")).intValue() : null;
             String grupoTeoria = payload.get("grupoTeoria") != null ? payload.get("grupoTeoria").toString() : null;
             String rutaArchivo = payload.get("rutaArchivo") != null ? payload.get("rutaArchivo").toString() : null;
-            Integer idDocente = payload.get("idDocenteReal") instanceof Number ? ((Number)payload.get("idDocenteReal")).intValue() : null;
+            Integer idDocente = idUsuario; // Usar idUsuario como idDocente ya que no se envía idDocenteReal
 
             int res = service.guardarContenido(codigoCurso, idUsuario, idCiclo, grupoTeoria, idDocente, rutaArchivo, unidades);
             return ResponseEntity.ok(Map.of("ok", true, "res", res));

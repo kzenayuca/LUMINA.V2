@@ -116,4 +116,40 @@ public class AsistenciaRepository {
         jdbc.update(update, estadoAsistencia, idMatricula, idHorario, fecha);
     }
 
+    // Obtener codigo_curso por id_horario
+    public String getCodigoCursoPorHorario(int idHorario) {
+        String sql = "SELECT gc.codigo_curso FROM horarios h INNER JOIN grupos_curso gc ON h.grupo_id = gc.grupo_id WHERE h.id_horario = ?";
+        try {
+            return jdbc.queryForObject(sql, new Object[]{idHorario}, String.class);
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    // Marcar el primer tema pendiente como completado para el curso
+    public void marcarTemaCompletado(String codigoCurso) {
+        // Obtener id_silabo activo para el curso
+        String sqlSilabo = "SELECT id_silabo FROM silabos WHERE codigo_curso = ? AND estado = 'ACTIVO' LIMIT 1";
+        Integer idSilabo = null;
+        try {
+            idSilabo = jdbc.queryForObject(sqlSilabo, new Object[]{codigoCurso}, Integer.class);
+        } catch (Exception ex) {
+            return; // No silabo activo
+        }
+        if (idSilabo == null) return;
+
+        // Obtener el primer tema pendiente
+        String sqlTema = "SELECT t.id_tema FROM temas t INNER JOIN unidades u ON t.unidad_id = u.unidad_id WHERE u.id_silabo = ? AND t.estado = 'PENDIENTE' ORDER BY t.id_tema LIMIT 1";
+        Integer idTema = null;
+        try {
+            idTema = jdbc.queryForObject(sqlTema, new Object[]{idSilabo}, Integer.class);
+        } catch (Exception ex) {
+            return; // No tema pendiente
+        }
+        if (idTema != null) {
+            String update = "UPDATE temas SET estado = 'COMPLETADO' WHERE id_tema = ?";
+            jdbc.update(update, idTema);
+        }
+    }
+
 }

@@ -95,5 +95,10 @@ public class AsistenciaService {
         for (EstudianteAsistenciaDTO s : req.getActualizaciones()) {
             repo.actualizarAsistenciaEstudiante(s.getIdMatricula(), req.getIdHorario(), req.getFecha(), s.getEstado_asistencia());
         }
+        // Marcar un tema como completado para el curso correspondiente
+        String codigoCurso = repo.getCodigoCursoPorHorario(req.getIdHorario());
+        if (codigoCurso != null) {
+            repo.marcarTemaCompletado(codigoCurso);
+        }
     }
 }
