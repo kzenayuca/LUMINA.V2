@@ -125,7 +125,7 @@ public class AsistenciaRepository {
             return null;
         }
     }
-
+    //Cambios en AsistenciaService.java
     // Marcar el primer tema pendiente como completado para el curso
     public void marcarTemaCompletado(String codigoCurso) {
         // Obtener id_silabo activo para el curso

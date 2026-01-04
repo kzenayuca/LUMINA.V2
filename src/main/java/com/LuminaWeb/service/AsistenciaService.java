@@ -89,7 +89,7 @@ public class AsistenciaService {
         resp.put("estudiantes", estudiantes);
         return resp;
     }
-
+// Guardar Asistencia ahora actualiza asistencias y marca tema como completado
     public void guardarAsistencias(GuardarAsistenciaRequest req) {
         // actualizar cada registro en asistencias_estudiante
         for (EstudianteAsistenciaDTO s : req.getActualizaciones()) {
