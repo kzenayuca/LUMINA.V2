@@ -423,6 +423,7 @@
                 gap: 10px;
             }
         }
+        
     </style>
 </head>
 <body>
@@ -647,7 +648,7 @@ function mostrarCursosYNotas() {
             <div class="course-header">
                 <div class="course-name">${curso.nombre || curso.nombre_curso}</div>
                 <div class="course-average ${curso.promedio >= 10.5 ? 'average-approved' : 'average-disapproved'}">
-                    ${curso.promedio > 0 ? curso.promedio : '--'}
+                    ${curso.promedio > 0 ? curso.promedio.toFixed(2) : '--'}
                 </div>
             </div>
             <div class="course-details">
@@ -667,18 +668,26 @@ function mostrarCursosYNotas() {
                         <th>Evaluación</th>
                         <th>Nota</th>
                         <th>Peso</th>
+                        <th>Ponderado</th>
                         <th>Fecha</th>
                     </tr>
                 </thead>
                 <tbody>
-                    ${curso.notas.map(nota => `
+                    ${curso.notas.map(nota => {
+                        const ponderado = (nota.valor || nota.nota) * ((nota.peso || nota.porcentaje) / 100);
+                        return `
                         <tr>
                             <td>${nota.tipo || nota.tipo_evaluacion}</td>
-                            <td>${nota.valor || nota.nota}</td>
-                            <td>${nota.peso || nota.porcentaje}%</td>
-                            <td>${nota.fecha || new Date(nota.fecha_registro).toLocaleDateString()}</td>
+                            <td><strong>${(nota.valor || nota.nota).toFixed(1)}</strong></td>
+                            <td>${(nota.peso || nota.porcentaje).toFixed(0)}%</td>
+                            <td style="color: #3498db; font-weight: 600;">${ponderado.toFixed(2)}</td>
+                            <td>${nota.fecha ? new Date(nota.fecha).toLocaleDateString() : new Date(nota.fecha_registro).toLocaleDateString()}</td>
                         </tr>
-                    `).join('')}
+                    `}).join('')}
+                    <tr style="background: rgba(52, 152, 219, 0.1); font-weight: 700;">
+                        <td colspan="3" style="text-align: right; padding-right: 10px;">PROMEDIO FINAL:</td>
+                        <td colspan="2" style="color: #2c3e50; font-size: 1.1rem;">${curso.promedio.toFixed(2)}</td>
+                    </tr>
                 </tbody>
             </table>
             ` : '<p class="no-grades" style="text-align: center; padding: 15px; color: #7f8c8d;">No hay evaluaciones registradas</p>'}

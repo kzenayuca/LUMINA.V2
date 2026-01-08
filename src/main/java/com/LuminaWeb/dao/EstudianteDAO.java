@@ -190,56 +190,63 @@ public List<SilaboEstudiante> obtenerSilabosPorCUI(String cui) {
         return lista;
     }
 
-    /** Llama al procedimiento notas_estudiante(p_cui) */
-    public List<CursoNotasDTO> getNotasPorCUI(String cui, String semestre) {
-        SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate)
-                .withProcedureName("notas_estudiante");
+/** Llama al procedimiento notas_estudiante(p_cui) */
+public List<CursoNotasDTO> getNotasPorCUI(String cui, String semestre) {
+    SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate)
+            .withProcedureName("notas_estudiante");
 
-        Map<String, Object> params = new HashMap<>();
-        params.put("p_cui", cui);
+    Map<String, Object> params = new HashMap<>();
+    params.put("p_cui", cui);
 
-        Map<String, Object> result = call.execute(params);
-        List<Map<String, Object>> rows = (List<Map<String, Object>>) result.get("#result-set-1");
-        if (rows == null) return new ArrayList<>();
+    Map<String, Object> result = call.execute(params);
+    List<Map<String, Object>> rows = (List<Map<String, Object>>) result.get("#result-set-1");
+    if (rows == null) return new ArrayList<>();
 
-        Map<String, CursoNotasDTO> cursos = new LinkedHashMap<>();
-        for (Map<String, Object> row : rows) {
-            String codigo = safeStr(row.get("codigo_curso"));
-            if (codigo == null) continue;
+    Map<String, CursoNotasDTO> cursos = new LinkedHashMap<>();
+    
+    for (Map<String, Object> row : rows) {
+        String codigo = safeStr(row.get("codigo_curso"));
+        if (codigo == null) continue;
 
-            CursoNotasDTO curso = cursos.computeIfAbsent(codigo, k -> {
-                CursoNotasDTO c = new CursoNotasDTO();
-                c.nombre = safeStr(row.get("nombre_curso"));
-                c.codigo = codigo;
-                c.docente = safeStr(row.get("docente_del_curso"));
-                return c;
-            });
+        CursoNotasDTO curso = cursos.computeIfAbsent(codigo, k -> {
+            CursoNotasDTO c = new CursoNotasDTO();
+            c.nombre = safeStr(row.get("nombre_curso"));
+            c.codigo = codigo;
+            c.docente = safeStr(row.get("docente_del_curso"));
+            return c;
+        });
 
-            NotaDTO nota = new NotaDTO();
-            nota.tipo = safeStr(row.get("tipo_evaluacion"));
-            nota.valor = safeDouble(row.get("nota"));
-            nota.peso = safeDouble(row.get("porcentaje"));
-            nota.fecha = safeStr(row.get("fecha_registro"));
-            curso.notas.add(nota);
-        }
-
-        // calcular promedios
-        for (CursoNotasDTO c : cursos.values()) {
-            double sumProd = 0, sumPeso = 0;
-            for (NotaDTO n : c.notas) {
-                sumProd += n.valor * n.peso;
-                sumPeso += n.peso;
-            }
-            if (sumPeso > 0)
-                c.promedio = Math.round((sumProd / sumPeso) * 100.0) / 100.0;
-            else if (!c.notas.isEmpty()) {
-                double s = c.notas.stream().mapToDouble(n -> n.valor).sum();
-                c.promedio = Math.round((s / c.notas.size()) * 100.0) / 100.0;
-            }
-        }
-
-        return new ArrayList<>(cursos.values());
+        NotaDTO nota = new NotaDTO();
+        nota.tipo = safeStr(row.get("tipo_evaluacion"));
+        nota.valor = safeDouble(row.get("nota"));
+        nota.peso = safeDouble(row.get("porcentaje")); 
+        nota.fecha = safeStr(row.get("fecha_registro"));
+        curso.notas.add(nota);
     }
+
+    // CALCULAR PROMEDIO PONDERADO 
+    for (CursoNotasDTO c : cursos.values()) {
+        double sumaPonderada = 0.0;
+        double sumaPorcentajes = 0.0;
+        
+        for (NotaDTO n : c.notas) {
+            if (n.valor > 0 && n.peso > 0) {
+                // Multiplicar nota por su porcentaje
+                sumaPonderada += n.valor * (n.peso / 100.0);
+                sumaPorcentajes += n.peso;
+            }
+        }
+        
+        // El promedio ponderado es la suma de (nota × porcentaje/100)
+        if (sumaPorcentajes > 0) {
+            c.promedio = Math.round(sumaPonderada * 100.0) / 100.0;
+        } else {
+            c.promedio = 0.0;
+        }
+    }
+
+    return new ArrayList<>(cursos.values());
+}
 
 // estudiante_dashboard
     /* Obtiene resumen de cursos matriculados para un estudiante */

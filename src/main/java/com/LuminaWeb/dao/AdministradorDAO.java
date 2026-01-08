@@ -1340,6 +1340,22 @@ public Map<String, Object> obtenerReporteCurso(String codigoCurso) {
     
     resultado.put("docentes", jdbcTemplate.queryForList(sqlDocentes, codigoCurso));
     
+    //Obtener porcentajes del curso
+    String sqlPorcentajes = """
+        SELECT tipo_eval_id, porcentaje
+        FROM porcentajes_evaluacion pe
+        INNER JOIN ciclos_academicos ca ON pe.id_ciclo = ca.id_ciclo
+        WHERE pe.codigo_curso = ? AND ca.estado = 'ACTIVO'
+    """;
+    
+    List<Map<String, Object>> porcentajesRows = jdbcTemplate.queryForList(sqlPorcentajes, codigoCurso);
+    Map<Integer, Double> porcentajes = new HashMap<>();
+    for (Map<String, Object> row : porcentajesRows) {
+        int tipoEvalId = ((Number) row.get("tipo_eval_id")).intValue();
+        double porcentaje = ((Number) row.get("porcentaje")).doubleValue() / 100.0;
+        porcentajes.put(tipoEvalId, porcentaje);
+    }
+    
     //Estudiantes con notas
     String sqlEstudiantes = """
         SELECT 
@@ -1370,22 +1386,24 @@ public Map<String, Object> obtenerReporteCurso(String codigoCurso) {
         return est;
     });
     
-    //Agregar notas a cada estudiante
+    //Agregar notas a cada estudiante y calcular promedio PONDERADO
     for (Map<String, Object> est : estudiantes) {
         int idMatricula = (int) est.get("idMatricula");
         Map<String, Double> notas = obtenerNotasEstudiante(idMatricula);
         est.put("notas", notas);
         
-        //Calcular promedio
-        double suma = 0;
-        int count = 0;
-        for (Double nota : notas.values()) {
-            if (nota != null) {
-                suma += nota;
-                count++;
+        //CALCULAR PROMEDIO PONDERADO
+        double sumaPonderada = 0.0;
+        for (Map.Entry<String, Double> entry : notas.entrySet()) {
+            if (entry.getValue() != null) {
+                int tipoEvalId = Integer.parseInt(entry.getKey());
+                Double porcentaje = porcentajes.get(tipoEvalId);
+                if (porcentaje != null) {
+                    sumaPonderada += entry.getValue() * porcentaje;
+                }
             }
         }
-        est.put("promedio", count > 0 ? suma / count : 0.0);
+        est.put("promedio", sumaPonderada);
     }
     
     resultado.put("estudiantes", estudiantes);

@@ -7,8 +7,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
     <style>
         :root{
-            --bg-1: #667eea;
-            --bg-2: #764ba2;
+            --bg-1: #bec6e9;
+            --bg-2: #e2d1f3;
             --primary: #2c3e50;
             --accent: #3498db;
             --muted: #7f8c8d;
@@ -1273,28 +1273,29 @@ function actualizarEstadoExamenes(examenes) {
         actualizarEstadisticas(estudiantes);
     }
 
-    function actualizarEstadisticas(estudiantes) {
-        const total = estudiantes.length;
-        const aprobados = estudiantes.filter(e => e.promedio >= 10.5).length;
-        const desaprobados = total - aprobados;
+function actualizarEstadisticas(estudiantes) {
+    const total = estudiantes.length;
+    
+    const aprobados = estudiantes.filter(e => e.promedio != null && e.promedio >= 10.5).length;
+    const desaprobados = total - aprobados;
 
-        let sumaPromedios = 0;
-        let countConNota = 0;
+    let sumaPromedios = 0;
+    let countConNota = 0;
 
-        estudiantes.forEach(e => {
-            if (e.promedio !== null && e.promedio !== undefined && !isNaN(e.promedio)) {
-                sumaPromedios += e.promedio;
-                countConNota++;
-            }
-        });
+    estudiantes.forEach(e => {
+        if (e.promedio !== null && e.promedio !== undefined && !isNaN(e.promedio)) {
+            sumaPromedios += e.promedio;
+            countConNota++;
+        }
+    });
 
-        const promedioGeneral = countConNota > 0 ? (sumaPromedios / countConNota).toFixed(1) : "0.0";
+    const promedioGeneral = countConNota > 0 ? (sumaPromedios / countConNota).toFixed(1) : "0.0";
 
-        document.getElementById("total-alumnos").textContent = total;
-        document.getElementById("aprobados").textContent = aprobados;
-        document.getElementById("desaprobados").textContent = desaprobados;
-        document.getElementById("promedio-general").textContent = promedioGeneral;
-    }
+    document.getElementById("total-alumnos").textContent = total;
+    document.getElementById("aprobados").textContent = aprobados;
+    document.getElementById("desaprobados").textContent = desaprobados;
+    document.getElementById("promedio-general").textContent = promedioGeneral;
+}
 
     // GUARDAR NOTAS
     async function guardarNotas() {

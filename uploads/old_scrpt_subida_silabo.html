@@ -1,0 +1,400 @@
+
+    <script>
+        // Array de cursos de ejemplo (normalmente cargado desde backend)
+        const COURSE_DATA_MOCK = [
+            { code: "MAT101", name: "Matemática Aplicada", hasSyllabus: false, hasContent: false, units: [] },
+            { code: "ING102", name: "Inglés I", hasSyllabus: true, hasContent: false, units: [
+                { id: 1, name: "Introducción", themes: ["Saludos", "Verbo To Be"] }
+            ] },
+            { code: "CC201", name: "Ciencia de la Computación I", hasSyllabus: true, hasContent: true, units: [
+                { id: 1, name: "Fundamentos de Python", themes: ["Variables", "Tipos de Datos"] },
+                { id: 2, name: "Estructuras de Control", themes: ["If/Else", "Bucles"] },
+                { id: 3, name: "Algoritmos Avanzados", themes: ["Búsqueda binaria", "Recursividad"] }
+            ] }
+        ];
+        
+        let unitCounter = 0;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('course-blocks-container');
+            
+            // 1. Renderizar todos los bloques
+            COURSE_DATA_MOCK.forEach(course => {
+                container.innerHTML += generateCourseBlock(course);
+            });
+            
+            // 2. Inicializar la lógica dinámica
+            initDynamicContentLogic();
+            initFileUploadLogic();
+        });
+
+        // Función para crear el HTML de un tema
+        function createThemeHtml(themeName = '') {
+            return `
+                <div class="theme-item">
+                    <input type="text" placeholder="Escribe el tema..." value="${themeName}" required>
+                    <button type="button" class="btn-remove" onclick="this.closest('.theme-item').remove()"><i class="fas fa-trash-alt"></i></button>
+                </div>
+            `;
+        }
+        
+        // Función para crear el HTML de una unidad
+        function createUnitHtml(courseCode, unitNumber, unitName = `Unidad ${unitNumber}`, themes = []) {
+            const themesHtml = themes.map(t => createThemeHtml(t)).join('');
+            
+            // Para el minimizador: unit-content envuelve la lista de temas y el botón de añadir tema.
+            return `
+                <div class="unit-item" data-unit-id="${unitNumber}">
+                    <div class="unit-header" onclick="toggleThemes(this.closest('.unit-item'))">
+                        <h4>
+                            <i class="fas fa-chevron-down toggle-themes"></i>
+                            <input type="text" value="${unitName}" placeholder="Nombre de la Unidad..." style="border:none; background:none; font-weight:bold; color:var(--primary);">
+                        </h4>
+                        <div class="unit-actions">
+                            <button type="button" onclick="event.stopPropagation(); removeUnit('${courseCode}', ${unitNumber})"><i class="fas fa-trash"></i> Eliminar</button>
+                        </div>
+                    </div>
+                    <div class="unit-content">
+                        <div class="theme-list">
+                            ${themesHtml}
+                        </div>
+                        <button type="button" class="btn-add-theme" data-add-theme-to="${courseCode}" data-unit-id="${unitNumber}"><i class="fas fa-plus"></i> Añadir Tema</button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Función para generar el bloque de un curso (Se mantiene igual, solo llama a las funciones actualizadas)
+        const generateCourseBlock = (course) => {
+            // [ Lógica para determinar estado del curso... ] (Mantenido)
+            const hasSyllabus = course.hasSyllabus;
+            const hasContent = course.hasContent;
+            const statusClass = hasSyllabus && hasContent ? 'status-uploaded' : 'status-pending';
+            const statusText = hasSyllabus && hasContent ? 'Asistencia Desbloqueada' : 'Asistencia Bloqueada';
+            const statusIcon = hasSyllabus && hasContent ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+            const uploadBtnText = hasSyllabus ? 'Reemplazar Sílabo (PDF)' : 'Subir Sílabo (PDF)';
+            const uploadDisplayContent = hasSyllabus 
+                ? `<i class="fas fa-file-pdf" style="color: var(--success);"></i> <strong>${course.code}_Silabo_2025.pdf</strong> - Subido.`
+                : `<i class="fas fa-times-circle" style="color: var(--danger);"></i> Archivo no seleccionado.`;
+            const requirementBg = hasSyllabus && hasContent ? '#e6fff1' : '#fff9e6';
+            const requirementColor = hasSyllabus && hasContent ? 'var(--success)' : 'var(--warning)';
+            const requirementIcon = hasSyllabus && hasContent ? 'fas fa-check-circle' : 'fas fa-info-circle';
+            const requirementTitle = hasSyllabus && hasContent ? 'Asistencia Desbloqueada' : 'Requisitos para desbloquear la asistencia';
+            const requirementList = hasSyllabus && hasContent 
+                ? `<li>El sílabo fue cargado y el temario está completo.</li><li>Puede modificar el contenido si es necesario.</li>`
+                : `<li>Debe subir el sílabo oficial del curso **(PDF)**.</li><li>Debe ingresar todo el temario **(Unidades y Temas)**.</li><li>La asistencia se habilita cuando el sílabo es subido y el contenido es ingresado.</li>`;
+
+
+            return `
+                <div class="course-upload-block" data-course-code="${course.code}">
+                    <div class="upload-header">
+                        <h2 class="upload-title">
+                            <i class="fas fa-book upload-icon"></i>
+                            ${course.code} - ${course.name}
+                        </h2>
+                        <div class="status-badge ${statusClass}">
+                            <i class="${statusIcon}"></i> ${statusText}
+                        </div>
+                    </div>
+
+                    <div class="requirements" style="background: ${requirementBg}; border-left-color: ${requirementColor};">
+                        <h4><i class="${requirementIcon}" style="color: ${requirementColor};"></i> ${requirementTitle}</h4>
+                        <ul>
+                            ${requirementList}
+                        </ul>
+                    </div>
+
+                    <div class="syllabus-upload-section">
+                        <input type="file" class="input-hidden-file" id="file-${course.code}" accept=".pdf" data-course="${course.code}">
+                        <button type="button" class="btn-upload-syllabus" data-target="file-${course.code}">
+                            <i class="fas fa-file-upload"></i> ${uploadBtnText}
+                        </button>
+                        <div class="file-upload-display" id="file-display-${course.code}">
+                            ${uploadDisplayContent}
+                        </div>
+                    </div>
+
+                    <div class="content-form">
+                        <h3><i class="fas fa-list-ul"></i> Ingreso de Unidades y Temas</h3>
+                        <div class="unit-list" id="units-${course.code}">
+                            </div>
+                        
+                        <button type="button" class="btn-add-unit" data-course-add-unit="${course.code}">
+                            <i class="fas fa-plus-circle"></i> Añadir Unidad
+                        </button>
+                        
+                        <button type="button" class="btn btn-save-content" disabled data-course-save="${course.code}">
+                            <i class="fas fa-save"></i> Guardar Contenido
+                        </button>
+                    </div>
+                </div>
+            `;
+        };
+
+        // --- FUNCIÓN DE MINIMIZADOR ---
+        window.toggleThemes = (unitElement) => {
+            unitElement.classList.toggle('collapsed');
+        }
+
+        // --- LÓGICA DE UNIDADES Y TEMAS (modificada para inicializar minimizador) ---
+        
+        // Añadir Unidad
+        function addUnit(courseCode) {
+            unitCounter++;
+            const unitList = document.getElementById(`units-${courseCode}`);
+            if (!unitList) return;
+            
+            unitList.insertAdjacentHTML('beforeend', createUnitHtml(courseCode, unitCounter));
+            updateSaveButtonState(courseCode);
+        }
+
+        // Eliminar Unidad
+        window.removeUnit = (courseCode, unitId) => {
+            const unitElement = document.querySelector(`#units-${courseCode} .unit-item[data-unit-id="${unitId}"]`);
+            if (unitElement && confirm('¿Está seguro de eliminar esta Unidad y todos sus temas?')) {
+                unitElement.remove();
+                updateSaveButtonState(courseCode);
+            }
+        };
+
+        // Añadir Tema
+        function addTheme(courseCode, unitId) {
+            const unitElement = document.querySelector(`#units-${courseCode} .unit-item[data-unit-id="${unitId}"]`);
+            if (!unitElement) return;
+            
+            const themeList = unitElement.querySelector('.theme-list');
+            themeList.insertAdjacentHTML('beforeend', createThemeHtml());
+            
+            // Opcional: enfocar el nuevo input y expandir la unidad si está colapsada
+            const newThemeInput = themeList.lastElementChild.querySelector('input');
+            if(newThemeInput) newThemeInput.focus();
+            unitElement.classList.remove('collapsed');
+            updateSaveButtonState(courseCode);
+        }
+
+        // Habilita/Deshabilita el botón de guardar
+        function updateSaveButtonState(courseCode) {
+            const unitList = document.getElementById(`units-${courseCode}`);
+            const saveBtn = document.querySelector(`.btn-save-content[data-course-save="${courseCode}"]`);
+            if (unitList.children.length > 0) {
+                saveBtn.disabled = false;
+            } else {
+                saveBtn.disabled = true;
+            }
+        }
+        
+        // Inicializar la lógica de contenido dinámico
+        function initDynamicContentLogic() {
+            // Cargar contenido inicial
+            COURSE_DATA_MOCK.forEach(course => {
+                const unitListEl = document.getElementById(`units-${course.code}`);
+                if (unitListEl && course.units && course.units.length > 0) {
+                    let maxId = 0;
+                    course.units.forEach(unit => {
+                        maxId = Math.max(maxId, unit.id);
+                        unitListEl.innerHTML += createUnitHtml(course.code, unit.id, unit.name, unit.themes);
+                        // Colapsar unidades cargadas si son muchas
+                        if (course.units.length > 2) { 
+                            const lastUnit = unitListEl.lastElementChild;
+                            if(lastUnit) lastUnit.classList.add('collapsed'); 
+                        }
+                    });
+                    unitCounter = Math.max(unitCounter, maxId);
+                }
+                updateSaveButtonState(course.code); // Estado inicial
+            });
+            
+            // Asignar listeners a todos los botones de Añadir Unidad y Delegación de Temas (Mantenido)
+            document.querySelectorAll('.btn-add-unit').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const courseCode = e.currentTarget.getAttribute('data-course-add-unit');
+                    addUnit(courseCode);
+                });
+            });
+
+            document.querySelectorAll('.unit-list').forEach(list => {
+                list.closest('.content-form').addEventListener('click', (e) => {
+                    // Lógica para añadir tema
+                    if (e.target.classList.contains('btn-add-theme') || e.target.closest('.btn-add-theme')) {
+                        const btn = e.target.closest('.btn-add-theme');
+                        const courseCode = btn.getAttribute('data-add-theme-to');
+                        const unitId = btn.getAttribute('data-unit-id');
+                        addTheme(courseCode, unitId);
+                        e.stopPropagation(); // Evita que se propague al unit-header si el botón está dentro
+                    }
+                    // Forzar el botón de guardar a habilitarse con cualquier cambio de input
+                    if (e.target.tagName === 'INPUT') {
+                        const courseCode = e.target.closest('.course-upload-block').getAttribute('data-course-code');
+                        updateSaveButtonState(courseCode);
+                    }
+                });
+            });
+
+            // Asignar listeners para Guardar Contenido
+            document.querySelectorAll('.btn-save-content').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const courseCode = e.currentTarget.getAttribute('data-course-save');
+                    saveContent(courseCode);
+                });
+            });
+        }
+        
+        // --- LÓGICA DE SUBIDA DE ARCHIVOS (Mantenido) ---
+        
+        function initFileUploadLogic() {
+            document.querySelectorAll('.btn-upload-syllabus').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const targetId = e.currentTarget.getAttribute('data-target');
+                    document.getElementById(targetId).click();
+                });
+            });
+
+            document.querySelectorAll('.input-hidden-file').forEach(input => {
+                input.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    const courseCode = e.target.getAttribute('data-course');
+                    const displayEl = document.getElementById(`file-display-${courseCode}`);
+
+                    if (file) {
+                        if (file.size > 10 * 1024 * 1024) {
+                            alert('Archivo demasiado grande (máx 10MB).');
+                            e.target.value = '';
+                            displayEl.innerHTML = `<i class="fas fa-times-circle" style="color: var(--danger);"></i> Archivo demasiado grande.`;
+                            return;
+                        }
+                        
+                        // Simular subida de sílabo
+                        uploadSyllabus(courseCode, file);
+                        
+                        // Mostrar info del archivo (en el cliente)
+                        const fileSize = (file.size / 1024 / 1024).toFixed(2);
+                        displayEl.innerHTML = `
+                            <i class="fas fa-file-pdf" style="color: var(--primary);"></i> 
+                            <strong>${file.name}</strong> (${fileSize}MB) - Pendiente de envío.
+                        `;
+                    } else {
+                        displayEl.innerHTML = `<i class="fas fa-times-circle" style="color: var(--danger);"></i> Archivo no seleccionado.`;
+                    }
+                });
+            });
+        }
+
+        // Simulación de Subida y Guardado
+        
+        function uploadSyllabus(courseCode, file) {
+            // [ Lógica de AJAX para subir sílabo ]
+            console.log(`Simulando SUBIDA DE SÍLABO para ${courseCode}: ${file.name}`);
+            
+            // Simulación de éxito después de 1 segundo
+            setTimeout(() => {
+                const course = COURSE_DATA_MOCK.find(c => c.code === courseCode);
+                if (course) course.hasSyllabus = true;
+                
+                // Nota: Ya NO mostramos el modal aquí, solo actualizamos el estado visual
+                updateCourseBlockStatus(courseCode);
+                // Opcional: Alerta simple si no se muestra el modal
+                console.log(`Sílabo de ${courseCode} subido. Falta guardar contenido.`);
+                
+            }, 1000);
+        }
+
+        function saveContent(courseCode) {
+            const unitsEl = document.getElementById(`units-${courseCode}`);
+            const data = [];
+            
+            // Recoger los datos del formulario (ejemplo)
+            unitsEl.querySelectorAll('.unit-item').forEach(unitEl => {
+                const unitNameInput = unitEl.querySelector('input[type="text"]');
+                const unitData = {
+                    name: unitNameInput ? unitNameInput.value.trim() : 'Unidad sin Nombre',
+                    themes: []
+                };
+                
+                unitEl.querySelectorAll('.theme-list input[type="text"]').forEach(themeInput => {
+                    if (themeInput.value.trim()) {
+                        unitData.themes.push(themeInput.value.trim());
+                    }
+                });
+                
+                if (unitData.themes.length > 0) { // Solo guardamos unidades con al menos 1 tema
+                    data.push(unitData);
+                }
+            });
+
+            if (data.length === 0) {
+                 alert('Debe añadir al menos una unidad con temas antes de guardar.');
+                 return;
+            }
+            
+            console.log(`Simulando GUARDADO DE CONTENIDO para ${courseCode}:`, data);
+            
+            // Aquí iría la lógica de AJAX/fetch para guardar el contenido
+            
+            // Simulación de éxito después de 1 segundo
+            const saveBtn = document.querySelector(`.btn-save-content[data-course-save="${courseCode}"]`);
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+
+            setTimeout(() => {
+                const course = COURSE_DATA_MOCK.find(c => c.code === courseCode);
+                const prevStatus = course.hasSyllabus && course.hasContent;
+                if (course) course.hasContent = true;
+                
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="fas fa-save"></i> Guardar Contenido';
+                
+                // ** Lógica de Modal solicitada **
+                document.getElementById('modalTitle').textContent = '¡Contenido Guardado Exitosamente!';
+                
+                if (course.hasSyllabus && !prevStatus) {
+                    // Si el sílabo ya estaba y este guardado desbloquea la asistencia
+                     document.getElementById('modalMsg').textContent = `El contenido del curso ${courseCode} ha sido guardado. **¡Asistencia Desbloqueada!**`;
+                } else if (course.hasSyllabus && prevStatus) {
+                    // Si el sílabo ya estaba y solo se actualiza contenido
+                     document.getElementById('modalMsg').textContent = `El contenido del curso ${courseCode} ha sido actualizado.`;
+                } else {
+                    // Si el sílabo NO estaba subido
+                    document.getElementById('modalMsg').textContent = `El contenido del curso ${courseCode} ha sido guardado. Recuerda subir el Sílabo (PDF) para desbloquear la asistencia.`;
+                }
+
+                document.getElementById('successModal').classList.add('active');
+                
+                // Actualiza el estado visual del bloque
+                updateCourseBlockStatus(courseCode);
+            }, 1500);
+        }
+        
+        function updateCourseBlockStatus(courseCode) {
+             // [ Lógica para actualizar el estado del badge y los requisitos ] (Mantenido)
+            const course = COURSE_DATA_MOCK.find(c => c.code === courseCode);
+            const block = document.querySelector(`.course-upload-block[data-course-code="${courseCode}"]`);
+            if (!block || !course) return;
+
+            const statusBadge = block.querySelector('.status-badge');
+            const requirements = block.querySelector('.requirements');
+            
+            if (course.hasSyllabus && course.hasContent) {
+                statusBadge.className = 'status-badge status-uploaded';
+                statusBadge.innerHTML = `<i class="fas fa-check-circle"></i> Asistencia Desbloqueada`;
+                requirements.style.background = '#e6fff1';
+                requirements.style.borderLeftColor = 'var(--success)';
+                requirements.querySelector('h4').innerHTML = `<i class="fas fa-check-circle" style="color: var(--success);"></i> Asistencia Desbloqueada`;
+                requirements.querySelector('ul').innerHTML = `<li>El sílabo fue cargado y el temario está completo.</li><li>Puede modificar el contenido si es necesario.</li>`;
+
+            } else {
+                 statusBadge.className = 'status-badge status-pending';
+                statusBadge.innerHTML = `<i class="fas fa-exclamation-circle"></i> Asistencia Bloqueada`;
+                requirements.style.background = '#fff9e6';
+                requirements.style.borderLeftColor = 'var(--warning)';
+                requirements.querySelector('h4').innerHTML = `<i class="fas fa-info-circle" style="color: var(--warning);"></i> Requisitos para desbloquear la asistencia`;
+                requirements.querySelector('ul').innerHTML = `<li>Debe subir el sílabo oficial del curso **(PDF)**.</li><li>Debe ingresar todo el temario **(Unidades y Temas)**.</li><li>La asistencia se habilita cuando el sílabo es subido y el contenido es ingresado.</li>`;
+            }
+        }
+
+        // Lógica del modal (mantener)
+        document.getElementById('goToAttendance').addEventListener('click', () => {
+            document.getElementById('successModal').classList.remove('active');
+            window.location.href = 'nuevo_profesor_asistencia-desbloqueada.html'; 
+        });
+
+    </script>

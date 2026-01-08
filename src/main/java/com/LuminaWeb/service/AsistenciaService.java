@@ -55,8 +55,8 @@ public class AsistenciaService {
         Map<String,Object> h = horarios.get(0);
         Integer idHorario = (Integer) h.get("id_horario");
         LocalTime horaInicio = ((java.sql.Time) h.get("hora_inicio")).toLocalTime();
-        // hora cierre = hora_inicio + 20 minutos
-        LocalTime horaCierre = horaInicio.plusMinutes(20);
+        // hora cierre = hora_inicio + 60 minutos
+        LocalTime horaCierre = horaInicio.plusMinutes(180);
         LocalTime ahora = LocalTime.now();
 
         String fecha = LocalDate.now().toString(); // yyyy-MM-dd
@@ -95,10 +95,12 @@ public class AsistenciaService {
         for (EstudianteAsistenciaDTO s : req.getActualizaciones()) {
             repo.actualizarAsistenciaEstudiante(s.getIdMatricula(), req.getIdHorario(), req.getFecha(), s.getEstado_asistencia());
         }
-        // Marcar un tema como completado para el curso correspondiente
-        String codigoCurso = repo.getCodigoCursoPorHorario(req.getIdHorario());
-        if (codigoCurso != null) {
-            repo.marcarTemaCompletado(codigoCurso);
+        // Marcar un tema como completado para el grupo correspondiente
+        Integer grupoId = repo.getGrupoIdPorHorario(req.getIdHorario());
+        System.out.println("Grupo ID obtenido para el horario " + req.getIdHorario() + ": " + grupoId);
+        if (grupoId != null) {
+            System.out.println("Entrando a la funcion para el tema con el id del grupo" + grupoId);
+            repo.marcarTemaCompletado(grupoId);
         }
     }
 }

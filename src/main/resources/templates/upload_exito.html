@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<h2>Archivo subido exitosamente</h2>
+
+<p th:text="${mensaje}"></p>
+
+<p>
+    Nombre del archivo: 
+    <span th:text="${nombreArchivo}"></span>
+</p>
+
+<p>
+    Ruta pública:
+    <a th:href="${rutaArchivo}" target="_blank" th:text="${rutaArchivo}"></a>
+</p>
+
+</body>
+</html>

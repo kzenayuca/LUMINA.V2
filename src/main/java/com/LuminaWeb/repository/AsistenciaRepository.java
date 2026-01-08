@@ -125,29 +125,74 @@ public class AsistenciaRepository {
             return null;
         }
     }
+
+    // Obtener grupo_id por id_horario
+    public Integer getGrupoIdPorHorario(int idHorario) {
+        String sql = "SELECT grupo_id FROM horarios WHERE id_horario = ?";
+        try {
+            return jdbc.queryForObject(sql, new Object[]{idHorario}, Integer.class);
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
     //Cambios en AsistenciaService.java
-    // Marcar el primer tema pendiente como completado para el curso
-    public void marcarTemaCompletado(String codigoCurso) {
+    // Marcar el primer tema pendiente como completado para el grupo
+    public void marcarTemaCompletado(int grupoId) {
+        // Obtener codigo_curso por grupo_id
+        String sqlCurso = "SELECT codigo_curso FROM grupos_curso WHERE grupo_id = ?";
+        String codigoCurso = null;
+        try {
+            System.out.println("Obteniendo codigo_curso para grupoId: " + grupoId);
+            codigoCurso = jdbc.queryForObject(sqlCurso, new Object[]{grupoId}, String.class);
+            System.out.println("codigo_curso obtenido: " + codigoCurso);
+        } catch (Exception ex) {
+            System.out.println("No se encontró codigo_curso para grupoId: " + grupoId);
+            return; // No grupo encontrado
+        }
+        if (codigoCurso == null) return;
+
         // Obtener id_silabo activo para el curso
-        String sqlSilabo = "SELECT id_silabo FROM silabos WHERE codigo_curso = ? AND estado = 'ACTIVO' LIMIT 1";
+        String sqlSilabo = "SELECT id_silabo FROM silabos WHERE codigo_curso = ? AND estado = 'APROBADO' LIMIT 1";
         Integer idSilabo = null;
         try {
+            System.out.println("Obteniendo id_silabo activo para codigoCurso: " + codigoCurso);
             idSilabo = jdbc.queryForObject(sqlSilabo, new Object[]{codigoCurso}, Integer.class);
+            System.out.println("id_silabo obtenido: " + idSilabo);
         } catch (Exception ex) {
+            System.out.println("No se encontró silabo activo para codigoCurso: " + codigoCurso);
             return; // No silabo activo
         }
         if (idSilabo == null) return;
+
+        // Verificar si ya se completó un tema hoy para este silabo
+        String sqlCheck = "SELECT COUNT(*) FROM temas t INNER JOIN unidades u ON t.unidad_id = u.unidad_id WHERE u.id_silabo = ? AND t.estado = 'COMPLETADO' AND t.fecha_completado = CURDATE()";
+        Integer countCompletadosHoy = null;
+        try {
+            countCompletadosHoy = jdbc.queryForObject(sqlCheck, new Object[]{idSilabo}, Integer.class);
+        } catch (Exception ex) {
+            System.out.println("Error al verificar temas completados hoy: " + ex.getMessage());
+            return;
+        }
+        if (countCompletadosHoy != null && countCompletadosHoy > 0) {
+            System.out.println("Ya se completó un tema hoy para el silabo " + idSilabo + ", no se marca otro.");
+            return;
+        }
 
         // Obtener el primer tema pendiente
         String sqlTema = "SELECT t.id_tema FROM temas t INNER JOIN unidades u ON t.unidad_id = u.unidad_id WHERE u.id_silabo = ? AND t.estado = 'PENDIENTE' ORDER BY t.id_tema LIMIT 1";
         Integer idTema = null;
         try {
+            System.out.println("Obteniendo primer tema pendiente para idSilabo: " + idSilabo);
             idTema = jdbc.queryForObject(sqlTema, new Object[]{idSilabo}, Integer.class);
         } catch (Exception ex) {
+            System.out.println("No se encontró tema pendiente para idSilabo: " + idSilabo);
             return; // No tema pendiente
         }
         if (idTema != null) {
-            String update = "UPDATE temas SET estado = 'COMPLETADO' WHERE id_tema = ?";
+            String update = "UPDATE temas SET estado = 'COMPLETADO', fecha_completado = CURDATE() WHERE id_tema = ?";
+            //linea en consola para ver si logro insertar
+            System.out.println("Marcando tema como COMPLETADO, id_tema: " + idTema);
             jdbc.update(update, idTema);
         }
     }

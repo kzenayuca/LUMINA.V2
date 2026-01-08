@@ -265,76 +265,111 @@ public class ProfesorDAO {
         return ids.isEmpty() ? Optional.empty() : Optional.of(ids.get(0));
     }
     //Obtiene estudiantes de un grupo con sus notas
-    public List<NotaEstudiante> obtenerEstudiantesConNotas(int grupoId) {
-        String sqlEstudiantes = """
-            SELECT DISTINCT
-                e.cui,
-                e.numero_matricula,
-                e.apellidos_nombres,
-                u.correo_institucional,
-                m.id_matricula
-            FROM matriculas m
-            INNER JOIN estudiantes e ON m.cui = e.cui
-            INNER JOIN usuarios u ON e.id_usuario = u.id_usuario
-            WHERE m.grupo_id = ?
-              AND m.estado_matricula = 'ACTIVO'
-            ORDER BY e.apellidos_nombres
-        """;
-
-        List<NotaEstudiante> estudiantes = jdbcTemplate.query(
-            sqlEstudiantes, 
-            new Object[]{grupoId}, 
-            (rs, rowNum) -> {
-                NotaEstudiante ne = new NotaEstudiante();
-                ne.cui = rs.getString("cui");
-                ne.numeroMatricula = rs.getInt("numero_matricula");
-                ne.nombreEstudiante = rs.getString("apellidos_nombres");
-                ne.idMatricula = rs.getInt("id_matricula");
-                ne.notas = new HashMap<>(); //Inicializar el Map
-                return ne;
-            }
-        );
-
-        //Para cada estudiante, obtener sus notas
-        String sqlNotas = """
-            SELECT 
-                te.tipo_eval_id,
-                te.codigo,
-                n.calificacion
-            FROM notas n
-            INNER JOIN tipos_evaluacion te ON n.tipo_eval_id = te.tipo_eval_id
-            WHERE n.id_matricula = ?
-        """;
-
-        for (NotaEstudiante est : estudiantes) {
-            List<Map<String, Object>> notasRows = jdbcTemplate.queryForList(
-                sqlNotas, est.idMatricula
-            );
-            
-            for (Map<String, Object> row : notasRows) {
-                //Guardamos la nota usando el tipo_eval_id como clave (p. ej. "3")
-                String codigo = String.valueOf(safeInt(row.get("tipo_eval_id")));
-                Double calificacion = safeDouble(row.get("calificacion"));
-                est.notas.put(codigo, calificacion);
-            }
-
-            //Calcular promedio
-            if (!est.notas.isEmpty()) {
-                double suma = est.notas.values().stream()
-                    .filter(v -> v != null)
-                    .mapToDouble(Double::doubleValue).sum();
-                long count = est.notas.values().stream()
-                    .filter(v -> v != null)
-                    .count();
-                est.promedio = count > 0 ? suma / count : 0.0;
-            } else {
-                est.promedio = 0.0;
-            }
-        }
-
-        return estudiantes;
+public List<NotaEstudiante> obtenerEstudiantesConNotas(int grupoId) {
+    String sqlGrupoInfo = """
+        SELECT codigo_curso, id_ciclo 
+        FROM grupos_curso 
+        WHERE grupo_id = ?
+    """;
+    
+    Map<String, Object> grupoInfo = jdbcTemplate.queryForMap(sqlGrupoInfo, grupoId);
+    String codigoCurso = (String) grupoInfo.get("codigo_curso");
+    int idCiclo = ((Number) grupoInfo.get("id_ciclo")).intValue();
+    
+    //Obtener los porcentajes
+    String sqlPorcentajes = """
+        SELECT tipo_eval_id, porcentaje
+        FROM porcentajes_evaluacion
+        WHERE codigo_curso = ? AND id_ciclo = ?
+    """;
+    
+    List<Map<String, Object>> porcentajesRows = jdbcTemplate.queryForList(
+        sqlPorcentajes, codigoCurso, idCiclo
+    );
+    
+    //porcentaje/100
+    Map<Integer, Double> porcentajesMap = new HashMap<>();
+    for (Map<String, Object> row : porcentajesRows) {
+        int tipoEvalId = ((Number) row.get("tipo_eval_id")).intValue();
+        double porcentaje = ((Number) row.get("porcentaje")).doubleValue() / 100.0;
+        porcentajesMap.put(tipoEvalId, porcentaje);
     }
 
+    String sqlEstudiantes = """
+        SELECT DISTINCT
+            e.cui,
+            e.numero_matricula,
+            e.apellidos_nombres,
+            u.correo_institucional,
+            m.id_matricula
+        FROM matriculas m
+        INNER JOIN estudiantes e ON m.cui = e.cui
+        INNER JOIN usuarios u ON e.id_usuario = u.id_usuario
+        WHERE m.grupo_id = ?
+          AND m.estado_matricula = 'ACTIVO'
+        ORDER BY e.apellidos_nombres
+    """;
+
+    List<NotaEstudiante> estudiantes = jdbcTemplate.query(
+        sqlEstudiantes, 
+        new Object[]{grupoId}, 
+        (rs, rowNum) -> {
+            NotaEstudiante ne = new NotaEstudiante();
+            ne.cui = rs.getString("cui");
+            ne.numeroMatricula = rs.getInt("numero_matricula");
+            ne.nombreEstudiante = rs.getString("apellidos_nombres");
+            ne.idMatricula = rs.getInt("id_matricula");
+            ne.notas = new HashMap<>();
+            return ne;
+        }
+    );
+
+    //Para cada estudiante, obtener sus notas
+    String sqlNotas = """
+        SELECT 
+            te.tipo_eval_id,
+            te.codigo,
+            n.calificacion
+        FROM notas n
+        INNER JOIN tipos_evaluacion te ON n.tipo_eval_id = te.tipo_eval_id
+        WHERE n.id_matricula = ?
+    """;
+
+    for (NotaEstudiante est : estudiantes) {
+        List<Map<String, Object>> notasRows = jdbcTemplate.queryForList(
+            sqlNotas, est.idMatricula
+        );
+        
+        for (Map<String, Object> row : notasRows) {
+            String codigo = String.valueOf(safeInt(row.get("tipo_eval_id")));
+            Double calificacion = safeDouble(row.get("calificacion"));
+            est.notas.put(codigo, calificacion);
+        }
+
+        //CALCULAR PROMEDIO PONDERADO usando los porcentajes
+        if (!est.notas.isEmpty() && !porcentajesMap.isEmpty()) {
+            double sumaPromedios = 0.0;
+            double sumaPorcentajes = 0.0; 
+            
+            for (Map.Entry<String, Double> entry : est.notas.entrySet()) {
+                if (entry.getValue() != null) {
+                    int tipoEvalId = Integer.parseInt(entry.getKey());
+                    Double porcentaje = porcentajesMap.get(tipoEvalId);
+                    
+                    if (porcentaje != null) {
+                        sumaPromedios += entry.getValue() * porcentaje;
+                        sumaPorcentajes += porcentaje;
+                    }
+                }
+            }
+                        est.promedio = sumaPromedios;            
+        } else {
+            est.promedio = 0.0;
+        }
+    }
+
+    return estudiantes;
+}
     //Guarda o actualiza una nota individual 
     public boolean guardarNota(int idMatricula, int tipoEvalId, double calificacion, int idDocente) {
         try {
@@ -351,7 +386,6 @@ public class ProfesorDAO {
             );
 
             if (count != null && count > 0) {
-                //Actualizar
                 String sqlUpdate = """
                     UPDATE notas 
                     SET calificacion = ?, 
@@ -361,7 +395,6 @@ public class ProfesorDAO {
                 """;
                 jdbcTemplate.update(sqlUpdate, calificacion, idDocente, idMatricula, tipoEvalId);
             } else {
-                //Insertar
                 String sqlInsert = """
                     INSERT INTO notas (id_matricula, tipo_eval_id, calificacion, docente_registro_id)
                     VALUES (?, ?, ?, ?)
@@ -1051,26 +1084,46 @@ public Map<String, Object> obtenerEstadisticasAsistencia(int grupoId) {
 //Obtiene indicadores rápidos del curso (promedio, aprobación, etc.)
 public Map<String, Object> obtenerIndicadoresRapidos(int grupoId) {
     try {
+        //Obtener información del grupo
+        String sqlGrupoInfo = """
+            SELECT codigo_curso, id_ciclo 
+            FROM grupos_curso 
+            WHERE grupo_id = ?
+        """;
+        
+        Map<String, Object> grupoInfo = jdbcTemplate.queryForMap(sqlGrupoInfo, grupoId);
+        String codigoCurso = (String) grupoInfo.get("codigo_curso");
+        int idCiclo = ((Number) grupoInfo.get("id_ciclo")).intValue();
+        
+        // Obtener porcentajes
+        String sqlPorcentajes = """
+            SELECT tipo_eval_id, porcentaje
+            FROM porcentajes_evaluacion
+            WHERE codigo_curso = ? AND id_ciclo = ?
+        """;
+        
+        List<Map<String, Object>> porcentajesRows = jdbcTemplate.queryForList(
+            sqlPorcentajes, codigoCurso, idCiclo
+        );
+        
+        Map<Integer, Double> porcentajesMap = new HashMap<>();
+        for (Map<String, Object> row : porcentajesRows) {
+            int tipoEvalId = ((Number) row.get("tipo_eval_id")).intValue();
+            double porcentaje = ((Number) row.get("porcentaje")).doubleValue() / 100.0;
+            porcentajesMap.put(tipoEvalId, porcentaje);
+        }
+
+        //Obtener estudiantes y sus notas
         String sql = """
             SELECT 
-                AVG(
-                    (COALESCE(n1.calificacion, 0) + COALESCE(n2.calificacion, 0) + 
-                     COALESCE(n3.calificacion, 0) + COALESCE(n4.calificacion, 0) + 
-                     COALESCE(n5.calificacion, 0) + COALESCE(n6.calificacion, 0)) / 6
-                ) as promedio_general,
-                COUNT(DISTINCT m.cui) as total_estudiantes,
-                SUM(CASE 
-                    WHEN (COALESCE(n1.calificacion, 0) + COALESCE(n2.calificacion, 0) + 
-                          COALESCE(n3.calificacion, 0) + COALESCE(n4.calificacion, 0) + 
-                          COALESCE(n5.calificacion, 0) + COALESCE(n6.calificacion, 0)) / 6 >= 10.5 
-                    THEN 1 ELSE 0 
-                END) as aprobados,
-                SUM(CASE 
-                    WHEN (COALESCE(n1.calificacion, 0) + COALESCE(n2.calificacion, 0) + 
-                          COALESCE(n3.calificacion, 0) + COALESCE(n4.calificacion, 0) + 
-                          COALESCE(n5.calificacion, 0) + COALESCE(n6.calificacion, 0)) / 6 < 10.5 
-                    THEN 1 ELSE 0 
-                END) as desaprobados
+                m.id_matricula,
+                m.cui,
+                n1.calificacion as nota1,
+                n2.calificacion as nota2,
+                n3.calificacion as nota3,
+                n4.calificacion as nota4,
+                n5.calificacion as nota5,
+                n6.calificacion as nota6
             FROM matriculas m
             LEFT JOIN notas n1 ON m.id_matricula = n1.id_matricula AND n1.tipo_eval_id = 1
             LEFT JOIN notas n2 ON m.id_matricula = n2.id_matricula AND n2.tipo_eval_id = 2
@@ -1082,16 +1135,44 @@ public Map<String, Object> obtenerIndicadoresRapidos(int grupoId) {
               AND m.estado_matricula = 'ACTIVO'
         """;
 
-        Map<String, Object> resultado = jdbcTemplate.queryForMap(sql, grupoId);
+        List<Map<String, Object>> estudiantes = jdbcTemplate.queryForList(sql, grupoId);
         
-        Double promedioGeneral = resultado.get("promedio_general") != null ? 
-            ((Number) resultado.get("promedio_general")).doubleValue() : 0.0;
-        int totalEstudiantes = ((Number) resultado.get("total_estudiantes")).intValue();
-        int aprobados = resultado.get("aprobados") != null ? 
-            ((Number) resultado.get("aprobados")).intValue() : 0;
-        int desaprobados = resultado.get("desaprobados") != null ? 
-            ((Number) resultado.get("desaprobados")).intValue() : 0;
+        int totalEstudiantes = estudiantes.size();
+        int aprobados = 0;
+        int desaprobados = 0;
+        double sumaPromedios = 0.0;
+        int countConNotas = 0;
 
+        for (Map<String, Object> est : estudiantes) {
+            double promedioPonderado = 0.0;
+            boolean tieneNotas = false;
+            
+            //Calcular promedio ponderado para cada estudiante
+            for (int i = 1; i <= 6; i++) {
+                Object notaObj = est.get("nota" + i);
+                if (notaObj != null) {
+                    double nota = ((Number) notaObj).doubleValue();
+                    Double porcentaje = porcentajesMap.get(i);
+                    if (porcentaje != null) {
+                        promedioPonderado += nota * porcentaje;
+                        tieneNotas = true;
+                    }
+                }
+            }
+            
+            if (tieneNotas) {
+                sumaPromedios += promedioPonderado;
+                countConNotas++;
+                
+                if (promedioPonderado >= 10.5) {
+                    aprobados++;
+                } else {
+                    desaprobados++;
+                }
+            }
+        }
+
+        double promedioGeneral = countConNotas > 0 ? (sumaPromedios / countConNotas) : 0.0;
         double porcentajeAprobacion = totalEstudiantes > 0 ? 
             (aprobados * 100.0 / totalEstudiantes) : 0.0;
 

@@ -386,31 +386,32 @@
             <div class="submenu" id="users-submenu">
                 <a href="ad_gestion_usuarios.html" class="submenu-item">
                     <i class="fas fa-chevron-right"></i>
-                    <span>Gestión de Usuarios</span>
+                    <span>Gestionar Usuarios</span>
                 </a>
             </div>
             <div class="menu-item" id="academic-menu">
                 <i class="fas fa-book-open"></i>
                 <span>GESTIÓN ACADÉMICA</span>
             </div>
-            <div class="submenu" id="academic-submenu">
-                <a href="ad_asignar_horarios.html" class="submenu-item">
-                    <i class="fas fa-chevron-right"></i>
-                    <span>Asignar Horarios</span>
-                </a>
-                <a href="ad_docentes.html" class="submenu-item">
-                    <i class="fas fa-chevron-right"></i>
-                    <span>Docentes</span>
-                </a>
-                <a href="ad_gestion_cursos.html" class="submenu-item">
-                    <i class="fas fa-chevron-right"></i>
-                    <span>Información cursos</span>
-                </a>
-                <a href="ad_edita_estudiante.html" class="submenu-item">
-                    <i class="fas fa-chevron-right"></i>
-                    <span>Editar Estudiantes</span>
-                </a>
-            </div>
+                <div class="submenu" id="academic-submenu">                    
+                    <a href="ad_docentes.html" class="submenu-item">
+                        <i class="fas fa-chevron-right"></i>
+                        <span>Editar Docentes</span>
+                    </a>
+                    <a href="ad_edita_estudiante.html" class="submenu-item">
+                        <i class="fas fa-chevron-right"></i>
+                        <span>Editar Estudiantes</span>
+                    </a>
+                    <a href="ad_gestion_cursos.html" class="submenu-item">
+                        <i class="fas fa-chevron-right"></i>
+                        <span>Editar cursos</span>
+                    </a>
+                    <a href="ad_asignar_horarios.html" class="submenu-item">
+                        <i class="fas fa-chevron-right"></i>
+                        <span>Editar Horarios</span>
+                    </a>
+                    
+                </div>
             <div class="menu-item" id="reports-menu">
                 <i class="fas fa-chart-bar"></i>
                 <span>ARCHIVOS</span>
@@ -690,82 +691,96 @@
             });
         }
 
-        function mostrarReporteCurso() {
-            document.getElementById('titulo-reporte').textContent = `Reporte del Curso: ${datosActuales.nombreCurso}`;
-            
-            const statsContainer = document.getElementById('stats-container');
-            statsContainer.style.display = 'grid';
-            
-            const totalEstudiantes = datosActuales.estudiantes.length;
-            const aprobados = datosActuales.estudiantes.filter(e => e.promedio >= 10.5).length;
-            const promedioGeneral = totalEstudiantes > 0 
-                ? (datosActuales.estudiantes.reduce((sum, e) => sum + (e.promedio || 0), 0) / totalEstudiantes).toFixed(2)
-                : 0;
+function mostrarReporteCurso() {
+    document.getElementById('titulo-reporte').textContent = `Reporte del Curso: ${datosActuales.nombreCurso}`;
+    
+    // Estadísticas
+    const statsContainer = document.getElementById('stats-container');
+    statsContainer.style.display = 'grid';
+    
+    const totalEstudiantes = datosActuales.estudiantes.length;
+    const aprobados = datosActuales.estudiantes.filter(e => e.promedio >= 10.5).length;
+    const promedioGeneral = totalEstudiantes > 0 
+        ? (datosActuales.estudiantes.reduce((sum, e) => sum + (e.promedio || 0), 0) / totalEstudiantes).toFixed(2)
+        : 0;
 
-            statsContainer.innerHTML = `
-                <div class="stat-card">
-                    <div class="value">${totalEstudiantes}</div>
-                    <div class="label">Total Estudiantes</div>
-                </div>
-                <div class="stat-card">
-                    <div class="value">${aprobados}</div>
-                    <div class="label">Aprobados</div>
-                </div>
-                <div class="stat-card">
-                    <div class="value">${totalEstudiantes - aprobados}</div>
-                    <div class="label">Desaprobados</div>
-                </div>
-                <div class="stat-card">
-                    <div class="value">${promedioGeneral}</div>
-                    <div class="label">Promedio General</div>
-                </div>
-            `;
+    statsContainer.innerHTML = `
+        <div class="stat-card">
+            <div class="value">${totalEstudiantes}</div>
+            <div class="label">Total Estudiantes</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${aprobados}</div>
+            <div class="label">Aprobados</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${totalEstudiantes - aprobados}</div>
+            <div class="label">Desaprobados</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${promedioGeneral}</div>
+            <div class="label">Promedio General</div>
+        </div>
+    `;
 
-            const thead = document.getElementById('tabla-head');
-            thead.innerHTML = `
-                <tr>
-                    <th colspan="8" style="background: rgba(52, 152, 219, 0.1); color: #2c3e50; text-align: left; padding: 15px;">
+    // Información de docentes
+    const thead = document.getElementById('tabla-head');
+    thead.innerHTML = `
+        <tr>
+            <th colspan="8" style="background: rgba(52, 152, 219, 0.1); color: #2c3e50; text-align: left; padding: 15px;">
                         <strong>Docentes del Curso:</strong><br>
-                        ${datosActuales.docentes.map(d => 
-                            `${d.nombreDocente} - ${d.tipo_clase || d.tipoClase} (Grupo ${d.letraGrupo || d.letra_grupo})`
-                        ).join(' | ')}
-                    </th>
-                </tr>
-                <tr>
-                    <th>CUI</th>
-                    <th>Estudiante</th>
-                    <th>Grupo</th>
-                    <th>EP1</th>
-                    <th>EP2</th>
-                    <th>EP3</th>
-                    <th>Promedio</th>
-                    <th>Estado</th>
-                </tr>
-            `;
+                ${datosActuales.docentes.map(d => 
+                    `${d.nombreDocente} - ${d.tipo_clase || d.tipoClase} (Grupo ${d.letraGrupo || d.letra_grupo})`
+                ).join(' | ')}
+            </th>
+        </tr>
+        <tr>
+            <th>CUI</th>
+            <th>Estudiante</th>
+            <th>Grupo</th>
+            <th>EC1</th>
+            <th>EP1</th>
+            <th>EC2</th>
+            <th>EP2</th>
+            <th>EC3</th>
+            <th>EP3</th>
+            <th>Promedio</th>
+            <th>Estado</th>
+        </tr>
+    `;
 
-            const tbody = document.getElementById('tabla-body');
-            datosActuales.estudiantes.forEach(est => {
-                const ep1 = est.notas['1'] != null ? est.notas['1'].toFixed(1) : '-';
-                const ep2 = est.notas['2'] != null ? est.notas['2'].toFixed(1) : '-';
-                const ep3 = est.notas['3'] != null ? est.notas['3'].toFixed(1) : '-';
-                const promedio = est.promedio != null ? est.promedio.toFixed(1) : '-';
-                const estado = est.promedio >= 10.5 ? 'Aprobado' : 'Desaprobado';
-                const estiloEstado = est.promedio >= 10.5 ? 'color: #2ecc71; font-weight: 700;' : 'color: #e74c3c; font-weight: 700;';
+    const tbody = document.getElementById('tabla-body');
+    
+    // Orden: EC1(4), EP1(1), EC2(5), EP2(2), EC3(6), EP3(3)
+    datosActuales.estudiantes.forEach(est => {
+        const ec1 = est.notas['4'] != null ? est.notas['4'].toFixed(1) : '-';
+        const ep1 = est.notas['1'] != null ? est.notas['1'].toFixed(1) : '-';
+        const ec2 = est.notas['5'] != null ? est.notas['5'].toFixed(1) : '-';
+        const ep2 = est.notas['2'] != null ? est.notas['2'].toFixed(1) : '-';
+        const ec3 = est.notas['6'] != null ? est.notas['6'].toFixed(1) : '-';
+        const ep3 = est.notas['3'] != null ? est.notas['3'].toFixed(1) : '-';
+        
+        const promedio = est.promedio != null ? est.promedio.toFixed(2) : '-';
+        const estado = est.promedio >= 10.5 ? 'Aprobado' : 'Desaprobado';
+        const estiloEstado = est.promedio >= 10.5 ? 'color: #2ecc71; font-weight: 700;' : 'color: #e74c3c; font-weight: 700;';
 
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${est.cui}</td>
-                        <td>${est.nombreEstudiante}</td>
-                        <td>${est.letraGrupo}</td>
-                        <td>${ep1}</td>
-                        <td>${ep2}</td>
-                        <td>${ep3}</td>
-                        <td><strong>${promedio}</strong></td>
-                        <td style="${estiloEstado}">${estado}</td>
-                    </tr>
-                `;
-            });
-        }
+        tbody.innerHTML += `
+            <tr>
+                <td>${est.cui}</td>
+                <td>${est.nombreEstudiante}</td>
+                <td>${est.letraGrupo}</td>
+                <td>${ec1}</td>
+                <td>${ep1}</td>
+                <td>${ec2}</td>
+                <td>${ep2}</td>
+                <td>${ec3}</td>
+                <td>${ep3}</td>
+                <td><strong>${promedio}</strong></td>
+                <td style="${estiloEstado}">${estado}</td>
+            </tr>
+        `;
+    });
+}
 
         function mostrarReporteDocentes() {
             document.getElementById('titulo-reporte').textContent = 'Reporte General de Docentes';
@@ -892,63 +907,70 @@
             doc.save(`Reporte_Estudiantes_${new Date().getTime()}.pdf`);
         }
 
-        function generarPDFCurso(doc, startY) {
-            //Información del curso
-            doc.setFontSize(14);
-            doc.text(`Curso: ${datosActuales.codigoCurso} - ${datosActuales.nombreCurso}`, 14, startY);
+function generarPDFCurso(doc, startY) {
+    // Información del curso
+    doc.setFontSize(14);
+    doc.text(`Curso: ${datosActuales.codigoCurso} - ${datosActuales.nombreCurso}`, 14, startY);
 
-            //Docentes
-            doc.setFontSize(10);
-            let yPos = startY + 7;
-            doc.text('Docentes:', 14, yPos);
-            datosActuales.docentes.forEach(d => {
-                yPos += 5;
-                doc.text(`  - ${d.nombreDocente} (${d.tipoClase} - Grupo ${d.letraGrupo})`, 14, yPos);
-            });
+    // Docentes
+    doc.setFontSize(10);
+    let yPos = startY + 7;
+    doc.text('Docentes:', 14, yPos);
+    datosActuales.docentes.forEach(d => {
+        yPos += 5;
+        doc.text(`  - ${d.nombreDocente} (${d.tipoClase || d.tipo_clase} - Grupo ${d.letraGrupo || d.letra_grupo})`, 14, yPos);
+    });
 
-            //Estadísticas
-            yPos += 10;
-            const totalEst = datosActuales.estudiantes.length;
-            const aprobados = datosActuales.estudiantes.filter(e => e.promedio >= 10.5).length;
-            const promedioGen = totalEst > 0 
-                ? (datosActuales.estudiantes.reduce((sum, e) => sum + (e.promedio || 0), 0) / totalEst).toFixed(2)
-                : 0;
+    // Estadísticas
+    yPos += 10;
+    const totalEst = datosActuales.estudiantes.length;
+    const aprobados = datosActuales.estudiantes.filter(e => e.promedio >= 10.5).length;
+    const promedioGen = totalEst > 0 
+        ? (datosActuales.estudiantes.reduce((sum, e) => sum + (e.promedio || 0), 0) / totalEst).toFixed(2)
+        : 0;
 
-            doc.text(`Total: ${totalEst} | Aprobados: ${aprobados} | Desaprobados: ${totalEst - aprobados} | Promedio: ${promedioGen}`, 14, yPos);
+    doc.text(`Total: ${totalEst} | Aprobados: ${aprobados} | Desaprobados: ${totalEst - aprobados} | Promedio: ${promedioGen}`, 14, yPos);
 
-            //Tabla de estudiantes
-            const tableData = datosActuales.estudiantes.map(est => {
-                const ep1 = est.notas['1'] != null ? est.notas['1'].toFixed(1) : '-';
-                const ep2 = est.notas['2'] != null ? est.notas['2'].toFixed(1) : '-';
-                const ep3 = est.notas['3'] != null ? est.notas['3'].toFixed(1) : '-';
-                const promedio = est.promedio != null ? est.promedio.toFixed(1) : '-';
-                const estado = est.promedio >= 10.5 ? 'Aprobado' : 'Desaprobado';
+    // Tabla de estudiantes con EC1, EC2, EC3
+    const tableData = datosActuales.estudiantes.map(est => {
+        const ec1 = est.notas['4'] != null ? est.notas['4'].toFixed(1) : '-';
+        const ep1 = est.notas['1'] != null ? est.notas['1'].toFixed(1) : '-';
+        const ec2 = est.notas['5'] != null ? est.notas['5'].toFixed(1) : '-';
+        const ep2 = est.notas['2'] != null ? est.notas['2'].toFixed(1) : '-';
+        const ec3 = est.notas['6'] != null ? est.notas['6'].toFixed(1) : '-';
+        const ep3 = est.notas['3'] != null ? est.notas['3'].toFixed(1) : '-';
+        const promedio = est.promedio != null ? est.promedio.toFixed(2) : '-';
+        const estado = est.promedio >= 10.5 ? 'Aprobado' : 'Desaprobado';
 
-                return [
-                    est.cui,
-                    est.nombreEstudiante,
-                    est.letraGrupo,
-                    ep1,
-                    ep2,
-                    ep3,
-                    promedio,
-                    estado
-                ];
-            });
+        return [
+            est.cui,
+            est.nombreEstudiante,
+            est.letraGrupo,
+            ec1,
+            ep1,
+            ec2,
+            ep2,
+            ec3,
+            ep3,
+            promedio,
+            estado
+        ];
+    });
 
-            doc.autoTable({
-                startY: yPos + 5,
-                head: [['CUI', 'Estudiante', 'Grupo', 'EP1', 'EP2', 'EP3', 'Promedio', 'Estado']],
-                body: tableData,
-                styles: { fontSize: 8, cellPadding: 2 },
-                headStyles: { fillColor: [52, 152, 219] },
-                columnStyles: {
-                    1: { cellWidth: 50 }
-                }
-            });
-
-            doc.save(`Reporte_Curso_${datosActuales.codigoCurso}_${new Date().getTime()}.pdf`);
+    doc.autoTable({
+        startY: yPos + 5,
+        head: [['CUI', 'Estudiante', 'Grupo', 'EC1', 'EP1', 'EC2', 'EP2', 'EC3', 'EP3', 'Prom', 'Estado']],
+        body: tableData,
+        styles: { fontSize: 7, cellPadding: 2 },
+        headStyles: { fillColor: [52, 152, 219] },
+        columnStyles: {
+            1: { cellWidth: 40 },
+            9: { fontStyle: 'bold' }
         }
+    });
+
+    doc.save(`Reporte_Curso_${datosActuales.codigoCurso}_${new Date().getTime()}.pdf`);
+}
 
         function generarPDFDocentes(doc, startY) {
             //Estadísticas

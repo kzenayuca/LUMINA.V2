@@ -9,8 +9,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     <style>
         :root{
-            --bg-1: #667eea;
-            --bg-2: #764ba2;
+            --bg-1: #bec7ee;
+            --bg-2: #e0cbf5;
             --primary: #2c3e50;
             --accent: #3498db;
             --muted: #7f8c8d;
@@ -647,12 +647,14 @@ function mostrarReporteNotas(estudiantes) {
     document.getElementById("info-tipo").textContent = cursoActual.tipo;
 
     const total = estudiantes.length;
-    const aprobados = estudiantes.filter(e => e.promedio >= 10.5).length;
+    
+    // CAMBIO: Contar aprobados basándose en promedio ponderado
+    const aprobados = estudiantes.filter(e => e.promedio != null && e.promedio >= 10.5).length;
     const desaprobados = total - aprobados;
 
     let suma = 0, count = 0;
     estudiantes.forEach(e => {
-        if (e.promedio != null) {
+        if (e.promedio != null && !isNaN(e.promedio)) {
             suma += e.promedio;
             count++;
         }
@@ -670,12 +672,12 @@ function mostrarReporteNotas(estudiantes) {
     thead.innerHTML = `
         <th>CUI</th>
         <th>Estudiante</th>
-        <th>Cont1</th>
-        <th>Parcial1</th>
-        <th>Cont2</th>
-        <th>Parcial2</th>
-        <th>Cont3</th>
-        <th>Parcial3</th>
+        <th>EC1</th>
+        <th>EP1</th>
+        <th>EC2</th>
+        <th>EP2</th>
+        <th>EC3</th>
+        <th>EP3</th>
         <th>Promedio</th>
         <th>Estado</th>
     `;
@@ -683,7 +685,7 @@ function mostrarReporteNotas(estudiantes) {
     const tbody = document.getElementById("tabla-body");
     tbody.innerHTML = "";
 
-    const orden = ['4','1','5','2','6','3'];
+    const orden = ['4','1','5','2','6','3']; // EC1, EP1, EC2, EP2, EC3, EP3
 
     estudiantes.forEach(e => {
         let notas = "";
@@ -697,7 +699,7 @@ function mostrarReporteNotas(estudiantes) {
                 <td>${e.cui}</td>
                 <td>${e.nombreEstudiante}</td>
                 ${notas}
-                <td>${e.promedio != null ? e.promedio.toFixed(1) : "-"}</td>
+                <td><strong>${e.promedio != null ? e.promedio.toFixed(1) : "-"}</strong></td>
                 <td class="estado ${e.promedio >= 10.5 ? "aprobado" : "desaprobado"}">
                     ${e.promedio >= 10.5 ? "Aprobado" : "Desaprobado"}
                 </td>
